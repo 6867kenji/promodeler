@@ -17,6 +17,9 @@ class CompiledScene:
     parts: dict[str, bpy.types.Object] = field(default_factory=dict)
     materials: dict[str, bpy.types.Material] = field(default_factory=dict)
     cutters: list[bpy.types.Object] = field(default_factory=list)
+    procedural: dict = field(default_factory=dict)  # material id -> ProceduralMaterial
+    textures: dict = field(default_factory=dict)  # part id -> channel -> texture metadata
+    uv_stats: dict = field(default_factory=dict)  # part id -> coverage/density
     frozen: bool = False
 
 
@@ -40,7 +43,10 @@ def compile_recipe(recipe: dict) -> CompiledScene:
     scene = CompiledScene(root=root)
 
     for spec in asset["materials"]:
-        scene.materials[spec["id"]] = materials.build_material(spec)
+        mat, procedural = materials.build_material(spec)
+        scene.materials[spec["id"]] = mat
+        if procedural is not None:
+            scene.procedural[spec["id"]] = procedural
 
     def cutter_factory(owner: bpy.types.Object, owner_id: str):
         def make_cutter(index: int, spec: dict) -> bpy.types.Object:

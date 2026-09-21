@@ -29,7 +29,8 @@ python -m promodeler build assets/wrench.py --views perspective,top --force
 ## アセットファイルの書き方
 
 `assets/crate.py`（プリミティブと階層）、`assets/mug.py`（回転体 + スイープ + Union）、
-`assets/wrench.py`（穴あき押出 + Bevel + 配列カッターの Difference）を参照。
+`assets/wrench.py`（穴あき押出 + Bevel + 配列カッターの Difference）、`assets/rusty_can.py` /
+`assets/leather_journal.py`（手続きマテリアルのベイク）を参照。
 モジュールは `asset` に `AssetGenerator` か `Asset` を置く。任意で `render = RenderSettings(...)` を置ける。
 
 - 座標系: メートル、右手系、**+Y が上**、+Z が手前 (glTF と同じ)。角度はラジアン。
@@ -65,11 +66,36 @@ python -m promodeler build assets/wrench.py --views perspective,top --force
 Boolean の後に Bevel を掛けると切り口の細かい面で幅が収まらず退化面が出る。
 カッターの頂点が対象の面と同一平面に乗らないよう、半セグメント回転などでずらす。
 
+### マテリアル（M2）
+
+`Material` の各チャンネル（`base_color`, `roughness`, `metallic`, `emission_color`, `emission_strength`, `height`）は
+定数か **フィールド** を取る。フィールドは表面上の関数で、3D オブジェクト座標で評価されるため UV の継ぎ目が出ない。
+
+| フィールド | 内容 |
+| --- | --- |
+| `Noise(size, detail, roughness, seed)` | fBm ノイズ 0..1。`size` はメートル単位の特徴サイズ（タプルで異方性） |
+| `Voronoi(size, feature, randomness, seed)` | セルノイズ。`f1` / `smooth_f1` / `distance_to_edge` |
+| `Curvature(radius)` | 凸エッジのマスク。半径は幾何ベベル幅の約 3 倍にする |
+| `Cavity(distance)`, `AmbientOcclusion(distance)`, `Thickness(distance)` | レイトレースによる凹み・遮蔽・薄さ |
+| `Facing(direction)` | 法線と方向の内積（上向き面の埃など） |
+| `Position(axis, start, end)` | 座標を 0..1 に正規化 |
+| 演算 | `+ - * /`, `.pow()`, `.clamp()`, `.smoothstep(lo, hi)`, `.ramp(stops)`, `ColorRamp(field, stops)`, `.mix()` |
+
+`layers=(Layer(base_color=..., roughness=..., height=..., mask=field), ...)` で下から順に合成する。
+フィールドを含むマテリアルは凍結後に自動で UV 展開され、Cycles で基本色 / 粗さ / 金属 / 法線 / 発光を
+`textures/<part>_<channel>.png` に焼く。レンダと glTF はその PBR テクスチャセットを使う。
+`quality.texture_resolution`（既定 1024）と `quality.bake_samples`（既定 32）、CLI の
+`--texture-resolution` / `--bake-samples` で品質を変えられる（反復時は 256 / 4 が速い）。
+
+プリセット: `presets.worn_leather(color, seed, wear, edge_radius)`, `presets.rusty_iron(seed, rust, edge_radius)`,
+`presets.painted_metal(color, seed, wear, edge_radius)`。`assets/rusty_can.py` と `assets/leather_journal.py` を参照。
+
 ## 数値 QA (`report.json` の `parts.<id>`)
 
 `vertices`, `faces`, `triangles`, `non_manifold_edges`, `boundary_edges`, `loose_vertices`,
 `inconsistent_winding_edges`, `degenerate_faces`, `watertight`, `volume`（符号付き。負なら裏返り）,
-`self_intersections`（頂点を共有しない三角形対の交差数）。問題は `warnings` にコード付きで並ぶ。
+`self_intersections`（頂点を共有しない三角形対の交差数）。ベイクしたパーツには `uv`（アトラス使用率、テクセル密度）と
+`textures`（チャンネル別のパス・解像度・所要秒）が付く。問題は `warnings` にコード付きで並ぶ。
 レンダが出たことは正しさの証明ではない。数値 QA と目視を分けて判断する。
 
 ## テスト

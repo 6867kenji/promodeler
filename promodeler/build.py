@@ -9,7 +9,7 @@ import os
 import shutil
 import subprocess
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 from . import KERNEL_VERSION
@@ -65,13 +65,18 @@ def load_asset_module(path: str):
     return module
 
 
-def load_asset(path: str, render: RenderSettings | None = None) -> LoadedAsset:
-    """An asset file exposes ``asset`` as an ``AssetGenerator`` or an ``Asset``; ``render`` is optional."""
+def load_asset(path: str, render: RenderSettings | None = None, quality_overrides: dict | None = None) -> LoadedAsset:
+    """An asset file exposes ``asset`` as an ``AssetGenerator`` or an ``Asset``; ``render`` is optional.
+
+    ``quality_overrides`` replaces fields of the generator's quality profile,
+    for example a lower texture resolution for a quick iteration.
+    """
     module = load_asset_module(path)
     target = getattr(module, "asset", None)
     render = render or getattr(module, "render", None) or RenderSettings()
     if isinstance(target, AssetGenerator):
-        input = target.make_input()
+        quality = replace(target.quality, **quality_overrides) if quality_overrides else None
+        input = target.make_input(quality=quality)
         asset = target.generate(input)
         recipe = build_recipe(
             asset, input, render,
@@ -100,8 +105,8 @@ class BuildResult:
 
 
 def build(path: str, out_root: str = "build", force: bool = False, render: RenderSettings | None = None,
-          timeout: float = 600.0) -> BuildResult:
-    loaded = load_asset(path, render)
+          timeout: float = 1800.0, quality_overrides: dict | None = None) -> BuildResult:
+    loaded = load_asset(path, render, quality_overrides)
     blender = find_blender()
     version = blender_version(blender)
     digest = recipe_hash(loaded.recipe, kernel_version=KERNEL_VERSION, blender=version)

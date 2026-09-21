@@ -83,6 +83,24 @@ class BuildTests(unittest.TestCase):
             self.assertAlmostEqual(bounds["min"][1], 0.0, places=4)
             self.assertAlmostEqual(bounds["max"][1], 0.006, places=4)
 
+    def test_rusty_can_bakes_texture_set(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            result = build(str(ROOT / "assets" / "rusty_can.py"), out_root=tmp, force=True,
+                           quality_overrides={"texture_resolution": 128, "bake_samples": 2})
+            self.assertTrue(result.ok, result.report.get("error"))
+            self.assert_clean(result.report)
+            body = result.report["parts"]["body"]
+            self.assertEqual(set(body["textures"]), {"base_color", "roughness", "metallic", "normal"})
+            for meta in body["textures"].values():
+                self.assertTrue(os.path.isfile(meta["path"]), meta["path"])
+                self.assertEqual(meta["resolution"], 128)
+            self.assertGreater(body["uv"]["coverage"], 0.2)
+            self.assertGreater(body["uv"]["texel_density_px_per_m"], 100)
+            gltf = read_glb_json(result.report["export"]["path"])
+            self.assertGreaterEqual(len(gltf.get("images", [])), 3)
+            self.assertIn("normalTexture", gltf["materials"][0])
+            self.assertIn("baseColorTexture", gltf["materials"][0]["pbrMetallicRoughness"])
+
 
 if __name__ == "__main__":
     unittest.main()

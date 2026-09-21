@@ -26,6 +26,11 @@ class Color:
     def to_recipe(self) -> list[float]:
         return [self.r, self.g, self.b, self.a]
 
+    def scaled(self, factor: float) -> "Color":
+        """Brighten or darken in linear light, clamped to 0...1, keeping alpha."""
+        r, g, b, a = self.to_linear()
+        return Color.from_linear(r * factor, g * factor, b * factor, a)
+
     @staticmethod
     def from_linear(r: float, g: float, b: float, a: float = 1.0) -> "Color":
         return Color(_encode(r), _encode(g), _encode(b), a)

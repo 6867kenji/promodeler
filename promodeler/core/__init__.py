@@ -10,12 +10,16 @@ compiles. Conventions:
 - Parts, materials and other entities are addressed by semantic string IDs.
 """
 
-from . import curves
+from . import curves, presets
 from .asset import Asset, GenerationInput, Part, QualityProfile, RenderSettings
 from .color import Color, srgb
 from .diagnostics import ModelingError
+from .fields import (
+    AmbientOcclusion, Cavity, ColorField, ColorMix, ColorRamp, Curvature, Facing, Field, Mix, Noise, Position,
+    Thickness, Voronoi,
+)
 from .generator import AssetGenerator
-from .material import Material
+from .material import Layer, Material
 from .modifiers import Array, Bevel, Boolean, Cutter, Mirror, Solidify, Subdivision
 from .profile import Profile
 from .recipe import build_recipe, dump_recipe, recipe_hash
@@ -23,25 +27,37 @@ from .shapes import Box, Cone, Cylinder, Extrude, Loft, LoftSection, Plane, Revo
 from .transform import Transform
 
 __all__ = [
+    "AmbientOcclusion",
     "Array",
     "Asset",
     "AssetGenerator",
     "Bevel",
     "Boolean",
     "Box",
+    "Cavity",
     "Color",
+    "ColorField",
+    "ColorMix",
+    "ColorRamp",
     "Cone",
+    "Curvature",
     "Cutter",
     "Cylinder",
     "Extrude",
+    "Facing",
+    "Field",
     "GenerationInput",
+    "Layer",
     "Loft",
     "LoftSection",
     "Material",
     "Mirror",
+    "Mix",
     "ModelingError",
     "Part",
+    "Noise",
     "Plane",
+    "Position",
     "Profile",
     "QualityProfile",
     "RenderSettings",
@@ -50,10 +66,13 @@ __all__ = [
     "Sphere",
     "Subdivision",
     "Sweep",
+    "Thickness",
     "Transform",
+    "Voronoi",
     "build_recipe",
     "curves",
     "dump_recipe",
+    "presets",
     "recipe_hash",
     "srgb",
 ]

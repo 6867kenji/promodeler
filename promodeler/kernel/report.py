@@ -85,6 +85,13 @@ def part_statistics(obj: bpy.types.Object, depsgraph) -> dict:
 def build_report(scene: CompiledScene, recipe: dict) -> dict:
     depsgraph = bpy.context.evaluated_depsgraph_get()
     parts = {part_id: part_statistics(obj, depsgraph) for part_id, obj in scene.parts.items()}
+    for part_id, stats in parts.items():
+        if part_id in scene.uv_stats:
+            stats["uv"] = scene.uv_stats[part_id]
+        if part_id in scene.textures:
+            stats["textures"] = {
+                channel: {k: v for k, v in meta.items() if k != "image"} for channel, meta in scene.textures[part_id].items()
+            }
     totals = {
         key: sum(p[key] for p in parts.values())
         for key in ("vertices", "faces", "triangles", "non_manifold_edges", "boundary_edges", "loose_vertices",
@@ -117,6 +124,8 @@ def build_report(scene: CompiledScene, recipe: dict) -> dict:
             warnings.append({"code": "geometry.selfIntersection", "message": f"Part {part_id!r} has {stats['self_intersections']} self-intersecting triangle pairs."})
         if stats["self_intersections"] is None:
             warnings.append({"code": "geometry.selfIntersectionSkipped", "message": f"Part {part_id!r} exceeds the self-intersection check limit."})
+        if "uv" in stats and stats["uv"]["coverage"] < 0.2:
+            warnings.append({"code": "uv.coverage", "message": f"Part {part_id!r} uses only {stats['uv']['coverage']:.0%} of its texture atlas."})
         if stats["watertight"] and stats["volume"] is not None and stats["volume"] < 0:
             warnings.append({"code": "geometry.insideOut", "message": f"Part {part_id!r} has negative volume; its normals face inward."})
     return {

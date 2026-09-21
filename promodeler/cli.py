@@ -34,14 +34,24 @@ def cmd_doctor(args) -> int:
     return 0
 
 
+def _quality_overrides(args) -> dict | None:
+    overrides = {}
+    if getattr(args, "texture_resolution", None):
+        overrides["texture_resolution"] = args.texture_resolution
+    if getattr(args, "bake_samples", None):
+        overrides["bake_samples"] = args.bake_samples
+    return overrides or None
+
+
 def cmd_recipe(args) -> int:
-    loaded = load_asset(args.asset, _render_overrides(args))
+    loaded = load_asset(args.asset, _render_overrides(args), _quality_overrides(args))
     print(dump_recipe(loaded.recipe) if args.compact else json.dumps(loaded.recipe, indent=2, sort_keys=True))
     return 0
 
 
 def cmd_build(args) -> int:
-    result = build(args.asset, out_root=args.out, force=args.force, render=_render_overrides(args))
+    result = build(args.asset, out_root=args.out, force=args.force, render=_render_overrides(args),
+                   quality_overrides=_quality_overrides(args))
     report = result.report
     print(f"asset:   {report.get('asset', '?')}")
     print(f"hash:    {result.hash[:12]}{' (cached)' if result.cached else ''}")
@@ -61,6 +71,11 @@ def cmd_build(args) -> int:
     if bounds:
         size = [round(hi - lo, 4) for lo, hi in zip(bounds["min"], bounds["max"])]
         print(f"bounds:  size {size} (Y up)")
+    for part_id, stats in report["parts"].items():
+        if "textures" in stats:
+            channels = ", ".join(f"{c} {m['seconds']}s" for c, m in stats["textures"].items())
+            uv = stats.get("uv", {})
+            print(f"bake:    {part_id}: {channels}; uv coverage {uv.get('coverage')}, {uv.get('texel_density_px_per_m')} px/m")
     for render in report.get("renders", []):
         state = "written" if render["written"] else "MISSING"
         print(f"render:  {render['view']:<12} {state} {render['seconds']}s  {render['path']}")
@@ -88,6 +103,8 @@ def main(argv: list[str] | None = None) -> int:
         p.add_argument("--resolution", type=int, default=None)
         p.add_argument("--engine", choices=("eevee", "cycles"), default=None)
         p.add_argument("--views", default=None, help="Comma-separated: perspective,front,side,top")
+        p.add_argument("--texture-resolution", type=int, default=None, help="Override quality.texture_resolution")
+        p.add_argument("--bake-samples", type=int, default=None, help="Override quality.bake_samples")
         p.set_defaults(func=func)
     sub.choices["recipe"].add_argument("--compact", action="store_true")
     sub.choices["build"].add_argument("--out", default="build")

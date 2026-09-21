@@ -21,18 +21,25 @@ class QualityProfile:
     curve_segments: int = 32
     surface_segments: int = 16
     max_triangles: int = 2_000_000
+    texture_resolution: int = 1024
+    bake_samples: int = 32
 
     def validate(self) -> None:
-        for name, minimum in (("curve_segments", 3), ("surface_segments", 2), ("max_triangles", 1)):
+        for name, minimum in (("curve_segments", 3), ("surface_segments", 2), ("max_triangles", 1),
+                              ("texture_resolution", 16), ("bake_samples", 1)):
             value = getattr(self, name)
             if not isinstance(value, int) or value < minimum:
                 raise ModelingError("quality.range", f"quality.{name} must be an integer >= {minimum}.")
+        if self.texture_resolution > 8192 or self.bake_samples > 4096:
+            raise ModelingError("quality.range", "quality.texture_resolution <= 8192 and bake_samples <= 4096.")
 
     def to_recipe(self) -> dict:
         return {
             "curve_segments": self.curve_segments,
             "surface_segments": self.surface_segments,
             "max_triangles": self.max_triangles,
+            "texture_resolution": self.texture_resolution,
+            "bake_samples": self.bake_samples,
         }
 
 
