@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "promodeler"
+version = "0.0.1"
+description = "Code-first, deterministic generation of realistic 3D assets with a headless Blender kernel."
+requires-python = ">=3.13"
+dependencies = []
+
+[project.scripts]
+promodeler = "promodeler.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["promodeler*"]
