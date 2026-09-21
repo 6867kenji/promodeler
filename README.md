@@ -5,12 +5,13 @@ Python のソースコードがアセットの唯一の正であり、ヘッド�
 コンパイラのバックエンドとして使う。設計の背景は
 [docs/01-realitizer-analysis-and-design.md](docs/01-realitizer-analysis-and-design.md)。
 
-## 使い方 (M0)
+## 使い方
 
 ```sh
 python -m promodeler doctor                 # Blender を検出できるか確認
-python -m promodeler recipe assets/crate.py # レシピ JSON を表示 (Blender 不要)
-python -m promodeler build assets/crate.py  # 生成 + レンダ + glTF 書き出し
+python -m promodeler recipe assets/mug.py   # レシピ JSON を表示 (Blender 不要)
+python -m promodeler build assets/mug.py    # 生成 + 数値 QA + レンダ + glTF 書き出し
+python -m promodeler build assets/wrench.py --views perspective,top --force
 ```
 
 出力は `build/<asset>/<hash12>/` に置かれる:
@@ -18,21 +19,58 @@ python -m promodeler build assets/crate.py  # 生成 + レンダ + glTF 書き�
 | ファイル | 内容 |
 | --- | --- |
 | `recipe.json` | kernel に渡した正規化レシピ。キャッシュ鍵の元 |
-| `report.json` | 数値 QA (バウンディング、三角形数、非マニフォールド辺)、レンダ結果、書き出し結果、失敗時は `error` |
-| `renders/*.png` | 固定ライト・自動フレーミングの検証レンダ |
-| `model.glb` | モディファイア適用済み、Y-up、パーツ名 = セマンティック ID の glTF |
+| `report.json` | 数値 QA、レンダ結果、書き出し結果、失敗時は `error` |
+| `renders/*.png` | 固定ライト・自動フレーミングの検証レンダ (`perspective` / `front` / `side` / `top`) |
+| `model.glb` | モディファイア適用済み、Y-up、ノード名 = パーツ ID、メッシュ名 = `mesh:<id>` |
 | `blender.log` | Blender の標準出力 |
 
 同じレシピ・同じ kernel/Blender バージョンなら再ビルドせずキャッシュを返す (`--force` で無効化)。
 
 ## アセットファイルの書き方
 
-`assets/crate.py` を参照。モジュールは `asset` に `AssetGenerator` か `Asset` を置く。
-任意で `render = RenderSettings(...)` を置ける。
+`assets/crate.py`（プリミティブと階層）、`assets/mug.py`（回転体 + スイープ + Union）、
+`assets/wrench.py`（穴あき押出 + Bevel + 配列カッターの Difference）を参照。
+モジュールは `asset` に `AssetGenerator` か `Asset` を置く。任意で `render = RenderSettings(...)` を置ける。
 
 - 座標系: メートル、右手系、**+Y が上**、+Z が手前 (glTF と同じ)。角度はラジアン。
 - 色: sRGB 非乗算 + 線形アルファ。`alpha_mode="opaque"` のとき alpha < 1 は検証エラー。
 - 範囲外の値は黙って丸めず `ModelingError(code, message)` を投げる。
+
+### 形状
+
+| 形状 | 内容 |
+| --- | --- |
+| `Box`, `Plane`, `Cylinder`, `Cone`, `Sphere` | 原点中心のプリミティブ。高さは局所 Y |
+| `Extrude(profile, depth, axis)` | 穴あり 2D プロファイルを軸方向に押し出す。`axis="y"` で地面に描いた形を上へ押し出す |
+| `Revolve(profile, segments, angle, cap_ends)` | (半径, 高さ) 列を Y 軸周りに回転。端点の半径 0 は極で閉じる。巻き方向は自動正規化 |
+| `Sweep(profile, path, scales, twist, capped)` | 穴なしプロファイルを 3D 折れ線に沿って回転最小フレームで掃引 |
+| `Loft(sections, capped)` | 同じ点数の断面（各断面は `LoftSection(points, transform)`）を張る |
+
+`promodeler.core.curves` に `circle`, `regular_polygon`, `rect`, `rounded_rect`, `arc`, `bezier`,
+`symmetric`, `join` などの点列ヘルパーがある。穴ありプロファイルのキャップは制約付きドロネー分割で
+三角形化してから四角形へ結合する。
+
+### モディファイア（順に適用）
+
+| モディファイア | 内容 |
+| --- | --- |
+| `Bevel(width, segments, angle_limit)` | 角度しきい値を超える辺を丸める。幅はメートル |
+| `Subdivision(levels)` | Catmull-Clark |
+| `Solidify(thickness, offset)` | 開いた面に厚みを付ける |
+| `Mirror(axes, merge_distance)` | 局所平面でミラー。平面上に面がある閉じた形状には使わず、`curves.symmetric` で全輪郭を作る |
+| `Array(count, offset)` | 定数オフセットで複製 |
+| `Boolean(operation, cutter, solver)` | `Cutter(shape, transform, modifiers)` を相手に Exact CSG。カッターは書き出されない |
+
+順序の指針: Bevel は輪郭の辺に対して行い、Boolean による溝や穴はその後に切る。
+Boolean の後に Bevel を掛けると切り口の細かい面で幅が収まらず退化面が出る。
+カッターの頂点が対象の面と同一平面に乗らないよう、半セグメント回転などでずらす。
+
+## 数値 QA (`report.json` の `parts.<id>`)
+
+`vertices`, `faces`, `triangles`, `non_manifold_edges`, `boundary_edges`, `loose_vertices`,
+`inconsistent_winding_edges`, `degenerate_faces`, `watertight`, `volume`（符号付き。負なら裏返り）,
+`self_intersections`（頂点を共有しない三角形対の交差数）。問題は `warnings` にコード付きで並ぶ。
+レンダが出たことは正しさの証明ではない。数値 QA と目視を分けて判断する。
 
 ## テスト
 

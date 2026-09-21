@@ -26,13 +26,13 @@ def main() -> int:
         import bpy
 
         from promodeler import KERNEL_VERSION
-        from promodeler.core.diagnostics import ModelingError
         from promodeler.kernel import compile as compiler, export, render, report as reporting
 
         with open(recipe_path, "r", encoding="utf-8") as f:
             recipe = json.load(f)
         compiler.reset_scene()
         scene = compiler.compile_recipe(recipe)
+        compiler.freeze_geometry(scene)
         report.update(reporting.build_report(scene, recipe))
         renders_dir = os.path.join(out_dir, "renders")
         os.makedirs(renders_dir, exist_ok=True)
