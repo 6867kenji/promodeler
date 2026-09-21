@@ -13,6 +13,7 @@ from dataclasses import dataclass, replace
 from pathlib import Path
 
 from . import KERNEL_VERSION
+from .contact_sheet import make_contact_sheet
 from .core import Asset, AssetGenerator, ModelingError, RenderSettings, build_recipe, dump_recipe, recipe_hash
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -47,6 +48,15 @@ def blender_version(executable: str) -> str:
     raise BlenderNotFound(f"Could not read the Blender version from {executable}.")
 
 
+def _merge_render(base: RenderSettings, override) -> RenderSettings:
+    """A ``RenderSettings`` replaces the asset's settings; a dict replaces only the named fields."""
+    if override is None:
+        return base
+    if isinstance(override, dict):
+        return replace(base, **override)
+    return override
+
+
 @dataclass
 class LoadedAsset:
     asset: Asset
@@ -65,7 +75,7 @@ def load_asset_module(path: str):
     return module
 
 
-def load_asset(path: str, render: RenderSettings | None = None, quality_overrides: dict | None = None) -> LoadedAsset:
+def load_asset(path: str, render=None, quality_overrides: dict | None = None) -> LoadedAsset:
     """An asset file exposes ``asset`` as an ``AssetGenerator`` or an ``Asset``; ``render`` is optional.
 
     ``quality_overrides`` replaces fields of the generator's quality profile,
@@ -73,7 +83,8 @@ def load_asset(path: str, render: RenderSettings | None = None, quality_override
     """
     module = load_asset_module(path)
     target = getattr(module, "asset", None)
-    render = render or getattr(module, "render", None) or RenderSettings()
+    base_render = getattr(module, "render", None) or RenderSettings()
+    render = _merge_render(base_render, render)
     if isinstance(target, AssetGenerator):
         quality = replace(target.quality, **quality_overrides) if quality_overrides else None
         input = target.make_input(quality=quality)
@@ -104,7 +115,7 @@ class BuildResult:
         return self.report.get("status") == "ok"
 
 
-def build(path: str, out_root: str = "build", force: bool = False, render: RenderSettings | None = None,
+def build(path: str, out_root: str = "build", force: bool = False, render=None,
           timeout: float = 1800.0, quality_overrides: dict | None = None) -> BuildResult:
     loaded = load_asset(path, render, quality_overrides)
     blender = find_blender()
@@ -141,6 +152,8 @@ def build(path: str, out_root: str = "build", force: bool = False, render: Rende
             report = json.load(f)
     report["hash"] = digest
     report["blender_exit_code"] = completed.returncode
+    if report.get("status") == "ok":
+        report["contact_sheet"] = make_contact_sheet(report, out_dir / "renders" / "contact_sheet.png")
     with open(report_path, "w", encoding="utf-8") as f:
         json.dump(report, f, indent=2, ensure_ascii=False)
     return BuildResult(out_dir=out_dir, report=report, cached=False, hash=digest)

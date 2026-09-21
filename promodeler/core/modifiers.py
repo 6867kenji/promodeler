@@ -12,6 +12,7 @@ from dataclasses import dataclass, fields
 from typing import ClassVar
 
 from .diagnostics import ModelingError, finite_vector, is_finite
+from .fields import Field, validate_field
 from .transform import Transform
 
 AXES = ("x", "y", "z")
@@ -60,15 +61,81 @@ class Bevel(Modifier):
 
 @dataclass(frozen=True)
 class Subdivision(Modifier):
-    """Catmull-Clark subdivision. ``levels`` applies to render and export."""
+    """Catmull-Clark subdivision, or plain face splitting with ``smooth=False`` to add density for displacement."""
 
     kind: ClassVar[str] = "subdivision"
     levels: int = 1
+    smooth: bool = True
 
     def validate(self, label: str) -> None:
         super().validate(label)
         if not isinstance(self.levels, int) or not 1 <= self.levels <= 6:
             raise ModelingError("subdivision.levels", f"{label}.levels must be in 1...6.")
+
+
+GEOMETRY_FIELD_KINDS = ("const", "noise", "voronoi", "position", "facing", "math", "clamp", "smoothstep", "ramp", "mix")
+
+
+def _check_geometry_field(field, label: str) -> None:
+    if not isinstance(field, Field):
+        raise ModelingError("displace.height", f"{label} must be a scalar Field.")
+    validate_field(field, label)
+    pending = [field]
+    while pending:
+        node = pending.pop()
+        if node.kind not in GEOMETRY_FIELD_KINDS:
+            raise ModelingError(
+                "displace.field",
+                f"{label} uses {node.kind!r}, which needs ray tracing; displacement fields may only use {GEOMETRY_FIELD_KINDS}.",
+            )
+        pending.extend(node.children())
+
+
+@dataclass(frozen=True)
+class Displace(Modifier):
+    """Move vertices along their normals by ``height`` meters, evaluated per vertex in object space.
+
+    Only procedural fields are allowed (noise, Voronoi, position, facing and
+    arithmetic); mesh-probe fields such as curvature need a renderer. The
+    mesh must be dense enough to carry the detail: add a ``Subdivision``
+    first, or author denser profiles.
+    """
+
+    kind: ClassVar[str] = "displace"
+    height: Field | None = None
+
+    def validate(self, label: str) -> None:
+        if self.height is None:
+            raise ModelingError("displace.height", f"{label}.height is required.")
+        _check_geometry_field(self.height, f"{label}.height")
+
+    def to_recipe(self) -> dict:
+        return {"kind": self.kind, "height": self.height.to_recipe()}
+
+
+SIMPLE_DEFORM_KINDS = ("bend", "twist", "taper")
+
+
+@dataclass(frozen=True)
+class SimpleDeform(Modifier):
+    """Bend or twist by ``angle`` radians, or taper by ``factor``, along the part's local ``axis``."""
+
+    kind: ClassVar[str] = "simple_deform"
+    method: str = "bend"
+    angle: float = 0.0
+    factor: float = 0.0
+    axis: str = "y"
+
+    def validate(self, label: str) -> None:
+        super().validate(label)
+        if self.method not in SIMPLE_DEFORM_KINDS:
+            raise ModelingError("deform.method", f"{label}.method must be one of {SIMPLE_DEFORM_KINDS}.")
+        if self.axis not in AXES:
+            raise ModelingError("deform.axis", f"{label}.axis must be one of {AXES}.")
+        if self.method in ("bend", "twist") and not -2 * math.pi <= self.angle <= 2 * math.pi:
+            raise ModelingError("deform.angle", f"{label}.angle must be within -2pi...2pi.")
+        if self.method == "taper" and not -1.0 <= self.factor <= 10.0:
+            raise ModelingError("deform.factor", f"{label}.factor must be within -1...10.")
 
 
 @dataclass(frozen=True)
@@ -140,6 +207,8 @@ class Cutter:
         for index, modifier in enumerate(self.modifiers):
             if isinstance(modifier, Boolean):
                 raise ModelingError("boolean.nested", f"{label}.modifiers[{index}] must not be a nested boolean.")
+            if isinstance(modifier, Displace):
+                raise ModelingError("boolean.cutterDisplace", f"{label}.modifiers[{index}]: cutters cannot be displaced.")
             modifier.validate(f"{label}.modifiers[{index}]")
 
     def to_recipe(self) -> dict:
@@ -176,4 +245,4 @@ class Boolean(Modifier):
         return {"kind": self.kind, "operation": self.operation, "solver": self.solver, "cutter": self.cutter.to_recipe()}
 
 
-MODIFIER_KINDS = {cls.kind: cls for cls in (Bevel, Subdivision, Solidify, Mirror, Array, Boolean)}
+MODIFIER_KINDS = {cls.kind: cls for cls in (Bevel, Subdivision, Solidify, Mirror, Array, Boolean, Displace, SimpleDeform)}

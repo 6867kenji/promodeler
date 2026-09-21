@@ -25,16 +25,33 @@ def _linear(color: list[float]) -> tuple[float, float, float, float]:
     return (d(color[0]), d(color[1]), d(color[2]), color[3])
 
 
-class FieldCompiler:
-    """Builds nodes in ``tree``. Scalar results are float sockets; color results are color sockets."""
+MESH_PROBE_KINDS = ("curvature", "cavity", "ao", "thickness")
 
-    def __init__(self, tree: bpy.types.NodeTree) -> None:
+
+class FieldCompiler:
+    """Builds nodes in ``tree``. Scalar results are float sockets; color results are color sockets.
+
+    ``mode`` is ``"shader"`` for material trees or ``"geometry"`` for
+    Geometry Nodes trees, where positions and normals come from input
+    nodes and ray-traced probes are unavailable.
+    """
+
+    def __init__(self, tree: bpy.types.NodeTree, mode: str = "shader") -> None:
         self.tree = tree
+        self.mode = mode
         self.nodes = tree.nodes
         self.links = tree.links
-        self.coords = self.nodes.new("ShaderNodeTexCoord")
-        self.geometry = self.nodes.new("ShaderNodeNewGeometry")
         self._x = 0
+        if mode == "shader":
+            coords = self.nodes.new("ShaderNodeTexCoord")
+            geometry = self.nodes.new("ShaderNodeNewGeometry")
+            self.coord_socket = sock(coords, "Object", output=True)
+            self.normal_socket = sock(geometry, "Normal", output=True)
+        else:
+            position = self.nodes.new("GeometryNodeInputPosition")
+            normal = self.nodes.new("GeometryNodeInputNormal")
+            self.coord_socket = position.outputs[0]
+            self.normal_socket = normal.outputs[0]
 
     def _new(self, idname: str):
         node = self.nodes.new(idname)
@@ -54,12 +71,16 @@ class FieldCompiler:
 
     def _mapped_coords(self, size):
         sizes = size if isinstance(size, list) else [size, size, size]
-        mapping = self._new("ShaderNodeMapping")
-        mapping.vector_type = "POINT"
-        self._link(sock(self.coords, "Object", output=True), sock(mapping, "Vector"))
+        scale = self._new("ShaderNodeVectorMath")
+        scale.operation = "MULTIPLY"
+        self._link(self.coord_socket, scale.inputs[0])
         # Authoring axes (x, y, z) become Blender (x, z, y); scale magnitudes only.
-        sock(mapping, "Scale").default_value = (1.0 / sizes[0], 1.0 / sizes[2], 1.0 / sizes[1])
-        return sock(mapping, "Vector", output=True)
+        scale.inputs[1].default_value = (1.0 / sizes[0], 1.0 / sizes[2], 1.0 / sizes[1])
+        return scale.outputs[0]
+
+    def _probe_only(self, kind: str) -> None:
+        if self.mode != "shader":
+            raise ModelingError("field.geometryOnly", f"Field {kind!r} needs ray tracing and cannot drive displacement.")
 
     def scalar(self, spec: dict):
         kind = spec["kind"]
@@ -104,17 +125,19 @@ class FieldCompiler:
         return sock(node, "Distance", output=True)
 
     def _s_curvature(self, spec):
+        self._probe_only("curvature")
         bevel = self._new("ShaderNodeBevel")
         bevel.samples = 8
         sock(bevel, "Radius").default_value = spec["radius"]
         dot = self._new("ShaderNodeVectorMath")
         dot.operation = "DOT_PRODUCT"
         self._link(sock(bevel, "Normal", output=True), dot.inputs[0])
-        self._link(sock(self.geometry, "Normal", output=True), dot.inputs[1])
+        self._link(self.normal_socket, dot.inputs[1])
         # A 90 degree edge averages to about 45 degrees: 1 - cos(45) = 0.29 maps to 1.
         return self._math("SUBTRACT", 1.0, sock(dot, "Value", output=True), then=("MULTIPLY", 3.4 * spec["strength"]), clamp=True)
 
     def _ao(self, distance: float, inside: bool):
+        self._probe_only("ao")
         node = self._new("ShaderNodeAmbientOcclusion")
         node.samples = 8
         node.inside = inside
@@ -135,13 +158,13 @@ class FieldCompiler:
         direction = (space.A2B.to_3x3() @ Vector(spec["direction"])).normalized()
         dot = self._new("ShaderNodeVectorMath")
         dot.operation = "DOT_PRODUCT"
-        self._link(sock(self.geometry, "Normal", output=True), dot.inputs[0])
+        self._link(self.normal_socket, dot.inputs[0])
         dot.inputs[1].default_value = direction
         return self._math("MAXIMUM", sock(dot, "Value", output=True), 0.0, clamp=True)
 
     def _s_position(self, spec):
         separate = self._new("ShaderNodeSeparateXYZ")
-        self._link(sock(self.coords, "Object", output=True), sock(separate, "Vector"))
+        self._link(self.coord_socket, sock(separate, "Vector"))
         component = sock(separate, AXIS_SOCKET_BLENDER[spec["axis"]], output=True)
         if spec["axis"] == "z":
             component = self._math("MULTIPLY", component, -1.0)

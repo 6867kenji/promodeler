@@ -9,17 +9,20 @@ from .build import BlenderNotFound, build, blender_version, find_blender, load_a
 from .core import ModelingError, RenderSettings, dump_recipe
 
 
-def _render_overrides(args) -> RenderSettings | None:
-    if args.resolution is None and args.engine is None and args.views is None:
-        return None
-    base = RenderSettings()
-    return RenderSettings(
-        resolution=args.resolution or base.resolution,
-        engine=args.engine or base.engine,
-        views=tuple(args.views.split(",")) if args.views else base.views,
-        samples=base.samples,
-        background=base.background,
-    )
+def _render_overrides(args) -> dict | None:
+    """Only the render fields given on the command line, layered over the asset's own settings."""
+    fields = {}
+    if args.resolution:
+        fields["resolution"] = args.resolution
+    if args.engine:
+        fields["engine"] = args.engine
+    if args.views:
+        fields["views"] = tuple(args.views.split(","))
+    if getattr(args, "passes", None):
+        fields["passes"] = tuple(args.passes.split(","))
+    if getattr(args, "environment", None):
+        fields["environment"] = args.environment
+    return fields or None
 
 
 def cmd_doctor(args) -> int:
@@ -78,7 +81,10 @@ def cmd_build(args) -> int:
             print(f"bake:    {part_id}: {channels}; uv coverage {uv.get('coverage')}, {uv.get('texel_density_px_per_m')} px/m")
     for render in report.get("renders", []):
         state = "written" if render["written"] else "MISSING"
-        print(f"render:  {render['view']:<12} {state} {render['seconds']}s  {render['path']}")
+        label = f"{render.get('pass', 'shaded')}/{render['view']}"
+        print(f"render:  {label:<22} {state} {render['seconds']}s  {render['path']}")
+    if report.get("contact_sheet"):
+        print(f"sheet:   {report['contact_sheet']['path']}")
     export = report.get("export", {})
     print(f"export:  {'written' if export.get('written') else 'MISSING'} {export.get('bytes', 0)} bytes  {export.get('path')}")
     for warning in report.get("warnings", []):
@@ -103,6 +109,8 @@ def main(argv: list[str] | None = None) -> int:
         p.add_argument("--resolution", type=int, default=None)
         p.add_argument("--engine", choices=("eevee", "cycles"), default=None)
         p.add_argument("--views", default=None, help="Comma-separated: perspective,front,side,top")
+        p.add_argument("--passes", default=None, help="Comma-separated: shaded,clay,wireframe,normals,uv")
+        p.add_argument("--environment", default=None, help="studio, overcast, sunny, sunset or an .hdr/.exr path")
         p.add_argument("--texture-resolution", type=int, default=None, help="Override quality.texture_resolution")
         p.add_argument("--bake-samples", type=int, default=None, help="Override quality.bake_samples")
         p.set_defaults(func=func)

@@ -12,6 +12,8 @@ from .transform import Transform
 
 RENDER_ENGINES = ("eevee", "cycles")
 RENDER_VIEWS = ("perspective", "front", "side", "top")
+RENDER_PASSES = ("shaded", "clay", "wireframe", "normals", "uv")
+RENDER_ENVIRONMENTS = ("studio", "overcast", "sunny", "sunset")
 
 
 @dataclass(frozen=True)
@@ -50,10 +52,16 @@ class RenderSettings:
     resolution: int = 512
     engine: str = "eevee"
     views: tuple[str, ...] = ("perspective",)
+    passes: tuple[str, ...] = ("shaded",)
+    environment: str = "studio"
     samples: int = 16
     background: tuple[float, float, float] = (0.35, 0.35, 0.35)
 
     def validate(self) -> None:
+        if not self.passes or any(p not in RENDER_PASSES for p in self.passes):
+            raise ModelingError("render.passes", f"render.passes must be nonempty and within {RENDER_PASSES}.")
+        if self.environment not in RENDER_ENVIRONMENTS and not self.environment.lower().endswith((".hdr", ".exr")):
+            raise ModelingError("render.environment", f"render.environment must be one of {RENDER_ENVIRONMENTS} or an .hdr/.exr path.")
         if not isinstance(self.resolution, int) or not 64 <= self.resolution <= 4096:
             raise ModelingError("render.resolution", "render.resolution must be an integer in 64...4096.")
         if self.engine not in RENDER_ENGINES:
@@ -70,6 +78,8 @@ class RenderSettings:
             "resolution": self.resolution,
             "engine": self.engine,
             "views": list(self.views),
+            "passes": list(self.passes),
+            "environment": self.environment,
             "samples": self.samples,
             "background": [float(v) for v in self.background],
         }

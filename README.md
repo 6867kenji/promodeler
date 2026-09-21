@@ -56,7 +56,9 @@ python -m promodeler build assets/wrench.py --views perspective,top --force
 | モディファイア | 内容 |
 | --- | --- |
 | `Bevel(width, segments, angle_limit)` | 角度しきい値を超える辺を丸める。幅はメートル |
-| `Subdivision(levels)` | Catmull-Clark |
+| `Subdivision(levels, smooth)` | Catmull-Clark。`smooth=False` で滑らかにせず面を分割（変位用の密度追加） |
+| `Displace(height)` | 頂点を法線方向にフィールド分（メートル）動かす。Geometry Nodes で評価。ノイズ・Voronoi・位置・向きと演算のみ使用可（曲率など光線追跡系は不可） |
+| `SimpleDeform(method, angle, factor, axis)` | bend / twist（ラジアン）または taper |
 | `Solidify(thickness, offset)` | 開いた面に厚みを付ける |
 | `Mirror(axes, merge_distance)` | 局所平面でミラー。平面上に面がある閉じた形状には使わず、`curves.symmetric` で全輪郭を作る |
 | `Array(count, offset)` | 定数オフセットで複製 |
@@ -65,6 +67,12 @@ python -m promodeler build assets/wrench.py --views perspective,top --force
 順序の指針: Bevel は輪郭の辺に対して行い、Boolean による溝や穴はその後に切る。
 Boolean の後に Bevel を掛けると切り口の細かい面で幅が収まらず退化面が出る。
 カッターの頂点が対象の面と同一平面に乗らないよう、半セグメント回転などでずらす。
+
+### 不完全さ（M3）
+
+`promodeler.core.imperfections` の `wobble`（大域的なゆがみ）、`dents`（まばらなへこみ）、`grain`（微細な粗さ）、
+`ripples`（方向性のある波）は `Displace` に渡す高さフィールドを返す。均一すぎる CG 感を消すのに最も効く。
+`assets/rusty_can.py` は壁の点列を細かくし `Subdivision(smooth=False)` を挟んでから `dents + wobble` で変形している。
 
 ### マテリアル（M2）
 
@@ -89,6 +97,21 @@ Boolean の後に Bevel を掛けると切り口の細かい面で幅が収ま�
 
 プリセット: `presets.worn_leather(color, seed, wear, edge_radius)`, `presets.rusty_iron(seed, rust, edge_radius)`,
 `presets.painted_metal(color, seed, wear, edge_radius)`。`assets/rusty_can.py` と `assets/leather_journal.py` を参照。
+
+### 検証レンダ（M3）
+
+`RenderSettings(views, passes, environment, engine)`:
+
+| 項目 | 選択肢 |
+| --- | --- |
+| `views` | `perspective`, `front`, `side`, `top` |
+| `passes` | `shaded`（ベイク済みマテリアル）, `clay`（無彩色の粘土）, `wireframe`（粘土 + 辺）, `normals`（ワールド法線）, `uv`（チェッカー） |
+| `environment` | `studio`（勾配環境 + エリアライト）, `overcast`, `sunny` / `sunset`（物理空 + 太陽）, または `.hdr` / `.exr` のパス |
+| `engine` | `eevee`（反復用）, `cycles`（最終確認。CPU、デノイズあり） |
+
+パス × ビューの全レンダを `renders/contact_sheet.png` に並べる（ホスト側、Pillow がある場合）。
+CLI では `--views`, `--passes`, `--environment`, `--engine` で上書きできる。
+環境は手続き的に生成するのでビルドは自己完結し、HDRI ファイルは任意で指定する。
 
 ## 数値 QA (`report.json` の `parts.<id>`)
 

@@ -3,8 +3,9 @@ import unittest
 from dataclasses import dataclass
 
 from promodeler.core import (
-    Asset, AssetGenerator, Bevel, Box, Color, Cylinder, GenerationInput, Material, ModelingError, Part,
-    QualityProfile, RenderSettings, Transform, build_recipe, dump_recipe, recipe_hash, srgb,
+    Asset, AssetGenerator, Bevel, Box, Color, Curvature, Cylinder, Displace, GenerationInput, Material,
+    ModelingError, Noise, Part, QualityProfile, RenderSettings, SimpleDeform, Transform, build_recipe,
+    dump_recipe, imperfections, recipe_hash, srgb,
 )
 
 
@@ -68,7 +69,30 @@ class ValidationTests(unittest.TestCase):
     def test_render_settings(self):
         with self.assertRaises(ModelingError):
             RenderSettings(views=("oblique",)).validate()
-        RenderSettings().validate()
+        with self.assertRaises(ModelingError):
+            RenderSettings(passes=("xray",)).validate()
+        with self.assertRaises(ModelingError):
+            RenderSettings(environment="night").validate()
+        RenderSettings(passes=("shaded", "clay"), environment="sunny").validate()
+        RenderSettings(environment="C:/somewhere/sky.hdr").validate()
+
+    def test_displace_rejects_probe_fields(self):
+        Displace(height=imperfections.dents() + imperfections.wobble()).validate("d")
+        with self.assertRaises(ModelingError) as ctx:
+            Displace(height=Curvature() * 0.001).validate("d")
+        self.assertEqual(ctx.exception.code, "displace.field")
+        with self.assertRaises(ModelingError):
+            Displace(height=None).validate("d")
+        recipe = Displace(height=Noise() * 0.001).to_recipe()
+        self.assertEqual(recipe["kind"], "displace")
+        self.assertEqual(recipe["height"]["kind"], "math")
+
+    def test_simple_deform(self):
+        SimpleDeform(method="bend", angle=0.3, axis="y").validate("s")
+        with self.assertRaises(ModelingError):
+            SimpleDeform(method="fold").validate("s")
+        with self.assertRaises(ModelingError):
+            SimpleDeform(method="taper", factor=20.0).validate("s")
 
 
 class RecipeTests(unittest.TestCase):

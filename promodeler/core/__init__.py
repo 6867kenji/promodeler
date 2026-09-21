@@ -10,7 +10,7 @@ compiles. Conventions:
 - Parts, materials and other entities are addressed by semantic string IDs.
 """
 
-from . import curves, presets
+from . import curves, imperfections, presets
 from .asset import Asset, GenerationInput, Part, QualityProfile, RenderSettings
 from .color import Color, srgb
 from .diagnostics import ModelingError
@@ -20,7 +20,7 @@ from .fields import (
 )
 from .generator import AssetGenerator
 from .material import Layer, Material
-from .modifiers import Array, Bevel, Boolean, Cutter, Mirror, Solidify, Subdivision
+from .modifiers import Array, Bevel, Boolean, Cutter, Displace, Mirror, SimpleDeform, Solidify, Subdivision
 from .profile import Profile
 from .recipe import build_recipe, dump_recipe, recipe_hash
 from .shapes import Box, Cone, Cylinder, Extrude, Loft, LoftSection, Plane, Revolve, Sphere, Sweep
@@ -43,6 +43,7 @@ __all__ = [
     "Curvature",
     "Cutter",
     "Cylinder",
+    "Displace",
     "Extrude",
     "Facing",
     "Field",
@@ -62,6 +63,7 @@ __all__ = [
     "QualityProfile",
     "RenderSettings",
     "Revolve",
+    "SimpleDeform",
     "Solidify",
     "Sphere",
     "Subdivision",
@@ -72,6 +74,7 @@ __all__ = [
     "build_recipe",
     "curves",
     "dump_recipe",
+    "imperfections",
     "presets",
     "recipe_hash",
     "srgb",

@@ -11,6 +11,7 @@ from promodeler.core import meshgen
 from promodeler.core.diagnostics import ModelingError
 
 from . import space
+from .fields import FieldCompiler
 
 PRIMITIVE_KINDS = ("box", "plane", "cylinder", "cone", "sphere")
 
@@ -180,6 +181,26 @@ def apply_shading(mesh: bpy.types.Mesh, smooth_angle: float | None) -> None:
 AXIS_INDEX_BLENDER = {"x": 0, "y": 2, "z": 1}
 
 
+def build_displace_group(name: str, height_spec: dict) -> bpy.types.NodeTree:
+    """A Geometry Nodes group offsetting every vertex along its normal by a scalar field."""
+    group = bpy.data.node_groups.new(name, "GeometryNodeTree")
+    group.interface.new_socket(name="Geometry", in_out="INPUT", socket_type="NodeSocketGeometry")
+    group.interface.new_socket(name="Geometry", in_out="OUTPUT", socket_type="NodeSocketGeometry")
+    group_in = group.nodes.new("NodeGroupInput")
+    group_out = group.nodes.new("NodeGroupOutput")
+    set_position = group.nodes.new("GeometryNodeSetPosition")
+    fc = FieldCompiler(group, mode="geometry")
+    height = fc.scalar(height_spec)
+    offset = group.nodes.new("ShaderNodeVectorMath")
+    offset.operation = "SCALE"
+    group.links.new(fc.normal_socket, offset.inputs[0])
+    fc._value(offset.inputs["Scale"], height)
+    group.links.new(group_in.outputs[0], set_position.inputs["Geometry"])
+    group.links.new(offset.outputs[0], set_position.inputs["Offset"])
+    group.links.new(set_position.outputs[0], group_out.inputs[0])
+    return group
+
+
 def add_modifiers(obj: bpy.types.Object, modifiers: list[dict], make_cutter=None) -> None:
     """``make_cutter(index, spec)`` returns a scene object for boolean operands."""
     for index, spec in enumerate(modifiers):
@@ -194,8 +215,20 @@ def add_modifiers(obj: bpy.types.Object, modifiers: list[dict], make_cutter=None
             mod.harden_normals = True
         elif kind == "subdivision":
             mod = obj.modifiers.new(name, "SUBSURF")
+            mod.subdivision_type = "CATMULL_CLARK" if spec.get("smooth", True) else "SIMPLE"
             mod.levels = spec["levels"]
             mod.render_levels = spec["levels"]
+        elif kind == "displace":
+            mod = obj.modifiers.new(name, "NODES")
+            mod.node_group = build_displace_group(f"displace:{obj.name}:{index}", spec["height"])
+        elif kind == "simple_deform":
+            mod = obj.modifiers.new(name, "SIMPLE_DEFORM")
+            mod.deform_method = spec["method"].upper()
+            mod.deform_axis = "XZY"[AXIS_INDEX_BLENDER[spec["axis"]]] if False else ("X", "Z", "Y")[("x", "y", "z").index(spec["axis"])]
+            if spec["method"] == "taper":
+                mod.factor = spec["factor"]
+            else:
+                mod.angle = spec["angle"]
         elif kind == "solidify":
             mod = obj.modifiers.new(name, "SOLIDIFY")
             mod.thickness = spec["thickness"]

@@ -1,4 +1,5 @@
 build/
+build_env/
 __pycache__/
 *.pyc
 *.blend1

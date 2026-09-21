@@ -100,6 +100,17 @@ class BuildTests(unittest.TestCase):
             self.assertGreaterEqual(len(gltf.get("images", [])), 3)
             self.assertIn("normalTexture", gltf["materials"][0])
             self.assertIn("baseColorTexture", gltf["materials"][0]["pbrMetallicRoughness"])
+            # Passes render every view; the contact sheet tiles them (when Pillow is installed).
+            renders = result.report["renders"]
+            self.assertEqual(len(renders), 2 * 3)
+            self.assertEqual({r["pass"] for r in renders}, {"shaded", "clay", "wireframe"})
+            sheet = result.report.get("contact_sheet")
+            if sheet is not None:
+                self.assertTrue(os.path.isfile(sheet["path"]))
+                self.assertEqual(sheet["passes"], ["shaded", "clay", "wireframe"])
+            # Displacement moved the wall: the can is no longer a perfect body of revolution.
+            body = result.report["parts"]["body"]
+            self.assertGreater(body["triangles"], 8000)
 
 
 if __name__ == "__main__":
