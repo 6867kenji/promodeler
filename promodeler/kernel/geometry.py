@@ -219,16 +219,21 @@ def _distribute(group, fc: FieldCompiler, surface_obj, spec: dict):
     info.transform_space = "RELATIVE"
     _sock(info, "Object").default_value = surface_obj
     distribute = group.nodes.new("GeometryNodeDistributePointsOnFaces")
+    mask = fc.scalar(spec["mask"]) if spec.get("mask") is not None else None
     if spec.get("min_distance", 0.0) > 0.0:
         distribute.distribute_method = "POISSON"
         _sock(distribute, "Distance Min").default_value = spec["min_distance"]
         _sock(distribute, "Density Max").default_value = spec["density"]
+        if mask is not None:
+            fc._value(_sock(distribute, "Density Factor"), mask)
     else:
+        # Random mode ignores Density Factor; scale the per-face density instead.
         distribute.distribute_method = "RANDOM"
-        _sock(distribute, "Density").default_value = spec["density"]
+        if mask is None:
+            _sock(distribute, "Density").default_value = spec["density"]
+        else:
+            fc._value(_sock(distribute, "Density"), fc._math("MULTIPLY", mask, spec["density"]))
     _sock(distribute, "Seed").default_value = int(spec["seed"])
-    if spec.get("mask") is not None:
-        fc._value(_sock(distribute, "Density Factor"), fc.scalar(spec["mask"]))
     group.links.new(_sock(info, "Geometry", output=True), _sock(distribute, "Mesh"))
     return distribute
 
@@ -338,6 +343,10 @@ def build_fur_group(name: str, spec: dict, surface_obj) -> bpy.types.NodeTree:
     group.links.new(radius.outputs[0], _sock(to_mesh, "Curve"))
     group.links.new(profile.outputs[0], _sock(to_mesh, "Profile Curve"))
     _sock(to_mesh, "Fill Caps").default_value = False
+    # Blender 4.3+ scales the profile through an explicit Scale input instead of the radius attribute.
+    scale_socket = next((sk for sk in to_mesh.inputs if sk.identifier == "Scale"), None)
+    if scale_socket is not None:
+        group.links.new(taper, scale_socket)
     group.links.new(to_mesh.outputs[0], group_out.inputs[0])
     return group
 
