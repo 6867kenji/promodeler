@@ -8,23 +8,36 @@ Python のソースコードがアセットの唯一の正であり、ヘッド�
 ## 使い方
 
 ```sh
-python -m promodeler doctor                 # Blender を検出できるか確認
-python -m promodeler recipe assets/mug.py   # レシピ JSON を表示 (Blender 不要)
-python -m promodeler build assets/mug.py    # 生成 + 数値 QA + レンダ + glTF 書き出し
-python -m promodeler build assets/wrench.py --views perspective,top --force
+python -m promodeler doctor                    # Blender / Pillow / anthropic の検出
+python -m promodeler new assets/lamp.py        # 雛形からアセットファイルを作る
+python -m promodeler recipe assets/mug.py      # 検証してレシピ JSON を表示 (Blender 不要)
+python -m promodeler build assets/mug.py       # 生成 + 数値 QA + ベイク + レンダ + glTF 書き出し
+python -m promodeler build assets/rusty_can.py --texture-resolution 256 --bake-samples 4   # 反復用
+python -m promodeler build assets/rusty_can.py --passes shaded,clay,wireframe --engine cycles  # 最終確認
+python -m promodeler critique assets/rusty_can.py --reference photo.jpg --goal "錆びた缶"  # Claude による批評
+python -m promodeler clean --keep 2            # 古いビルドを削除
 ```
 
-出力は `build/<asset>/<hash12>/` に置かれる:
+出力は `build/<asset>/<asset-hash>/` に置かれる:
 
 | ファイル | 内容 |
 | --- | --- |
-| `recipe.json` | kernel に渡した正規化レシピ。キャッシュ鍵の元 |
-| `report.json` | 数値 QA、レンダ結果、書き出し結果、失敗時は `error` |
-| `renders/*.png` | 固定ライト・自動フレーミングの検証レンダ (`perspective` / `front` / `side` / `top`) |
+| `recipe.json` | kernel に渡した正規化レシピ |
+| `report.json` | 数値 QA、UV、ベイク、レンダ、書き出し、失敗時は `error`。`critique.json` は批評結果 |
+| `renders/<render-key>/` | 検証レンダと `contact_sheet.png`。レンダ設定ごとにサブフォルダ |
+| `textures/*.png` | ベイク済み PBR テクスチャセット |
 | `model.glb` | モディファイア適用済み、Y-up、ノード名 = パーツ ID、メッシュ名 = `mesh:<id>` |
 | `blender.log` | Blender の標準出力 |
 
-同じレシピ・同じ kernel/Blender バージョンなら再ビルドせずキャッシュを返す (`--force` で無効化)。
+キャッシュ鍵は 2 段階。形状・マテリアル・品質のハッシュがディレクトリ名になり、レンダ設定（ビュー・パス・環境・エンジン）は
+`renders/` のサブフォルダ名になる。レンダ設定だけを変えた再ビルドはベイク済みテクスチャを再利用する。`--force` で全て作り直す。
+
+## エージェント向けの作業契約
+
+`Skill/SKILL.md` に、編集 → `recipe` → `build` → `report.json` とコンタクトシートを読む → 編集、という反復手順と
+API 早見表、無駄なビルドを避ける規則、検証と報告の契約をまとめている。Claude Code では `.claude/skills/promodeler/`
+から自動で参照される。`promodeler critique` は `anthropic` パッケージと API 認証があるときに使え、
+コンタクトシートと QA 要約（任意で参照写真）を Claude に渡して構造化された批評（点数、問題点、次の一手）を返す。
 
 ## アセットファイルの書き方
 
@@ -95,8 +108,10 @@ Boolean の後に Bevel を掛けると切り口の細かい面で幅が収ま�
 `quality.texture_resolution`（既定 1024）と `quality.bake_samples`（既定 32）、CLI の
 `--texture-resolution` / `--bake-samples` で品質を変えられる（反復時は 256 / 4 が速い）。
 
-プリセット: `presets.worn_leather(color, seed, wear, edge_radius)`, `presets.rusty_iron(seed, rust, edge_radius)`,
-`presets.painted_metal(color, seed, wear, edge_radius)`。`assets/rusty_can.py` と `assets/leather_journal.py` を参照。
+プリセット: `worn_leather(color, seed, wear, edge_radius)`, `rusty_iron(seed, rust, edge_radius)`,
+`painted_metal(color, seed, wear, edge_radius)`, `brushed_metal(color, seed, edge_radius)`,
+`old_wood(color, seed, weathering)`, `ceramic_glaze(color, seed, crazing)`, `concrete(color, seed, staining)`。
+`assets/rusty_can.py` と `assets/leather_journal.py` を参照。
 
 ### 検証レンダ（M3）
 

@@ -1,0 +1,118 @@
+---
+name: promodeler
+description: Author realistic 3D assets as promodeler Python files and iterate on them with headless Blender builds, numerical QA, contact-sheet renders and optional Claude critique. Use when a task asks to create or change a 3D model, prop, container, tool or material with promodeler; not for interactive Blender UI work.
+---
+
+# promodeler asset authoring
+
+Python source is the model's source of truth. You edit an asset file, run a build, read the report and the contact sheet, and edit again. Nothing is done through a Blender UI or a Blender MCP session. This skill is self-contained: it holds the workflow, the API cheat sheet and the judgement rules.
+
+## Environment and commands
+
+- Run from the repository root with the system Python 3.13+. Blender 4.2+ must be installed (`python -m promodeler doctor` reports the path, Pillow for contact sheets and the `anthropic` package for critique).
+- `python -m promodeler new assets/<name>.py --name "<Name>"` creates a starting file.
+- `python -m promodeler recipe assets/<name>.py` validates and prints the recipe without Blender. Use it first after every edit; validation errors are `code: message` pairs and are the cheapest feedback.
+- `python -m promodeler build assets/<name>.py` builds. For iteration add `--texture-resolution 256 --bake-samples 4 --passes shaded`; for the final check drop those flags and add `--passes shaded,clay,wireframe --engine cycles`.
+- Overrides: `--views perspective,front,side,top`, `--passes shaded,clay,wireframe,normals,uv`, `--environment studio|overcast|sunny|sunset|<file.hdr>`, `--engine eevee|cycles`, `--force` (ignore caches).
+- `python -m promodeler critique assets/<name>.py [--reference photo.jpg] [--goal "..."]` asks Claude for a structured review of the newest build. When you can view images yourself, look at the contact sheet directly instead.
+- `python -m promodeler clean --keep 2` prunes old builds.
+
+Outputs land in `build/<asset>/<hash>/`: `report.json`, `renders/<render-key>/contact_sheet.png` plus individual PNGs, `textures/*.png` (baked PBR set), `model.glb`, `blender.log`. The directory name is the hash of geometry, materials and quality; render-only changes reuse the baked textures and add a renders subfolder.
+
+## Coordinate and unit contracts
+
+- Meters, right-handed, +Y up, +Z toward the viewer (glTF convention). Angles in radians. Colors are sRGB via `srgb(r, g, b)`.
+- Primitives are centered on their local origin with height along local Y. `Transform(translation, rotation, scale)` is parent-local XYZ Euler.
+- Parts are addressed by string IDs; `root` is reserved. Cutters are never exported.
+- Out-of-range values raise `ModelingError` instead of being clamped. Never suppress or work around a validation error; change the value.
+
+## Asset file shape
+
+```python
+from dataclasses import dataclass
+from promodeler.core import (Asset, AssetGenerator, Bevel, Boolean, Cutter, Cylinder, Displace, Extrude,
+                             GenerationInput, Material, ModelingError, Part, Profile, RenderSettings, Revolve,
+                             Subdivision, Sweep, Transform, curves, imperfections, presets, srgb)
+
+@dataclass(frozen=True)
+class Parameters:
+    height: float = 0.11
+
+def validate(p: Parameters) -> None:
+    if not 0.03 <= p.height <= 0.3:
+        raise ModelingError("can.height", "height must be 3...30 cm.")
+
+def build(input: GenerationInput) -> Asset:
+    p = input.parameters
+    iron = presets.rusty_iron("iron", seed=input.seed, rust=0.5)
+    body = Part(id="body", shape=Revolve(profile=[(0, 0), (0.037, 0), (0.037, p.height), (0, p.height)]),
+                material="iron", modifiers=(Subdivision(levels=1, smooth=False),
+                                            Displace(height=imperfections.dents(size=0.04, depth=0.003))),
+                smooth_angle=0.5)
+    return Asset(name="Can", materials=(iron,), parts=(body,))
+
+asset = AssetGenerator(name="Can", parameters=Parameters(), build=build, validate=validate, seed=7)
+render = RenderSettings(resolution=640, views=("perspective", "front"), passes=("shaded", "clay"))
+```
+
+All randomness derives from `input.seed`; pass it into presets and fields. Keep parameters in the dataclass and validate their domain.
+
+## Shapes
+
+| Shape | Notes |
+| --- | --- |
+| `Box(size)`, `Plane(size)`, `Cylinder(radius, height)`, `Cone(radius, height, top_radius)`, `Sphere(radius)` | segments default to `input.quality.curve_segments` |
+| `Extrude(profile=Profile(outer, holes), depth, axis="y")` | profile on the ground (u along X, v along -Z), extruded up; holes are triangulated with constrained Delaunay |
+| `Revolve(profile=[(radius, height), ...], segments, angle, cap_ends)` | around Y; zero radius only at the ends (poles); winding is normalized |
+| `Sweep(profile=Profile(outer), path=[(x, y, z), ...], scales, twist, capped)` | rotation-minimizing frames; no holes; no reversals |
+| `Loft(sections=(LoftSection(points, transform), ...), capped)` | equal point counts; point 0 corresponds |
+
+Point helpers in `curves`: `circle`, `regular_polygon`, `rect`, `rounded_rect`, `arc`, `bezier`, `symmetric` (mirror a half outline into a full ring), `join`. Prefer many profile points and `Subdivision(smooth=False)` when a surface will be displaced.
+
+## Modifiers (applied in order)
+
+`Bevel(width, segments, angle_limit)`, `Subdivision(levels, smooth)`, `Solidify(thickness, offset)`, `Mirror(axes)`, `Array(count, offset)`, `Boolean(operation, cutter=Cutter(shape, transform, modifiers), solver="exact")`, `Displace(height=<field>)`, `SimpleDeform(method, angle, factor, axis)`.
+
+Rules that save iterations:
+
+- Bevel outline edges first, cut grooves and holes with booleans afterwards. A bevel after a boolean produces degenerate faces on the cut.
+- Never mirror a closed solid whose faces lie on the mirror plane; build the full outline with `curves.symmetric`.
+- Offset boolean cutters so no cutter vertex lies exactly in a face plane (rotate a cylinder by half a segment, shift by a fraction of a millimeter).
+- Displacement fields may use only `Noise`, `Voronoi`, `Position`, `Facing` and arithmetic. Curvature and cavity need the renderer and are rejected.
+
+## Materials
+
+`Material(id, base_color, roughness, metallic, emission_color, emission_strength, height, layers, bump_strength)`. Every channel is a constant or a field. Fields: `Noise(size, detail, roughness, seed)`, `Voronoi(size, feature, seed)`, `Curvature(radius)`, `Cavity(distance)`, `AmbientOcclusion(distance)`, `Thickness(distance)`, `Facing(direction)`, `Position(axis, start, end)`, combined with `+ - * /`, `.pow()`, `.clamp()`, `.smoothstep(lo, hi)`, `.ramp(stops)`, `ColorRamp(field, stops)`, `.mix()`. Sizes are meters. Layers: `Layer(base_color=..., roughness=..., metallic=..., height=..., mask=<field>)` composite bottom to top.
+
+Presets in `presets`: `worn_leather`, `rusty_iron`, `painted_metal`, `brushed_metal`, `old_wood`, `ceramic_glaze`, `concrete`. Each takes `seed` and a few intent parameters (`wear`, `rust`, `weathering`, `crazing`, `staining`) and `edge_radius`.
+
+Rules:
+
+- `Curvature(radius)` and `edge_radius` must be about three times the geometric bevel width, otherwise rounded edges look flat to the probe and no edge wear appears.
+- Feature sizes are physical: leather pores 3 mm, rust pits 2.5 mm, brushed lines 0.4 mm across. Scale them with the object, not with the texture resolution.
+- Bump heights are physical meters (0.1 to 1 mm). `bump_strength` of 1.0 to 2.0 is the artistic range.
+- A material with any field is baked; a constant material is not. Bakes cost roughly 3 s per channel at 1024 px and 32 samples on a 20-core CPU; iterate at 256 px and 4 samples.
+
+## Imperfections
+
+`imperfections.wobble(size, amplitude, seed)`, `dents(size, depth, coverage, seed)`, `grain(size, amplitude, seed)`, `ripples(size, amplitude, seed)` return height fields for `Displace`. Use them: a straight, round, flat object reads as computer generated before any texture does.
+
+## Verification loop
+
+1. `recipe` until validation passes.
+2. `build` at iteration quality. Read the printed summary and `report.json`: bounds against the intended size, `watertight`, `volume` positive, `self_intersections` zero, `non_manifold_edges` zero, `uv.coverage` above 0.3, `texel_density_px_per_m` adequate for the closest view, and every entry in `warnings`.
+3. Open `renders/<key>/contact_sheet.png`. Judge silhouette and proportions on the clay pass first, mesh density on the wireframe pass, then materials on the shaded pass: is the wear where hands and edges would wear it, is the roughness contrast visible, are feature sizes plausible for the object's size, does anything look uniformly repeated?
+4. Change one thing at a time in the asset file, rebuild, compare.
+5. Final check at full quality with `--passes shaded,clay,wireframe --engine cycles` and, when a reference photo exists, `critique --reference`.
+
+Report what was verified and how: numerical checks passed, which images were inspected, and what was not checked (for example, no reference comparison). A finished render is not proof of correctness; a warning-free report is not proof of realism.
+
+## Failure handling
+
+- `status: failed` in the report carries `error.code` and `error.message`; `blender.log` has the traceback. Fix the recipe rather than retrying the same build.
+- `geometry.selfIntersection` or `geometry.degenerate` after a boolean: change modifier order (bevel before boolean) or move the cutter off the face plane.
+- `uv.coverage` low: the shape has long thin islands; increase `texture_resolution` or split the part.
+- Displacement without visible effect: the mesh is too coarse; add `Subdivision(smooth=False)` or more profile points.
+- A black render under `sunny`/`sunset`: an environment failure; rebuild with `--environment studio` and report the error.
+
+Do not publish, install tools or edit unrelated project files while authoring an asset.

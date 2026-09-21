@@ -75,7 +75,8 @@ class MaterialTests(unittest.TestCase):
             Material("m", layers=(Layer(base_color=0.5),)).validate()
 
     def test_presets_validate_and_serialize(self):
-        for factory in (presets.worn_leather, presets.rusty_iron, presets.painted_metal):
+        for factory in (presets.worn_leather, presets.rusty_iron, presets.painted_metal, presets.brushed_metal,
+                        presets.old_wood, presets.ceramic_glaze, presets.concrete):
             m = factory(seed=2)
             m.validate()
             self.assertTrue(m.needs_bake)

@@ -58,6 +58,12 @@ class BuildTests(unittest.TestCase):
             again = build(str(ROOT / "assets" / "crate.py"), out_root=tmp)
             self.assertTrue(again.cached)
             self.assertEqual(again.hash, result.hash)
+            # Changing only render settings keeps the asset directory and adds a renders subfolder.
+            other = build(str(ROOT / "assets" / "crate.py"), out_root=tmp, render={"views": ("front",)})
+            self.assertFalse(other.cached)
+            self.assertEqual(other.out_dir, result.out_dir)
+            self.assertNotEqual(other.renders_dir, result.renders_dir)
+            self.assertEqual([r["view"] for r in other.report["renders"]], ["front"])
 
     def test_mug_union_is_one_watertight_shell(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -111,6 +117,13 @@ class BuildTests(unittest.TestCase):
             # Displacement moved the wall: the can is no longer a perfect body of revolution.
             body = result.report["parts"]["body"]
             self.assertGreater(body["triangles"], 8000)
+            # A render-only change reuses the baked textures instead of baking again.
+            again = build(str(ROOT / "assets" / "rusty_can.py"), out_root=tmp, render={"views": ("top",), "passes": ("shaded",)},
+                          quality_overrides={"texture_resolution": 128, "bake_samples": 2})
+            self.assertTrue(again.ok, again.report.get("error"))
+            self.assertTrue(again.textures_reused)
+            self.assertTrue(all(m["cached"] for m in again.report["parts"]["body"]["textures"].values()))
+            self.assertEqual(again.out_dir, result.out_dir)
 
 
 if __name__ == "__main__":

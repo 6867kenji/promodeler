@@ -137,3 +137,69 @@ def painted_metal(
         id, base_color=base_color, roughness=0.28 + orange_peel * 0.15, metallic=0.0,
         height=orange_peel * 0.00004, layers=(dirt, chipped), bump_strength=1.5,
     )
+
+
+def brushed_metal(id: str = "steel", color: Color = srgb(0.72, 0.72, 0.74), seed: int = 0, edge_radius: float = 0.004) -> Material:
+    """Brushed stainless or aluminum: anisotropic grain lines, fingerprint smudges and slightly duller edges."""
+    lines = Noise(size=(0.06, 0.0004, 0.06), detail=3.0, roughness=0.5, seed=seed)
+    smudge = Noise(size=0.02, detail=4.0, roughness=0.55, seed=seed + 1).smoothstep(0.45, 0.8)
+    base_color = ColorRamp(lines, ((0.3, color.scaled(0.92)), (0.7, color.scaled(1.04))))
+    edge = Layer(roughness=0.18, base_color=color.scaled(1.1), mask=Curvature(radius=edge_radius).smoothstep(0.2, 0.7))
+    smudged = Layer(roughness=0.5, mask=smudge * 0.5)
+    return Material(
+        id, base_color=base_color, roughness=0.28 + lines * 0.18, metallic=1.0,
+        height=lines * 0.00003, layers=(smudged, edge), bump_strength=1.0,
+    )
+
+
+def old_wood(id: str = "wood", color: Color = srgb(0.45, 0.30, 0.17), seed: int = 0, weathering: float = 0.6) -> Material:
+    """Planed timber with grain along local X, growth rings, raised grain and gray weathering on exposed faces."""
+    rings = Noise(size=(0.4, 0.012, 0.012), detail=2.0, roughness=0.5, distortion=0.6, seed=seed).ramp(
+        ((0.0, 0.0), (0.4, 0.2), (0.5, 1.0), (0.6, 0.2), (1.0, 0.0)))
+    grain = Noise(size=(0.15, 0.0015, 0.0015), detail=4.0, roughness=0.6, seed=seed + 1)
+    knots = Voronoi(size=0.12, feature="f1", seed=seed + 2).smoothstep(0.08, 0.22)
+    gray = Noise(size=0.05, detail=4.0, roughness=0.55, seed=seed + 3)
+    tone = rings * 0.6 + grain * 0.4
+    base_color = ColorRamp(tone, ((0.0, color.scaled(1.15)), (0.55, color), (1.0, color.scaled(0.55))))
+    weathered = Layer(
+        base_color=srgb(0.55, 0.52, 0.48),
+        roughness=0.9,
+        mask=(Facing((0.0, 1.0, 0.0)).pow(1.5) * (0.4 + 0.6 * gray) * weathering).clamp(),
+    )
+    dirt = Layer(base_color=color.scaled(0.4), roughness=0.85, mask=(Cavity(distance=0.01) * 0.8).clamp())
+    return Material(
+        id, base_color=base_color, roughness=0.55 + grain * 0.3, metallic=0.0,
+        height=grain * 0.00025 + rings * 0.00015 - knots * 0.0002, layers=(dirt, weathered), bump_strength=1.2,
+    )
+
+
+def ceramic_glaze(id: str = "glaze", color: Color = srgb(0.9, 0.88, 0.84), seed: int = 0, crazing: float = 0.3) -> Material:
+    """Glossy fired glaze with subtle thickness variation, faint crazing lines and dust in recesses."""
+    pooling = Noise(size=0.03, detail=3.0, roughness=0.5, seed=seed)
+    speck = Noise(size=0.002, detail=2.0, roughness=0.6, seed=seed + 1).smoothstep(0.7, 0.95)
+    crackle = Voronoi(size=0.008, feature="distance_to_edge", seed=seed + 2).smoothstep(0.0, 0.05).invert()
+    base_color = ColorRamp(pooling, ((0.2, color.scaled(0.9)), (0.8, color.scaled(1.03))))
+    crazed = Layer(base_color=color.scaled(0.75), roughness=0.5, mask=(crackle * crazing).clamp())
+    dust = Layer(base_color=srgb(0.6, 0.58, 0.55), roughness=0.9, mask=(Cavity(distance=0.006) * 0.5).clamp())
+    return Material(
+        id, base_color=base_color, roughness=0.12 + pooling * 0.08 + speck * 0.3, metallic=0.0,
+        height=pooling * 0.00008 - speck * 0.00004, layers=(crazed, dust), bump_strength=1.0,
+    )
+
+
+def concrete(id: str = "concrete", color: Color = srgb(0.62, 0.6, 0.57), seed: int = 0, staining: float = 0.5) -> Material:
+    """Cast concrete with aggregate speckle, pores, form lines and rain staining below edges."""
+    aggregate = Voronoi(size=0.004, feature="f1", seed=seed).smoothstep(0.35, 0.9)
+    pores = Noise(size=0.003, detail=3.0, roughness=0.7, seed=seed + 1).smoothstep(0.72, 0.9)
+    tone = Noise(size=0.08, detail=4.0, roughness=0.55, seed=seed + 2)
+    streaks = Noise(size=(0.01, 0.15, 0.01), detail=3.0, roughness=0.5, seed=seed + 3).smoothstep(0.55, 0.8)
+    base_color = ColorRamp(tone * 0.7 + aggregate * 0.3, ((0.0, color.scaled(0.8)), (0.6, color), (1.0, color.scaled(1.1))))
+    stained = Layer(
+        base_color=color.scaled(0.6),
+        roughness=0.95,
+        mask=(streaks * (1.0 - Facing((0.0, 1.0, 0.0))) * staining + Cavity(distance=0.015) * 0.6).clamp(),
+    )
+    return Material(
+        id, base_color=base_color, roughness=0.85 + pores * 0.1, metallic=0.0,
+        height=-pores * 0.0006 + aggregate * 0.0001 + tone * 0.0003, layers=(stained,), bump_strength=1.2,
+    )

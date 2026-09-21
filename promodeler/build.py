@@ -1,4 +1,11 @@
-"""Host-side orchestration: load an asset module, produce a recipe, run the kernel, collect results."""
+"""Host-side orchestration: load an asset module, produce a recipe, run the kernel, collect results.
+
+Two cache keys keep iteration fast. The asset key covers geometry,
+materials and quality: it names the output directory and decides whether
+baked textures can be reused. The render key covers views, passes,
+environment and engine: it names the renders subdirectory. Changing only
+render settings therefore never repeats a bake.
+"""
 
 from __future__ import annotations
 
@@ -9,6 +16,7 @@ import os
 import shutil
 import subprocess
 import sys
+import time
 from dataclasses import dataclass, replace
 from pathlib import Path
 
@@ -40,11 +48,17 @@ def find_blender() -> str:
     raise BlenderNotFound("Blender was not found. Set PROMODELER_BLENDER to the blender executable.")
 
 
+_version_cache: dict[str, str] = {}
+
+
 def blender_version(executable: str) -> str:
+    if executable in _version_cache:
+        return _version_cache[executable]
     out = subprocess.run([executable, "--version"], capture_output=True, text=True, timeout=60, check=False)
     for line in out.stdout.splitlines():
         if line.startswith("Blender "):
-            return line.split()[1]
+            _version_cache[executable] = line.split()[1]
+            return _version_cache[executable]
     raise BlenderNotFound(f"Could not read the Blender version from {executable}.")
 
 
@@ -103,16 +117,39 @@ def load_asset(path: str, render=None, quality_overrides: dict | None = None) ->
     return LoadedAsset(asset=asset, recipe=recipe, name=asset.name)
 
 
+def slugify(name: str) -> str:
+    return "".join(c if c.isalnum() or c in "-_" else "_" for c in name.lower())
+
+
+def asset_key(recipe: dict, blender: str) -> str:
+    """Hash of everything except render settings, plus kernel and Blender versions."""
+    without_render = {k: v for k, v in recipe.items() if k != "render"}
+    return recipe_hash(without_render, kernel_version=KERNEL_VERSION, blender=blender)
+
+
+def render_key(recipe: dict) -> str:
+    return recipe_hash({"render": recipe["render"]}, kernel_version=KERNEL_VERSION)[:8]
+
+
 @dataclass
 class BuildResult:
     out_dir: Path
     report: dict
     cached: bool
     hash: str
+    renders_dir: Path | None = None
+    textures_reused: bool = False
 
     @property
     def ok(self) -> bool:
         return self.report.get("status") == "ok"
+
+
+def _read_json(path: Path) -> dict | None:
+    if not path.is_file():
+        return None
+    with open(path, "r", encoding="utf-8") as f:
+        return json.load(f)
 
 
 def build(path: str, out_root: str = "build", force: bool = False, render=None,
@@ -120,40 +157,81 @@ def build(path: str, out_root: str = "build", force: bool = False, render=None,
     loaded = load_asset(path, render, quality_overrides)
     blender = find_blender()
     version = blender_version(blender)
-    digest = recipe_hash(loaded.recipe, kernel_version=KERNEL_VERSION, blender=version)
-    slug = "".join(c if c.isalnum() or c in "-_" else "_" for c in loaded.name.lower())
-    out_dir = Path(out_root).resolve() / slug / digest[:12]
+    digest = asset_key(loaded.recipe, version)
+    rkey = render_key(loaded.recipe)
+    out_dir = Path(out_root).resolve() / slugify(loaded.name) / digest[:12]
+    renders_dir = out_dir / "renders" / rkey
     report_path = out_dir / "report.json"
-    if report_path.is_file() and not force:
-        with open(report_path, "r", encoding="utf-8") as f:
-            report = json.load(f)
-        if report.get("status") == "ok":
-            return BuildResult(out_dir=out_dir, report=report, cached=True, hash=digest)
-    if out_dir.exists():
+    previous = _read_json(report_path)
+
+    if previous and previous.get("status") == "ok" and previous.get("render_key") == rkey and not force:
+        if all(Path(r["path"]).is_file() for r in previous.get("renders", [])):
+            return BuildResult(out_dir=out_dir, report=previous, cached=True, hash=digest, renders_dir=renders_dir)
+
+    reuse_textures = bool(previous and previous.get("status") == "ok" and (out_dir / "textures").is_dir() and not force)
+    if force and out_dir.exists():
         shutil.rmtree(out_dir)
-    out_dir.mkdir(parents=True)
+    if renders_dir.exists():
+        shutil.rmtree(renders_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
     recipe_path = out_dir / "recipe.json"
     with open(recipe_path, "w", encoding="utf-8") as f:
         f.write(dump_recipe(loaded.recipe))
-    command = [blender, "-b", "--python", str(KERNEL_ENTRY), "--", str(PROJECT_ROOT), str(recipe_path), str(out_dir)]
+    command = [blender, "-b", "--python", str(KERNEL_ENTRY), "--", str(PROJECT_ROOT), str(recipe_path), str(out_dir),
+               str(renders_dir), "reuse" if reuse_textures else "bake"]
+    started = time.perf_counter()
     completed = subprocess.run(command, capture_output=True, text=True, timeout=timeout, check=False,
                                encoding="utf-8", errors="replace")
     with open(out_dir / "blender.log", "w", encoding="utf-8") as f:
         f.write(completed.stdout)
         f.write("\n--- stderr ---\n")
         f.write(completed.stderr)
-    if not report_path.is_file():
+    report = _read_json(report_path)
+    if report is None or "seconds" not in report:
         report = {
             "status": "failed",
             "error": {"code": "kernel.noReport", "message": f"Blender exited with {completed.returncode} without writing report.json. See blender.log."},
         }
-    else:
-        with open(report_path, "r", encoding="utf-8") as f:
-            report = json.load(f)
     report["hash"] = digest
+    report["render_key"] = rkey
     report["blender_exit_code"] = completed.returncode
+    report["wall_seconds"] = round(time.perf_counter() - started, 3)
     if report.get("status") == "ok":
-        report["contact_sheet"] = make_contact_sheet(report, out_dir / "renders" / "contact_sheet.png")
+        report["contact_sheet"] = make_contact_sheet(report, renders_dir / "contact_sheet.png")
     with open(report_path, "w", encoding="utf-8") as f:
         json.dump(report, f, indent=2, ensure_ascii=False)
-    return BuildResult(out_dir=out_dir, report=report, cached=False, hash=digest)
+    return BuildResult(out_dir=out_dir, report=report, cached=False, hash=digest, renders_dir=renders_dir,
+                       textures_reused=reuse_textures)
+
+
+def latest_build_dir(path_or_dir: str, out_root: str = "build") -> Path:
+    """Resolve an asset file to its most recently modified build directory, or pass a directory through."""
+    candidate = Path(path_or_dir)
+    if candidate.is_dir():
+        return candidate.resolve()
+    loaded = load_asset(str(candidate))
+    asset_dir = Path(out_root).resolve() / slugify(loaded.name)
+    builds = [p for p in asset_dir.glob("*") if (p / "report.json").is_file()]
+    if not builds:
+        raise FileNotFoundError(f"No builds found under {asset_dir}")
+    return max(builds, key=lambda p: (p / "report.json").stat().st_mtime)
+
+
+def clean(out_root: str = "build", keep: int = 1) -> list[Path]:
+    """Delete all but the ``keep`` newest builds of every asset. Returns the removed directories."""
+    removed = []
+    root = Path(out_root)
+    if not root.is_dir():
+        return removed
+    for asset_dir in root.iterdir():
+        if not asset_dir.is_dir():
+            continue
+        builds = sorted(
+            (p for p in asset_dir.iterdir() if p.is_dir()),
+            key=lambda p: (p / "report.json").stat().st_mtime if (p / "report.json").is_file() else 0,
+            reverse=True,
+        )
+        for stale in builds[keep:]:
+            shutil.rmtree(stale)
+            removed.append(stale)
+    return removed

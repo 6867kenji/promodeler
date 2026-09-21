@@ -3,10 +3,59 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from pathlib import Path
 
 from . import KERNEL_VERSION, __version__
-from .build import BlenderNotFound, build, blender_version, find_blender, load_asset
-from .core import ModelingError, RenderSettings, dump_recipe
+from .build import BlenderNotFound, build, blender_version, clean, find_blender, latest_build_dir, load_asset
+from .core import ModelingError, dump_recipe
+
+TEMPLATE = '''"""{name}: describe the object here.
+
+Run:  python -m promodeler build {path}
+Quick iteration:  add --texture-resolution 256 --bake-samples 4
+"""
+
+from __future__ import annotations
+
+import math
+from dataclasses import dataclass
+
+from promodeler.core import (
+    Asset, AssetGenerator, Bevel, Box, GenerationInput, Material, ModelingError, Part, RenderSettings,
+    Transform, presets, srgb,
+)
+
+
+@dataclass(frozen=True)
+class Parameters:
+    width: float = 0.2
+    height: float = 0.1
+    depth: float = 0.15
+
+
+def validate(p: Parameters) -> None:
+    for name in ("width", "height", "depth"):
+        if not 0.01 <= getattr(p, name) <= 5.0:
+            raise ModelingError("{slug}.size", f"{{name}} must be within 0.01...5 m.")
+
+
+def build(input: GenerationInput) -> Asset:
+    p: Parameters = input.parameters
+    paint = presets.painted_metal("paint", seed=input.seed, wear=0.5)
+    body = Part(
+        id="body",
+        shape=Box(size=(p.width, p.height, p.depth)),
+        material="paint",
+        transform=Transform(translation=(0.0, p.height / 2, 0.0)),
+        modifiers=(Bevel(width=0.003, segments=3),),
+        smooth_angle=math.radians(40),
+    )
+    return Asset(name="{name}", materials=(paint,), parts=(body,))
+
+
+asset = AssetGenerator(name="{name}", parameters=Parameters(), build=build, validate=validate, seed=1)
+render = RenderSettings(resolution=640, views=("perspective", "front"), passes=("shaded", "clay"))
+'''
 
 
 def _render_overrides(args) -> dict | None:
@@ -25,18 +74,6 @@ def _render_overrides(args) -> dict | None:
     return fields or None
 
 
-def cmd_doctor(args) -> int:
-    print(f"promodeler {__version__} (kernel {KERNEL_VERSION}), host python {sys.version.split()[0]}")
-    try:
-        blender = find_blender()
-        print(f"blender: {blender}")
-        print(f"blender version: {blender_version(blender)}")
-    except BlenderNotFound as exc:
-        print(f"blender: NOT FOUND ({exc})")
-        return 1
-    return 0
-
-
 def _quality_overrides(args) -> dict | None:
     overrides = {}
     if getattr(args, "texture_resolution", None):
@@ -46,27 +83,42 @@ def _quality_overrides(args) -> dict | None:
     return overrides or None
 
 
+def cmd_doctor(args) -> int:
+    print(f"promodeler {__version__} (kernel {KERNEL_VERSION}), host python {sys.version.split()[0]}")
+    try:
+        blender = find_blender()
+        print(f"blender: {blender}")
+        print(f"blender version: {blender_version(blender)}")
+    except BlenderNotFound as exc:
+        print(f"blender: NOT FOUND ({exc})")
+        return 1
+    try:
+        import PIL  # noqa: F401
+        print("pillow: available (contact sheets enabled)")
+    except ImportError:
+        print("pillow: missing (contact sheets disabled; pip install pillow)")
+    try:
+        import anthropic  # noqa: F401
+        print("anthropic: available (critique enabled)")
+    except ImportError:
+        print("anthropic: missing (critique disabled; pip install anthropic)")
+    return 0
+
+
 def cmd_recipe(args) -> int:
     loaded = load_asset(args.asset, _render_overrides(args), _quality_overrides(args))
     print(dump_recipe(loaded.recipe) if args.compact else json.dumps(loaded.recipe, indent=2, sort_keys=True))
     return 0
 
 
-def cmd_build(args) -> int:
-    result = build(args.asset, out_root=args.out, force=args.force, render=_render_overrides(args),
-                   quality_overrides=_quality_overrides(args))
+def print_report(result) -> None:
     report = result.report
     print(f"asset:   {report.get('asset', '?')}")
     print(f"hash:    {result.hash[:12]}{' (cached)' if result.cached else ''}")
     print(f"out:     {result.out_dir}")
     print(f"status:  {report.get('status')}")
     if not result.ok:
-        error = report.get("error", {})
-        print(f"error:   {error.get('code')}: {error.get('message')}")
-        if args.verbose and error.get("traceback"):
-            print(error["traceback"])
-        print(f"log:     {result.out_dir / 'blender.log'}")
-        return 1
+        return
     totals = report["totals"]
     print(f"geometry: {totals['triangles']} tris, {totals['vertices']} verts, "
           f"{totals['non_manifold_edges']} non-manifold edges, {len(report['parts'])} parts")
@@ -76,7 +128,8 @@ def cmd_build(args) -> int:
         print(f"bounds:  size {size} (Y up)")
     for part_id, stats in report["parts"].items():
         if "textures" in stats:
-            channels = ", ".join(f"{c} {m['seconds']}s" for c, m in stats["textures"].items())
+            channels = ", ".join(
+                f"{c} {'cached' if m.get('cached') else str(m['seconds']) + 's'}" for c, m in stats["textures"].items())
             uv = stats.get("uv", {})
             print(f"bake:    {part_id}: {channels}; uv coverage {uv.get('coverage')}, {uv.get('texel_density_px_per_m')} px/m")
     for render in report.get("renders", []):
@@ -89,7 +142,61 @@ def cmd_build(args) -> int:
     print(f"export:  {'written' if export.get('written') else 'MISSING'} {export.get('bytes', 0)} bytes  {export.get('path')}")
     for warning in report.get("warnings", []):
         print(f"warning: {warning['code']}: {warning['message']}")
-    print(f"seconds: {report.get('seconds')}")
+    print(f"seconds: {report.get('wall_seconds', report.get('seconds'))}")
+
+
+def cmd_build(args) -> int:
+    result = build(args.asset, out_root=args.out, force=args.force, render=_render_overrides(args),
+                   quality_overrides=_quality_overrides(args))
+    print_report(result)
+    if not result.ok:
+        error = result.report.get("error", {})
+        print(f"error:   {error.get('code')}: {error.get('message')}")
+        if args.verbose and error.get("traceback"):
+            print(error["traceback"])
+        print(f"log:     {result.out_dir / 'blender.log'}")
+        return 1
+    return 0
+
+
+def cmd_critique(args) -> int:
+    from .critique import critique_build, format_critique
+
+    out_dir = latest_build_dir(args.target, args.out)
+    try:
+        critique = critique_build(out_dir, reference=args.reference, goal=args.goal, model=args.model,
+                                  fallbacks=not args.no_fallback)
+    except (RuntimeError, FileNotFoundError) as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
+    except Exception as exc:  # noqa: BLE001 - API/auth failures are reported, not traced.
+        print(f"error: critique request failed ({type(exc).__name__}): {exc}", file=sys.stderr)
+        print("hint: authenticate with `ant auth login` or set ANTHROPIC_API_KEY.", file=sys.stderr)
+        return 1
+    print(f"build:    {out_dir}")
+    print(f"model:    {critique.get('model')}")
+    print(format_critique(critique))
+    print(f"written:  {out_dir / 'critique.json'}")
+    return 0
+
+
+def cmd_clean(args) -> int:
+    removed = clean(args.out, keep=args.keep)
+    for path in removed:
+        print(f"removed: {path}")
+    print(f"{len(removed)} build directories removed")
+    return 0
+
+
+def cmd_new(args) -> int:
+    path = Path(args.path)
+    if path.exists():
+        print(f"error: {path} already exists", file=sys.stderr)
+        return 1
+    name = args.name or path.stem.replace("_", " ").title()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(TEMPLATE.format(name=name, path=path.as_posix(), slug=path.stem), encoding="utf-8")
+    print(f"created: {path}")
     return 0
 
 
@@ -97,12 +204,12 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="promodeler", description="Code-first realistic 3D asset generation.")
     sub = parser.add_subparsers(dest="command", required=True)
 
-    doctor = sub.add_parser("doctor", help="Check the host environment and Blender.")
+    doctor = sub.add_parser("doctor", help="Check the host environment, Blender and optional packages.")
     doctor.set_defaults(func=cmd_doctor)
 
     for name, func, help_text in (
         ("recipe", cmd_recipe, "Print the canonical recipe JSON without running Blender."),
-        ("build", cmd_build, "Generate, render and export an asset."),
+        ("build", cmd_build, "Generate, bake, render and export an asset."),
     ):
         p = sub.add_parser(name, help=help_text)
         p.add_argument("asset", help="Path to an asset .py file exposing `asset`.")
@@ -116,8 +223,27 @@ def main(argv: list[str] | None = None) -> int:
         p.set_defaults(func=func)
     sub.choices["recipe"].add_argument("--compact", action="store_true")
     sub.choices["build"].add_argument("--out", default="build")
-    sub.choices["build"].add_argument("--force", action="store_true", help="Ignore the cache.")
+    sub.choices["build"].add_argument("--force", action="store_true", help="Ignore the cache, including baked textures.")
     sub.choices["build"].add_argument("--verbose", "-v", action="store_true")
+
+    critique = sub.add_parser("critique", help="Ask Claude to review the latest build of an asset (needs the anthropic package).")
+    critique.add_argument("target", help="Asset .py file (uses its newest build) or a build directory.")
+    critique.add_argument("--reference", default=None, help="Reference photo to compare against.")
+    critique.add_argument("--goal", default=None, help="What the asset is meant to look like.")
+    critique.add_argument("--model", default="claude-opus-5")
+    critique.add_argument("--no-fallback", action="store_true", help="Disable server-side refusal fallbacks.")
+    critique.add_argument("--out", default="build")
+    critique.set_defaults(func=cmd_critique)
+
+    cleaner = sub.add_parser("clean", help="Delete stale build directories.")
+    cleaner.add_argument("--out", default="build")
+    cleaner.add_argument("--keep", type=int, default=1, help="Newest builds to keep per asset.")
+    cleaner.set_defaults(func=cmd_clean)
+
+    new = sub.add_parser("new", help="Create an asset file from a template.")
+    new.add_argument("path", help="Where to create it, e.g. assets/lamp.py")
+    new.add_argument("--name", default=None)
+    new.set_defaults(func=cmd_new)
 
     args = parser.parse_args(argv)
     try:

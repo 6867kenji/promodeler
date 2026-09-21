@@ -206,6 +206,43 @@ def _save(image: bpy.types.Image, path: str) -> None:
     image.save()
 
 
+def bake_plan(spec: dict, proc: ProceduralMaterial) -> list[tuple[str, str, bool]]:
+    """(channel, bake type, is color) for every channel that is not a constant."""
+    plan = []
+    for channel in ("base_color", "roughness", "metallic", "emission_color"):
+        if not channel_is_constant(spec, channel):
+            plan.append((channel, "EMIT", channel in ("base_color", "emission_color")))
+    if not channel_is_constant(spec, "emission_strength") and "emission_color" not in [p[0] for p in plan]:
+        plan.append(("emission_color", "EMIT", True))
+    if proc.has_height:
+        plan.append(("normal", "NORMAL", False))
+    return plan
+
+
+def texture_path(out_dir: str, part_id: str, channel: str) -> str:
+    return os.path.join(out_dir, f"{part_id}_{channel}.png")
+
+
+def load_textures(spec: dict, proc: ProceduralMaterial, quality: dict, out_dir: str, part_id: str) -> dict | None:
+    """Load a previously baked texture set; ``None`` when any file is missing."""
+    resolution = quality["texture_resolution"]
+    textures: dict = {}
+    for channel, _, is_color in bake_plan(spec, proc):
+        path = texture_path(out_dir, part_id, channel)
+        if not os.path.isfile(path):
+            return None
+        image = bpy.data.images.load(path)
+        image.name = f"{part_id}:{channel}"
+        image.colorspace_settings.name = "sRGB" if is_color else "Non-Color"
+        if image.size[0] != resolution:
+            return None
+        textures[channel] = {
+            "path": path, "resolution": resolution, "colorspace": "sRGB" if is_color else "Non-Color",
+            "seconds": 0.0, "cached": True, "image": image.name,
+        }
+    return textures
+
+
 def bake_part(obj: bpy.types.Object, spec: dict, proc: ProceduralMaterial, quality: dict, out_dir: str, part_id: str) -> dict:
     """Bake every non-constant channel of ``proc`` for ``obj`` and return texture metadata."""
     resolution = quality["texture_resolution"]
@@ -215,15 +252,7 @@ def bake_part(obj: bpy.types.Object, spec: dict, proc: ProceduralMaterial, quali
     _select_only(obj)
     _configure_bake(samples)
     textures: dict = {}
-    plan = []
-    for channel in ("base_color", "roughness", "metallic", "emission_color"):
-        if not channel_is_constant(spec, channel):
-            plan.append((channel, "EMIT", channel == "base_color" or channel == "emission_color"))
-    if not channel_is_constant(spec, "emission_strength") and "emission_color" not in [p[0] for p in plan]:
-        plan.append(("emission_color", "EMIT", True))
-    if proc.has_height:
-        plan.append(("normal", "NORMAL", False))
-    for channel, bake_type, is_color in plan:
+    for channel, bake_type, is_color in bake_plan(spec, proc):
         started = time.perf_counter()
         image = _new_image(f"{part_id}:{channel}", resolution, is_color)
         if bake_type == "EMIT":
@@ -231,17 +260,18 @@ def bake_part(obj: bpy.types.Object, spec: dict, proc: ProceduralMaterial, quali
             if channel == "emission_color":
                 strength = proc.sockets["emission_strength"]
                 if not (isinstance(strength, float) and strength == 1.0):
-                    fc = FieldCompiler(proc.tree)
-                    source = fc.mix_color(fc._c_color({"value": [0, 0, 0, 1]}), source, 1.0) if isinstance(source, float) else source
+                    if isinstance(source, float):
+                        fc = FieldCompiler(proc.tree)
+                        source = fc._c_color({"value": [source, source, source, 1.0]})
                     source = _scale_color(proc.tree, source, strength)
             _bake_into(proc, image, "EMIT", source, margin)
         else:
             _bake_into(proc, image, "NORMAL", None, margin)
-        path = os.path.join(out_dir, f"{part_id}_{channel}.png")
+        path = texture_path(out_dir, part_id, channel)
         _save(image, path)
         textures[channel] = {
             "path": path, "resolution": resolution, "colorspace": "sRGB" if is_color else "Non-Color",
-            "seconds": round(time.perf_counter() - started, 3), "image": image.name,
+            "seconds": round(time.perf_counter() - started, 3), "cached": False, "image": image.name,
         }
     return textures
 

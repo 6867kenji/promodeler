@@ -9,6 +9,11 @@ description = "Code-first, deterministic generation of realistic 3D assets with 
 requires-python = ">=3.13"
 dependencies = []
 
+[project.optional-dependencies]
+sheets = ["pillow"]
+critique = ["anthropic"]
+all = ["pillow", "anthropic"]
+
 [project.scripts]
 promodeler = "promodeler.cli:main"
 

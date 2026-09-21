@@ -1,4 +1,4 @@
-"""Entry point executed by ``blender -b --python entry.py -- <project_root> <recipe.json> <out_dir>``.
+"""Entry point executed by ``blender -b --python entry.py -- <project_root> <recipe.json> <out_dir> <renders_dir> <bake|reuse>``.
 
 Always writes ``report.json``. On failure the report carries ``error`` and the
 process exits nonzero, so the caller never mistakes a crash for a result.
@@ -16,6 +16,8 @@ import traceback
 def main() -> int:
     args = sys.argv[sys.argv.index("--") + 1:]
     project_root, recipe_path, out_dir = args[0], args[1], args[2]
+    renders_dir = args[3] if len(args) > 3 else os.path.join(out_dir, "renders")
+    reuse_textures = len(args) > 4 and args[4] == "reuse"
     if project_root not in sys.path:
         sys.path.insert(0, project_root)
     os.makedirs(out_dir, exist_ok=True)
@@ -33,9 +35,8 @@ def main() -> int:
         compiler.reset_scene()
         scene = compiler.compile_recipe(recipe)
         compiler.freeze_geometry(scene)
-        surface.finish(scene, recipe, out_dir)
+        surface.finish(scene, recipe, out_dir, reuse_textures=reuse_textures)
         report.update(reporting.build_report(scene, recipe))
-        renders_dir = os.path.join(out_dir, "renders")
         os.makedirs(renders_dir, exist_ok=True)
         report["renders"] = render.render_views(scene, recipe["render"], renders_dir)
         report["export"] = export.export_gltf(scene, os.path.join(out_dir, "model.glb"))
