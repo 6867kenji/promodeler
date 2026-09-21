@@ -14,10 +14,14 @@ from . import space
 from .fields import FieldCompiler
 
 PRIMITIVE_KINDS = ("box", "plane", "cylinder", "cone", "sphere")
+GENERATED_KINDS = ("scatter", "fur")
 
 
 def build_mesh(name: str, shape: dict, quality: dict) -> bpy.types.Mesh:
     kind = shape["kind"]
+    if kind in GENERATED_KINDS:
+        # Geometry Nodes replace this placeholder entirely.
+        return bpy.data.meshes.new(name)
     bm = bmesh.new()
     try:
         if kind in PRIMITIVE_KINDS:
@@ -181,6 +185,163 @@ def apply_shading(mesh: bpy.types.Mesh, smooth_angle: float | None) -> None:
 AXIS_INDEX_BLENDER = {"x": 0, "y": 2, "z": 1}
 
 
+def _geometry_group(name: str) -> tuple[bpy.types.NodeTree, bpy.types.Node, bpy.types.Node]:
+    group = bpy.data.node_groups.new(name, "GeometryNodeTree")
+    group.interface.new_socket(name="Geometry", in_out="INPUT", socket_type="NodeSocketGeometry")
+    group.interface.new_socket(name="Geometry", in_out="OUTPUT", socket_type="NodeSocketGeometry")
+    return group, group.nodes.new("NodeGroupInput"), group.nodes.new("NodeGroupOutput")
+
+
+def _sock(node, identifier: str, output: bool = False):
+    for s in node.outputs if output else node.inputs:
+        if s.identifier == identifier:
+            return s
+    raise ModelingError("field.socket", f"Node {node.bl_idname} has no socket {identifier!r}.")
+
+
+def build_attribute_group(name: str, attribute: str, field_spec: dict) -> bpy.types.NodeTree:
+    """Store a scalar field as a point attribute (a vertex group when one of that name exists)."""
+    group, group_in, group_out = _geometry_group(name)
+    store = group.nodes.new("GeometryNodeStoreNamedAttribute")
+    store.data_type = "FLOAT"
+    store.domain = "POINT"
+    _sock(store, "Name").default_value = attribute
+    fc = FieldCompiler(group, mode="geometry")
+    fc._value(_sock(store, "Value"), fc.scalar(field_spec))
+    group.links.new(group_in.outputs[0], _sock(store, "Geometry"))
+    group.links.new(store.outputs[0], group_out.inputs[0])
+    return group
+
+
+def _distribute(group, fc: FieldCompiler, surface_obj, spec: dict):
+    """Points on another object's evaluated surface. Returns (distribute node, points socket)."""
+    info = group.nodes.new("GeometryNodeObjectInfo")
+    info.transform_space = "RELATIVE"
+    _sock(info, "Object").default_value = surface_obj
+    distribute = group.nodes.new("GeometryNodeDistributePointsOnFaces")
+    if spec.get("min_distance", 0.0) > 0.0:
+        distribute.distribute_method = "POISSON"
+        _sock(distribute, "Distance Min").default_value = spec["min_distance"]
+        _sock(distribute, "Density Max").default_value = spec["density"]
+    else:
+        distribute.distribute_method = "RANDOM"
+        _sock(distribute, "Density").default_value = spec["density"]
+    _sock(distribute, "Seed").default_value = int(spec["seed"])
+    if spec.get("mask") is not None:
+        fc._value(_sock(distribute, "Density Factor"), fc.scalar(spec["mask"]))
+    group.links.new(_sock(info, "Geometry", output=True), _sock(distribute, "Mesh"))
+    return distribute
+
+
+def build_scatter_group(name: str, spec: dict, surface_obj, instance_obj) -> bpy.types.NodeTree:
+    group, group_in, group_out = _geometry_group(name)
+    fc = FieldCompiler(group, mode="geometry")
+    distribute = _distribute(group, fc, surface_obj, spec)
+    instance_info = group.nodes.new("GeometryNodeObjectInfo")
+    instance_info.transform_space = "ORIGINAL"
+    _sock(instance_info, "Object").default_value = instance_obj
+    _sock(instance_info, "As Instance").default_value = True
+    on_points = group.nodes.new("GeometryNodeInstanceOnPoints")
+    group.links.new(_sock(distribute, "Points", output=True), _sock(on_points, "Points"))
+    group.links.new(_sock(instance_info, "Geometry", output=True), _sock(on_points, "Instance"))
+    rotation = _sock(distribute, "Rotation", output=True)
+    if spec["rotate"]:
+        spin = group.nodes.new("FunctionNodeRandomValue")
+        spin.data_type = "FLOAT"
+        _sock(spin, "Min_001").default_value = 0.0
+        _sock(spin, "Max_001").default_value = 6.2831853
+        _sock(spin, "Seed").default_value = int(spec["seed"]) + 1
+        euler = group.nodes.new("ShaderNodeCombineXYZ")
+        group.links.new(_sock(spin, "Value_001", output=True), _sock(euler, "Z"))
+        to_rotation = group.nodes.new("FunctionNodeEulerToRotation")
+        group.links.new(euler.outputs[0], _sock(to_rotation, "Euler"))
+        rotate = group.nodes.new("FunctionNodeRotateRotation")
+        rotate.rotation_space = "LOCAL"
+        group.links.new(rotation, _sock(rotate, "Rotation"))
+        group.links.new(_sock(to_rotation, "Rotation", output=True), _sock(rotate, "Rotate By"))
+        rotation = _sock(rotate, "Rotation", output=True)
+    group.links.new(rotation, _sock(on_points, "Rotation"))
+    scale = group.nodes.new("FunctionNodeRandomValue")
+    scale.data_type = "FLOAT"
+    _sock(scale, "Min_001").default_value = spec["scale"][0]
+    _sock(scale, "Max_001").default_value = spec["scale"][1]
+    _sock(scale, "Seed").default_value = int(spec["seed"]) + 2
+    group.links.new(_sock(scale, "Value_001", output=True), _sock(on_points, "Scale"))
+    realize = group.nodes.new("GeometryNodeRealizeInstances")
+    group.links.new(on_points.outputs[0], _sock(realize, "Geometry"))
+    group.links.new(realize.outputs[0], group_out.inputs[0])
+    return group
+
+
+def build_fur_group(name: str, spec: dict, surface_obj) -> bpy.types.NodeTree:
+    group, group_in, group_out = _geometry_group(name)
+    fc = FieldCompiler(group, mode="geometry")
+    distribute = _distribute(group, fc, surface_obj, spec)
+    line = group.nodes.new("GeometryNodeCurvePrimitiveLine")
+    line.mode = "POINTS"
+    _sock(line, "Start").default_value = (0.0, 0.0, 0.0)
+    _sock(line, "End").default_value = (0.0, 0.0, spec["length"])
+    on_points = group.nodes.new("GeometryNodeInstanceOnPoints")
+    group.links.new(_sock(distribute, "Points", output=True), _sock(on_points, "Points"))
+    group.links.new(line.outputs[0], _sock(on_points, "Instance"))
+    group.links.new(_sock(distribute, "Rotation", output=True), _sock(on_points, "Rotation"))
+    realize = group.nodes.new("GeometryNodeRealizeInstances")
+    group.links.new(on_points.outputs[0], _sock(realize, "Geometry"))
+    resample = group.nodes.new("GeometryNodeResampleCurve")
+    # Blender 5 exposes the mode as a menu socket; 4.x as a node property.
+    if hasattr(resample, "mode"):
+        resample.mode = "COUNT"
+    else:
+        _sock(resample, "Mode").default_value = "Count"
+    _sock(resample, "Count").default_value = spec["segments"] + 1
+    group.links.new(realize.outputs[0], _sock(resample, "Curve"))
+    # Bend: droop toward -Y (Blender -Z) with t^2, plus noise curl scaled by t.
+    parameter = group.nodes.new("GeometryNodeSplineParameter")
+    t = _sock(parameter, "Factor", output=True)
+    t2 = fc._math("MULTIPLY", t, t)
+    droop = fc._math("MULTIPLY", t2, -spec["droop"] * spec["length"])
+    droop_vec = group.nodes.new("ShaderNodeCombineXYZ")
+    group.links.new(droop, _sock(droop_vec, "Z"))
+    noise = group.nodes.new("ShaderNodeTexNoise")
+    noise.noise_dimensions = "4D"
+    scale_node = group.nodes.new("ShaderNodeVectorMath")
+    scale_node.operation = "SCALE"
+    group.links.new(fc.coord_socket, scale_node.inputs[0])
+    scale_node.inputs["Scale"].default_value = 1.0 / max(spec["length"] * 3.0, 1e-4)
+    group.links.new(scale_node.outputs[0], noise.inputs["Vector"])
+    noise.inputs["W"].default_value = float(spec["seed"]) * 7.31
+    noise.inputs["Detail"].default_value = 2.0
+    centered = group.nodes.new("ShaderNodeVectorMath")
+    centered.operation = "SUBTRACT"
+    group.links.new(noise.outputs["Color"], centered.inputs[0])
+    centered.inputs[1].default_value = (0.5, 0.5, 0.5)
+    curl_amount = fc._math("MULTIPLY", t, spec["curl"] * spec["length"] * 2.0)
+    curl = group.nodes.new("ShaderNodeVectorMath")
+    curl.operation = "SCALE"
+    group.links.new(centered.outputs[0], curl.inputs[0])
+    group.links.new(curl_amount, curl.inputs["Scale"])
+    offset = group.nodes.new("ShaderNodeVectorMath")
+    offset.operation = "ADD"
+    group.links.new(droop_vec.outputs[0], offset.inputs[0])
+    group.links.new(curl.outputs[0], offset.inputs[1])
+    bend = group.nodes.new("GeometryNodeSetPosition")
+    group.links.new(resample.outputs[0], _sock(bend, "Geometry"))
+    group.links.new(offset.outputs[0], _sock(bend, "Offset"))
+    radius = group.nodes.new("GeometryNodeSetCurveRadius")
+    taper = fc._math("MULTIPLY", fc._math("SUBTRACT", 1.0, fc._math("MULTIPLY", t, 0.85)), spec["thickness"])
+    group.links.new(bend.outputs[0], _sock(radius, "Curve"))
+    group.links.new(taper, _sock(radius, "Radius"))
+    profile = group.nodes.new("GeometryNodeCurvePrimitiveCircle")
+    _sock(profile, "Resolution").default_value = spec["sides"]
+    _sock(profile, "Radius").default_value = 1.0
+    to_mesh = group.nodes.new("GeometryNodeCurveToMesh")
+    group.links.new(radius.outputs[0], _sock(to_mesh, "Curve"))
+    group.links.new(profile.outputs[0], _sock(to_mesh, "Profile Curve"))
+    _sock(to_mesh, "Fill Caps").default_value = False
+    group.links.new(to_mesh.outputs[0], group_out.inputs[0])
+    return group
+
+
 def build_displace_group(name: str, height_spec: dict) -> bpy.types.NodeTree:
     """A Geometry Nodes group offsetting every vertex along its normal by a scalar field."""
     group = bpy.data.node_groups.new(name, "GeometryNodeTree")
@@ -221,6 +382,34 @@ def add_modifiers(obj: bpy.types.Object, modifiers: list[dict], make_cutter=None
         elif kind == "displace":
             mod = obj.modifiers.new(name, "NODES")
             mod.node_group = build_displace_group(f"displace:{obj.name}:{index}", spec["height"])
+        elif kind == "cloth_drape":
+            if spec["pin"] is not None:
+                group_name = "pin"
+                if group_name not in obj.vertex_groups:
+                    obj.vertex_groups.new(name=group_name)
+                pin_mod = obj.modifiers.new(f"{name}_pin", "NODES")
+                pin_mod.node_group = build_attribute_group(f"pin:{obj.name}:{index}", group_name, spec["pin"])
+            mod = obj.modifiers.new(name, "CLOTH")
+            settings = mod.settings
+            settings.mass = spec["mass"]
+            settings.tension_stiffness = spec["stiffness"]
+            settings.compression_stiffness = spec["stiffness"]
+            settings.shear_stiffness = spec["stiffness"] * 0.4
+            settings.bending_stiffness = spec["bending"]
+            settings.tension_damping = spec["damping"]
+            settings.compression_damping = spec["damping"]
+            settings.shear_damping = spec["damping"]
+            settings.air_damping = 1.0
+            settings.quality = spec["quality"]
+            if spec["pin"] is not None:
+                settings.vertex_group_mass = "pin"
+                settings.pin_stiffness = 1.0
+            mod.collision_settings.use_collision = spec["collide"]
+            mod.collision_settings.distance_min = spec["thickness"]
+            mod.collision_settings.use_self_collision = True
+            mod.collision_settings.self_distance_min = spec["thickness"]
+            mod.point_cache.frame_start = 1
+            mod.point_cache.frame_end = spec["frames"]
         elif kind == "simple_deform":
             mod = obj.modifiers.new(name, "SIMPLE_DEFORM")
             mod.deform_method = spec["method"].upper()

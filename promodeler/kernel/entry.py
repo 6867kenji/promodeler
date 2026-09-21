@@ -2,6 +2,9 @@
 
 Always writes ``report.json``. On failure the report carries ``error`` and the
 process exits nonzero, so the caller never mistakes a crash for a result.
+
+Pipeline order: compile -> freeze geometry -> UVs and bakes -> LODs -> rig
+-> numerical report -> renders -> exports.
 """
 
 from __future__ import annotations
@@ -28,18 +31,36 @@ def main() -> int:
         import bpy
 
         from promodeler import KERNEL_VERSION
-        from promodeler.kernel import compile as compiler, export, render, report as reporting, surface
+        from promodeler.kernel import compile as compiler, export, render, report as reporting, rig, surface
 
         with open(recipe_path, "r", encoding="utf-8") as f:
             recipe = json.load(f)
-        compiler.reset_scene()
-        scene = compiler.compile_recipe(recipe)
-        compiler.freeze_geometry(scene)
-        surface.finish(scene, recipe, out_dir, reuse_textures=reuse_textures)
-        report.update(reporting.build_report(scene, recipe))
+        stages: dict = {}
+
+        def stage(name, fn, *args, **kwargs):
+            t0 = time.perf_counter()
+            result = fn(*args, **kwargs)
+            stages[name] = round(time.perf_counter() - t0, 3)
+            return result
+
+        stage("compile", lambda: (compiler.reset_scene(), None)[1])
+        scene = stage("compile", compiler.compile_recipe, recipe)
+        stage("freeze", compiler.freeze_geometry, scene)
+        stage("surface", surface.finish, scene, recipe, out_dir, reuse_textures=reuse_textures)
+        stage("lods", compiler.build_lods, scene, recipe)
+        rig_info = stage("rig", rig.bind_all, scene, recipe)
+        report.update(stage("report", reporting.build_report, scene, recipe))
+        if rig_info is not None:
+            report["rig"] = rig_info
         os.makedirs(renders_dir, exist_ok=True)
-        report["renders"] = render.render_views(scene, recipe["render"], renders_dir)
-        report["export"] = export.export_gltf(scene, os.path.join(out_dir, "model.glb"))
+        report["renders"] = stage("render", render.render_views, scene, recipe["render"], renders_dir)
+        has_clips = bool(recipe["asset"].get("clips"))
+        formats = (recipe.get("export") or {}).get("formats", ["glb"])
+        report["export"] = stage("export_glb", export.export_gltf, scene, os.path.join(out_dir, "model.glb"), has_clips)
+        report["exports"] = {"glb": report["export"]}
+        if "usdz" in formats:
+            report["exports"]["usdz"] = stage("export_usdz", export.export_usdz, scene, os.path.join(out_dir, "model.usdz"), has_clips)
+        report["stages"] = stages
         report["status"] = "ok"
         report["environment"] = {"blender": bpy.app.version_string, "kernel_version": KERNEL_VERSION, "python": sys.version.split()[0]}
         code = 0

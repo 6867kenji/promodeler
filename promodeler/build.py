@@ -22,7 +22,7 @@ from pathlib import Path
 
 from . import KERNEL_VERSION
 from .contact_sheet import make_contact_sheet
-from .core import Asset, AssetGenerator, ModelingError, RenderSettings, build_recipe, dump_recipe, recipe_hash
+from .core import Asset, AssetGenerator, ExportSettings, ModelingError, RenderSettings, build_recipe, dump_recipe, recipe_hash
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 KERNEL_ENTRY = Path(__file__).resolve().parent / "kernel" / "entry.py"
@@ -89,16 +89,20 @@ def load_asset_module(path: str):
     return module
 
 
-def load_asset(path: str, render=None, quality_overrides: dict | None = None) -> LoadedAsset:
-    """An asset file exposes ``asset`` as an ``AssetGenerator`` or an ``Asset``; ``render`` is optional.
+def load_asset(path: str, render=None, quality_overrides: dict | None = None, formats=None) -> LoadedAsset:
+    """An asset file exposes ``asset`` as an ``AssetGenerator`` or an ``Asset``; ``render`` and ``export`` are optional.
 
     ``quality_overrides`` replaces fields of the generator's quality profile,
-    for example a lower texture resolution for a quick iteration.
+    for example a lower texture resolution for a quick iteration. ``formats``
+    overrides the export formats.
     """
     module = load_asset_module(path)
     target = getattr(module, "asset", None)
     base_render = getattr(module, "render", None) or RenderSettings()
     render = _merge_render(base_render, render)
+    export = getattr(module, "export", None) or ExportSettings()
+    if formats:
+        export = ExportSettings(formats=tuple(formats))
     if isinstance(target, AssetGenerator):
         quality = replace(target.quality, **quality_overrides) if quality_overrides else None
         input = target.make_input(quality=quality)
@@ -106,12 +110,12 @@ def load_asset(path: str, render=None, quality_overrides: dict | None = None) ->
         recipe = build_recipe(
             asset, input, render,
             parameters=target.parameters_recipe(input.parameters),
-            generator_version=target.version,
+            generator_version=target.version, export=export,
         )
     elif isinstance(target, Asset):
         target.validate()
         asset = target
-        recipe = build_recipe(asset, None, render)
+        recipe = build_recipe(asset, None, render, export=export)
     else:
         raise ModelingError("asset.module", f"{path} must define `asset` as an AssetGenerator or Asset.")
     return LoadedAsset(asset=asset, recipe=recipe, name=asset.name)
@@ -122,13 +126,13 @@ def slugify(name: str) -> str:
 
 
 def asset_key(recipe: dict, blender: str) -> str:
-    """Hash of everything except render settings, plus kernel and Blender versions."""
-    without_render = {k: v for k, v in recipe.items() if k != "render"}
+    """Hash of everything except render and export settings, plus kernel and Blender versions."""
+    without_render = {k: v for k, v in recipe.items() if k not in ("render", "export")}
     return recipe_hash(without_render, kernel_version=KERNEL_VERSION, blender=blender)
 
 
 def render_key(recipe: dict) -> str:
-    return recipe_hash({"render": recipe["render"]}, kernel_version=KERNEL_VERSION)[:8]
+    return recipe_hash({"render": recipe["render"], "export": recipe.get("export")}, kernel_version=KERNEL_VERSION)[:8]
 
 
 @dataclass
@@ -153,8 +157,8 @@ def _read_json(path: Path) -> dict | None:
 
 
 def build(path: str, out_root: str = "build", force: bool = False, render=None,
-          timeout: float = 1800.0, quality_overrides: dict | None = None) -> BuildResult:
-    loaded = load_asset(path, render, quality_overrides)
+          timeout: float = 1800.0, quality_overrides: dict | None = None, formats=None) -> BuildResult:
+    loaded = load_asset(path, render, quality_overrides, formats)
     blender = find_blender()
     version = blender_version(blender)
     digest = asset_key(loaded.recipe, version)

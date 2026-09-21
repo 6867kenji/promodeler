@@ -430,6 +430,9 @@ def render_views(scene: CompiledScene, settings: dict, out_dir: str) -> list[dic
     passes = settings.get("passes") or ["shaded"]
     state = _PassState(scene, settings, bounds)
     results = []
+    if settings.get("pose") and scene.armature is not None:
+        from . import rig as rigging
+        rigging.apply_pose(scene, settings["pose"])
     try:
         for pass_name in passes:
             state.apply(pass_name)
@@ -452,4 +455,7 @@ def render_views(scene: CompiledScene, settings: dict, out_dir: str) -> list[dic
                 })
     finally:
         state.revert()
+        if settings.get("pose") and scene.armature is not None:
+            from . import rig as rigging
+            rigging.apply_pose(scene, None)
     return results

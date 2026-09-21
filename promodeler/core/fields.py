@@ -423,6 +423,25 @@ def validate_field(value, label: str) -> None:
         raise ModelingError("field.type", f"{label} must be a finite number, Color or field.")
 
 
+GEOMETRY_FIELD_KINDS = ("const", "noise", "voronoi", "position", "facing", "math", "clamp", "smoothstep", "ramp", "mix")
+
+
+def validate_geometry_field(field, label: str) -> None:
+    """Fields evaluated per vertex in Geometry Nodes cannot use ray-traced probes."""
+    if not isinstance(field, Field):
+        raise ModelingError("field.geometryOnly", f"{label} must be a scalar Field.")
+    validate_field(field, label)
+    pending = [field]
+    while pending:
+        node = pending.pop()
+        if node.kind not in GEOMETRY_FIELD_KINDS:
+            raise ModelingError(
+                "displace.field",
+                f"{label} uses {node.kind!r}, which needs ray tracing; geometry fields may only use {GEOMETRY_FIELD_KINDS}.",
+            )
+        pending.extend(node.children())
+
+
 def scalar_recipe(value) -> dict:
     return as_field(value).to_recipe()
 

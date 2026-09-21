@@ -22,6 +22,11 @@ def finish(scene: CompiledScene, recipe: dict, out_dir: str, reuse_textures: boo
     part_specs = {p["id"]: p for p in recipe["asset"]["parts"]}
     textures_dir = os.path.join(out_dir, "textures")
     previous_engine = bpy.context.scene.render.engine
+    # Scattered and fur geometry is dense decoration; keep it out of the bake
+    # ray tracing so probes on the underlying parts stay fast.
+    decorations = [scene.parts[pid] for pid in scene.generated]
+    for obj in decorations:
+        obj.hide_render = True
     for part_id, obj in scene.parts.items():
         material_id = part_specs[part_id]["material"]
         proc = scene.procedural.get(material_id)
@@ -37,4 +42,6 @@ def finish(scene: CompiledScene, recipe: dict, out_dir: str, reuse_textures: boo
             textures = materials.bake_part(obj, spec, proc, quality, textures_dir, part_id)
         scene.textures[part_id] = textures
         obj.data.materials[0] = materials.build_baked_material(spec, textures, part_id)
+    for obj in decorations:
+        obj.hide_render = False
     bpy.context.scene.render.engine = previous_engine

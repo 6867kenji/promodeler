@@ -12,7 +12,7 @@ from dataclasses import dataclass, fields
 from typing import ClassVar
 
 from .diagnostics import ModelingError, finite_vector, is_finite
-from .fields import Field, validate_field
+from .fields import Field, validate_field, validate_geometry_field
 from .transform import Transform
 
 AXES = ("x", "y", "z")
@@ -73,24 +73,6 @@ class Subdivision(Modifier):
             raise ModelingError("subdivision.levels", f"{label}.levels must be in 1...6.")
 
 
-GEOMETRY_FIELD_KINDS = ("const", "noise", "voronoi", "position", "facing", "math", "clamp", "smoothstep", "ramp", "mix")
-
-
-def _check_geometry_field(field, label: str) -> None:
-    if not isinstance(field, Field):
-        raise ModelingError("displace.height", f"{label} must be a scalar Field.")
-    validate_field(field, label)
-    pending = [field]
-    while pending:
-        node = pending.pop()
-        if node.kind not in GEOMETRY_FIELD_KINDS:
-            raise ModelingError(
-                "displace.field",
-                f"{label} uses {node.kind!r}, which needs ray tracing; displacement fields may only use {GEOMETRY_FIELD_KINDS}.",
-            )
-        pending.extend(node.children())
-
-
 @dataclass(frozen=True)
 class Displace(Modifier):
     """Move vertices along their normals by ``height`` meters, evaluated per vertex in object space.
@@ -107,10 +89,52 @@ class Displace(Modifier):
     def validate(self, label: str) -> None:
         if self.height is None:
             raise ModelingError("displace.height", f"{label}.height is required.")
-        _check_geometry_field(self.height, f"{label}.height")
+        validate_geometry_field(self.height, f"{label}.height")
 
     def to_recipe(self) -> dict:
         return {"kind": self.kind, "height": self.height.to_recipe()}
+
+
+@dataclass(frozen=True)
+class ClothDrape(Modifier):
+    """Simulate the part as cloth for ``frames`` frames and freeze the result.
+
+    Other parts of the asset act as collision bodies. ``pin`` is a field
+    whose value (0...1) holds vertices in place, for example
+    ``Position("y", 0.4, 0.5)`` to pin the top edge. The simulation is
+    deterministic for a given recipe on the same machine.
+    """
+
+    kind: ClassVar[str] = "cloth_drape"
+    frames: int = 60
+    mass: float = 0.3
+    stiffness: float = 15.0
+    bending: float = 0.5
+    damping: float = 5.0
+    quality: int = 5
+    pin: Field | None = None
+    collide: bool = True
+    thickness: float = 0.005
+
+    def validate(self, label: str) -> None:
+        super().validate(label)
+        if not isinstance(self.frames, int) or not 1 <= self.frames <= 600:
+            raise ModelingError("cloth.frames", f"{label}.frames must be in 1...600.")
+        if self.mass <= 0.0 or self.stiffness <= 0.0 or self.bending < 0.0 or self.damping < 0.0:
+            raise ModelingError("cloth.parameters", f"{label} mass and stiffness must be positive; bending and damping nonnegative.")
+        if not isinstance(self.quality, int) or not 1 <= self.quality <= 20:
+            raise ModelingError("cloth.quality", f"{label}.quality must be in 1...20.")
+        if not 0.0005 <= self.thickness <= 0.1:
+            raise ModelingError("cloth.thickness", f"{label}.thickness must be 0.5 mm...10 cm.")
+        if self.pin is not None:
+            validate_geometry_field(self.pin, f"{label}.pin")
+
+    def to_recipe(self) -> dict:
+        out = {"kind": self.kind, "frames": self.frames, "mass": float(self.mass), "stiffness": float(self.stiffness),
+               "bending": float(self.bending), "damping": float(self.damping), "quality": self.quality,
+               "collide": bool(self.collide), "thickness": float(self.thickness)}
+        out["pin"] = None if self.pin is None else self.pin.to_recipe()
+        return out
 
 
 SIMPLE_DEFORM_KINDS = ("bend", "twist", "taper")
@@ -245,4 +269,4 @@ class Boolean(Modifier):
         return {"kind": self.kind, "operation": self.operation, "solver": self.solver, "cutter": self.cutter.to_recipe()}
 
 
-MODIFIER_KINDS = {cls.kind: cls for cls in (Bevel, Subdivision, Solidify, Mirror, Array, Boolean, Displace, SimpleDeform)}
+MODIFIER_KINDS = {cls.kind: cls for cls in (Bevel, Subdivision, Solidify, Mirror, Array, Boolean, Displace, SimpleDeform, ClothDrape)}

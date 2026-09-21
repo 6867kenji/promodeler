@@ -11,7 +11,7 @@ compiles. Conventions:
 """
 
 from . import curves, imperfections, presets
-from .asset import Asset, GenerationInput, Part, QualityProfile, RenderSettings
+from .asset import LOD, Asset, ExportSettings, GenerationInput, Part, QualityProfile, RenderSettings
 from .color import Color, srgb
 from .diagnostics import ModelingError
 from .fields import (
@@ -20,10 +20,11 @@ from .fields import (
 )
 from .generator import AssetGenerator
 from .material import Layer, Material
-from .modifiers import Array, Bevel, Boolean, Cutter, Displace, Mirror, SimpleDeform, Solidify, Subdivision
+from .modifiers import Array, Bevel, Boolean, ClothDrape, Cutter, Displace, Mirror, SimpleDeform, Solidify, Subdivision
+from .rig import Clip, Joint, JointTransform, Keyframe, Pose, Rig
 from .profile import Profile
 from .recipe import build_recipe, dump_recipe, recipe_hash
-from .shapes import Box, Cone, Cylinder, Extrude, Loft, LoftSection, Plane, Revolve, Sphere, Sweep
+from .shapes import Box, Cone, Cylinder, Extrude, Fur, Loft, LoftSection, Plane, Revolve, Scatter, Sphere, Sweep
 from .transform import Transform
 
 __all__ = [
@@ -35,6 +36,8 @@ __all__ = [
     "Boolean",
     "Box",
     "Cavity",
+    "Clip",
+    "ClothDrape",
     "Color",
     "ColorField",
     "ColorMix",
@@ -44,10 +47,16 @@ __all__ = [
     "Cutter",
     "Cylinder",
     "Displace",
+    "ExportSettings",
     "Extrude",
     "Facing",
     "Field",
+    "Fur",
     "GenerationInput",
+    "Joint",
+    "JointTransform",
+    "Keyframe",
+    "LOD",
     "Layer",
     "Loft",
     "LoftSection",
@@ -58,11 +67,14 @@ __all__ = [
     "Part",
     "Noise",
     "Plane",
+    "Pose",
     "Position",
     "Profile",
     "QualityProfile",
     "RenderSettings",
     "Revolve",
+    "Rig",
+    "Scatter",
     "SimpleDeform",
     "Solidify",
     "Sphere",

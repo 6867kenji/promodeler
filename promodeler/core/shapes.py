@@ -12,6 +12,7 @@ from dataclasses import dataclass, fields
 from typing import ClassVar
 
 from .diagnostics import ModelingError, is_finite
+from .fields import Field, validate_geometry_field
 from .profile import Profile, validate_ring
 from .transform import Transform
 
@@ -301,4 +302,101 @@ class Loft(Shape):
         return {"kind": self.kind, "sections": [s.to_recipe() for s in self.sections], "capped": bool(self.capped)}
 
 
-SHAPE_KINDS = {cls.kind: cls for cls in (Box, Plane, Cylinder, Cone, Sphere, Extrude, Revolve, Sweep, Loft)}
+@dataclass(frozen=True)
+class Scatter(Shape):
+    """Copies of ``instance`` scattered over the surface of another part.
+
+    ``density`` is instances per square meter; ``scale`` a (min, max) random
+    factor; ``min_distance`` switches to Poisson disk spacing in meters.
+    Instances align to the surface normal and spin randomly around it.
+    ``mask`` (0...1) scales the density; it may use only geometry fields.
+    """
+
+    kind: ClassVar[str] = "scatter"
+    surface: str = ""
+    instance: Shape = Sphere(radius=0.01)
+    density: float = 100.0
+    seed: int = 0
+    scale: tuple[float, float] = (0.8, 1.2)
+    min_distance: float = 0.0
+    rotate: bool = True
+    mask: Field | None = None
+
+    def validate(self, label: str) -> None:
+        super().validate(label)
+        if not isinstance(self.surface, str) or not self.surface:
+            raise ModelingError("scatter.surface", f"{label}.surface must name another part.")
+        if isinstance(self.instance, (Scatter, Fur)):
+            raise ModelingError("scatter.instance", f"{label}.instance cannot itself be generated.")
+        self.instance.validate(f"{label}.instance")
+        _positive(self.density, "scatter.density", f"{label}.density")
+        if self.density > 1e6:
+            raise ModelingError("scatter.density", f"{label}.density is above 1e6 per square meter.")
+        if len(self.scale) != 2 or not 0.0 < self.scale[0] <= self.scale[1] <= 100.0:
+            raise ModelingError("scatter.scale", f"{label}.scale must be (min, max) with 0 < min <= max.")
+        if not is_finite(self.min_distance) or self.min_distance < 0.0:
+            raise ModelingError("scatter.minDistance", f"{label}.min_distance must be nonnegative.")
+        if not isinstance(self.seed, int):
+            raise ModelingError("scatter.seed", f"{label}.seed must be an integer.")
+        if self.mask is not None:
+            validate_geometry_field(self.mask, f"{label}.mask")
+
+    def to_recipe(self) -> dict:
+        return {
+            "kind": self.kind, "surface": self.surface, "instance": self.instance.to_recipe(),
+            "density": float(self.density), "seed": self.seed, "scale": [float(self.scale[0]), float(self.scale[1])],
+            "min_distance": float(self.min_distance), "rotate": bool(self.rotate),
+            "mask": None if self.mask is None else self.mask.to_recipe(),
+        }
+
+
+@dataclass(frozen=True)
+class Fur(Shape):
+    """Strands grown from the surface of another part, as thin tapered tubes.
+
+    ``density`` is strands per square meter, ``length`` and ``thickness`` in
+    meters. ``droop`` bends strands toward -Y with the square of their
+    parameter; ``curl`` adds noise. Triangle count is strands x segments x
+    sides x 2, so keep the density modest.
+    """
+
+    kind: ClassVar[str] = "fur"
+    surface: str = ""
+    density: float = 20000.0
+    length: float = 0.02
+    thickness: float = 0.0004
+    segments: int = 4
+    sides: int = 3
+    droop: float = 0.5
+    curl: float = 0.3
+    seed: int = 0
+    mask: Field | None = None
+
+    def validate(self, label: str) -> None:
+        super().validate(label)
+        if not isinstance(self.surface, str) or not self.surface:
+            raise ModelingError("fur.surface", f"{label}.surface must name another part.")
+        _positive(self.density, "fur.density", f"{label}.density")
+        _positive(self.length, "fur.length", f"{label}.length")
+        _positive(self.thickness, "fur.thickness", f"{label}.thickness")
+        if not isinstance(self.segments, int) or not 1 <= self.segments <= 32:
+            raise ModelingError("fur.segments", f"{label}.segments must be in 1...32.")
+        if not isinstance(self.sides, int) or not 3 <= self.sides <= 8:
+            raise ModelingError("fur.sides", f"{label}.sides must be in 3...8.")
+        if not 0.0 <= self.droop <= 3.0 or not 0.0 <= self.curl <= 3.0:
+            raise ModelingError("fur.shape", f"{label} droop and curl must be in 0...3.")
+        if not isinstance(self.seed, int):
+            raise ModelingError("fur.seed", f"{label}.seed must be an integer.")
+        if self.mask is not None:
+            validate_geometry_field(self.mask, f"{label}.mask")
+
+    def to_recipe(self) -> dict:
+        return {
+            "kind": self.kind, "surface": self.surface, "density": float(self.density), "length": float(self.length),
+            "thickness": float(self.thickness), "segments": self.segments, "sides": self.sides, "droop": float(self.droop),
+            "curl": float(self.curl), "seed": self.seed, "mask": None if self.mask is None else self.mask.to_recipe(),
+        }
+
+
+GENERATED_KINDS = ("scatter", "fur")
+SHAPE_KINDS = {cls.kind: cls for cls in (Box, Plane, Cylinder, Cone, Sphere, Extrude, Revolve, Sweep, Loft, Scatter, Fur)}

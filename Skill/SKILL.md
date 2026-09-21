@@ -93,6 +93,14 @@ Rules:
 - Bump heights are physical meters (0.1 to 1 mm). `bump_strength` of 1.0 to 2.0 is the artistic range.
 - A material with any field is baked; a constant material is not. Bakes cost roughly 3 s per channel at 1024 px and 32 samples on a 20-core CPU; iterate at 256 px and 4 samples.
 
+## Rigs, animation, scatter, fur, cloth, LODs
+
+- Rig: `Asset(rig=Rig(id, joints=(Joint(id, head, tail, parent), ...)), poses=(Pose(id, {joint: JointTransform(rotation=(x, y, z))}),), clips=(Clip(id, duration, keyframes=(Keyframe(t, pose_id_or_None), ...)),))`. Joint rotations are in the joint's local frame (Y from head to tail). `Part(skinned=True)` binds by automatic distance weights; `Part(parent_joint=...)` attaches rigidly. Use joint ids distinct from part ids. Verify poses with `--pose <id>` from a view perpendicular to the rotation axis; the export carries clips as glTF animations (`skins`, `animations` in the glb).
+- `Scatter(surface=<part id>, instance=<shape>, density, seed, scale, mask)` and `Fur(surface, density, length, thickness, segments, sides, droop, curl, mask)` are shapes of their own parts. Fur triangles = strands x segments x sides x 2: keep strands in the low thousands.
+- `ClothDrape(frames, mass, stiffness, bending, pin=<field>)` simulates a part against the other parts and freezes the result; give the cloth a `Subdivision(smooth=False)` for resolution and expect a few self-intersections in folds.
+- `Part(lods=(LOD(distance, ratio), ...))` exports decimated `<id>:lod<n>` nodes. `ExportSettings(formats=("glb", "usdz"))` or `--formats glb,usdz` adds USDZ.
+- `report.stages` lists seconds per pipeline stage; use it before blaming Blender for a slow build.
+
 ## Imperfections
 
 `imperfections.wobble(size, amplitude, seed)`, `dents(size, depth, coverage, seed)`, `grain(size, amplitude, seed)`, `ripples(size, amplitude, seed)` return height fields for `Displace`. Use them: a straight, round, flat object reads as computer generated before any texture does.

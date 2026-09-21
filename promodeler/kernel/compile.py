@@ -10,6 +10,8 @@ from promodeler.core.diagnostics import ModelingError
 
 from . import geometry, materials, space
 
+GENERATED_KINDS = ("scatter", "fur")
+
 
 @dataclass
 class CompiledScene:
@@ -20,6 +22,13 @@ class CompiledScene:
     procedural: dict = field(default_factory=dict)  # material id -> ProceduralMaterial
     textures: dict = field(default_factory=dict)  # part id -> channel -> texture metadata
     uv_stats: dict = field(default_factory=dict)  # part id -> coverage/density
+    generated: dict = field(default_factory=dict)  # part id -> shape kind for scatter/fur parts
+    lods: dict = field(default_factory=dict)  # part id -> [lod objects]
+    lod_stats: dict = field(default_factory=dict)  # part id -> [{level, distance, ratio, triangles}]
+    armature: bpy.types.Object | None = None
+    joints: dict = field(default_factory=dict)
+    pose_specs: dict = field(default_factory=dict)
+    cloth_frames: int = 0
     frozen: bool = False
 
 
@@ -28,6 +37,15 @@ def reset_scene() -> None:
     scene = bpy.context.scene
     scene.unit_settings.system = "METRIC"
     scene.unit_settings.scale_length = 1.0
+    scene.frame_set(1)
+
+
+def _hidden_object(name: str, mesh: bpy.types.Mesh, collection) -> bpy.types.Object:
+    obj = bpy.data.objects.new(name, mesh)
+    collection.objects.link(obj)
+    obj.hide_render = True
+    obj.display_type = "WIRE"
+    return obj
 
 
 def compile_recipe(recipe: dict) -> CompiledScene:
@@ -52,13 +70,10 @@ def compile_recipe(recipe: dict) -> CompiledScene:
         def make_cutter(index: int, spec: dict) -> bpy.types.Object:
             name = f"cutter:{owner_id}:{index}"
             mesh = geometry.build_mesh(f"mesh:{name}", spec["shape"], quality)
-            cutter = bpy.data.objects.new(name, mesh)
-            collection.objects.link(cutter)
+            cutter = _hidden_object(name, mesh, collection)
             cutter.parent = owner
             cutter.matrix_parent_inverse.identity()
             cutter.matrix_basis = space.author_to_blender_matrix(spec["transform"])
-            cutter.hide_render = True
-            cutter.display_type = "WIRE"
             geometry.add_modifiers(cutter, spec["modifiers"], make_cutter=None)
             scene.cutters.append(cutter)
             return cutter
@@ -67,7 +82,8 @@ def compile_recipe(recipe: dict) -> CompiledScene:
     # Create objects first, parent afterwards so declaration order is irrelevant.
     for part in asset["parts"]:
         mesh = geometry.build_mesh(f"mesh:{part['id']}", part["shape"], quality)
-        geometry.apply_shading(mesh, part["smooth_angle"])
+        if part["shape"]["kind"] not in GENERATED_KINDS:
+            geometry.apply_shading(mesh, part["smooth_angle"])
         mesh.materials.append(scene.materials[part["material"]])
         obj = bpy.data.objects.new(part["id"], mesh)
         collection.objects.link(obj)
@@ -80,8 +96,52 @@ def compile_recipe(recipe: dict) -> CompiledScene:
         obj.matrix_basis = space.author_to_blender_matrix(part["transform"])
         geometry.add_modifiers(obj, part["modifiers"], make_cutter=cutter_factory(obj, part["id"]))
 
+    # Generated parts read another part's evaluated surface through Object Info.
+    for part in asset["parts"]:
+        shape = part["shape"]
+        if shape["kind"] not in GENERATED_KINDS:
+            continue
+        obj = scene.parts[part["id"]]
+        surface = scene.parts[shape["surface"]]
+        scene.generated[part["id"]] = shape["kind"]
+        if shape["kind"] == "scatter":
+            instance_mesh = geometry.build_mesh(f"mesh:instance:{part['id']}", shape["instance"], quality)
+            geometry.apply_shading(instance_mesh, part["smooth_angle"])
+            instance = _hidden_object(f"instance:{part['id']}", instance_mesh, collection)
+            scene.cutters.append(instance)
+            group = geometry.build_scatter_group(f"scatter:{part['id']}", shape, surface, instance)
+        else:
+            group = geometry.build_fur_group(f"fur:{part['id']}", shape, surface)
+        modifier = obj.modifiers.new("generate", "NODES")
+        modifier.node_group = group
+
+    _simulate_cloth(scene, asset)
     bpy.context.view_layer.update()
     return scene
+
+
+def _simulate_cloth(scene: CompiledScene, asset: dict) -> None:
+    """Give every non-cloth part a collision body and step the timeline through the longest drape."""
+    cloth_parts = [p for p in asset["parts"] if any(m["kind"] == "cloth_drape" for m in p["modifiers"])]
+    if not cloth_parts:
+        return
+    frames = max(m["frames"] for p in cloth_parts for m in p["modifiers"] if m["kind"] == "cloth_drape")
+    collide = any(m["collide"] for p in cloth_parts for m in p["modifiers"] if m["kind"] == "cloth_drape")
+    cloth_ids = {p["id"] for p in cloth_parts}
+    if collide:
+        for part_id, obj in scene.parts.items():
+            if part_id in cloth_ids or part_id in scene.generated:
+                continue
+            collision = obj.modifiers.new("collision", "COLLISION")
+            if collision is None:
+                raise ModelingError("cloth.collision", f"Could not add a collision body to {part_id!r}.")
+            obj.collision.thickness_outer = 0.002
+    bscene = bpy.context.scene
+    bscene.frame_start = 1
+    bscene.frame_end = max(bscene.frame_end, frames)
+    for frame in range(1, frames + 1):
+        bscene.frame_set(frame)
+    scene.cloth_frames = frames
 
 
 def freeze_geometry(scene: CompiledScene) -> None:
@@ -100,12 +160,18 @@ def freeze_geometry(scene: CompiledScene) -> None:
         frozen[part_id] = mesh
     for part_id, obj in scene.parts.items():
         old = obj.data
+        old_materials = list(old.materials)
         obj.modifiers.clear()
         obj.data = frozen[part_id]
         if old.users == 0:
             bpy.data.meshes.remove(old)
-        # Rename after the source mesh is gone so the semantic name is not suffixed.
         frozen[part_id].name = f"mesh:{part_id}"
+        if len(frozen[part_id].materials) == 0:
+            for material in old_materials:
+                frozen[part_id].materials.append(material)
+        elif part_id in scene.generated:
+            for slot in range(len(frozen[part_id].materials)):
+                frozen[part_id].materials[slot] = old_materials[0]
     for cutter in scene.cutters:
         mesh = cutter.data
         bpy.data.objects.remove(cutter, do_unlink=True)
@@ -113,4 +179,50 @@ def freeze_geometry(scene: CompiledScene) -> None:
             bpy.data.meshes.remove(mesh)
     scene.cutters.clear()
     scene.frozen = True
+    bpy.context.scene.frame_set(1)
     bpy.context.view_layer.update()
+
+
+def build_lods(scene: CompiledScene, recipe: dict) -> None:
+    """Decimated copies of frozen parts, parented to the part and hidden from renders."""
+    pending = []
+    for part in recipe["asset"]["parts"]:
+        if not part.get("lods"):
+            continue
+        source = scene.parts[part["id"]]
+        objects = []
+        stats = []
+        for level, lod in enumerate(part["lods"], start=1):
+            mesh = source.data.copy()
+            obj = bpy.data.objects.new(f"{part['id']}:lod{level}", mesh)
+            bpy.context.scene.collection.objects.link(obj)
+            obj.parent = source
+            obj.matrix_parent_inverse.identity()
+            obj.matrix_basis.identity()
+            decimate = obj.modifiers.new("decimate", "DECIMATE")
+            decimate.decimate_type = "COLLAPSE"
+            decimate.ratio = lod["ratio"]
+            decimate.use_collapse_triangulate = True
+            objects.append(obj)
+            stats.append({"level": level, "distance": lod["distance"], "ratio": lod["ratio"]})
+            pending.append((obj, stats[-1]))
+        scene.lods[part["id"]] = objects
+        scene.lod_stats[part["id"]] = stats
+    if not pending:
+        return
+    bpy.context.view_layer.update()
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+    for obj, stat in pending:
+        evaluated = obj.evaluated_get(depsgraph)
+        mesh = bpy.data.meshes.new_from_object(evaluated, preserve_all_data_layers=True, depsgraph=depsgraph)
+        old = obj.data
+        obj.modifiers.clear()
+        obj.data = mesh
+        if old.users == 0:
+            bpy.data.meshes.remove(old)
+        mesh.name = f"mesh:{obj.name}"
+        mesh.calc_loop_triangles()
+        stat["triangles"] = len(mesh.loop_triangles)
+        obj["lod_level"] = stat["level"]
+        obj["lod_distance"] = stat["distance"]
+        obj.hide_render = True

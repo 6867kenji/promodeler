@@ -125,6 +125,52 @@ class BuildTests(unittest.TestCase):
             self.assertTrue(all(m["cached"] for m in again.report["parts"]["body"]["textures"].values()))
             self.assertEqual(again.out_dir, result.out_dir)
 
+    def test_tentacle_skin_and_clip_export(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            result = build(str(ROOT / "assets" / "tentacle.py"), out_root=tmp, force=True,
+                           render={"views": ("front",), "passes": ("shaded",), "pose": "curl"},
+                           quality_overrides={"texture_resolution": 128, "bake_samples": 2})
+            self.assertTrue(result.ok, result.report.get("error"))
+            rig = result.report["rig"]
+            self.assertEqual(rig["joints"], 4)
+            self.assertEqual(rig["skinned"], ["body"])
+            self.assertEqual([c["id"] for c in rig["clips"]], ["wave"])
+            gltf = read_glb_json(result.report["export"]["path"])
+            self.assertEqual(len(gltf["skins"]), 1)
+            self.assertEqual(len(gltf["skins"][0]["joints"]), 4)
+            self.assertEqual([a.get("name") for a in gltf["animations"]], ["wave"])
+
+    def test_mossy_rock_generated_parts_lods_and_usdz(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            result = build(str(ROOT / "assets" / "mossy_rock.py"), out_root=tmp, force=True,
+                           render={"views": ("perspective",), "passes": ("shaded",)},
+                           quality_overrides={"texture_resolution": 128, "bake_samples": 2}, formats=("glb", "usdz"))
+            self.assertTrue(result.ok, result.report.get("error"))
+            parts = result.report["parts"]
+            self.assertEqual(parts["pebbles"]["generated"], "scatter")
+            self.assertEqual(parts["grass"]["generated"], "fur")
+            self.assertGreater(parts["grass"]["triangles"], 1000)
+            lods = parts["rock"]["lods"]
+            self.assertEqual([l["level"] for l in lods], [1, 2])
+            self.assertLess(lods[1]["triangles"], lods[0]["triangles"])
+            self.assertLess(lods[0]["triangles"], parts["rock"]["triangles"])
+            self.assertTrue(result.report["exports"]["usdz"]["written"])
+            gltf = read_glb_json(result.report["export"]["path"])
+            names = {n.get("name") for n in gltf["nodes"]}
+            self.assertIn("rock:lod1", names)
+            self.assertIn("grass", names)
+
+    def test_draped_cloth_settles_on_block(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            result = build(str(ROOT / "assets" / "draped_cloth.py"), out_root=tmp, force=True,
+                           render={"views": ("front",), "passes": ("shaded",)},
+                           quality_overrides={"texture_resolution": 128, "bake_samples": 2})
+            self.assertTrue(result.ok, result.report.get("error"))
+            bounds = result.report["bounds"]
+            # The sheet started above the block and must have fallen around it, not through the floor.
+            self.assertGreater(bounds["min"][1], -0.3)
+            self.assertLess(bounds["max"][1], 0.3)
+
 
 if __name__ == "__main__":
     unittest.main()

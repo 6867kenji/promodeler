@@ -71,6 +71,8 @@ def _render_overrides(args) -> dict | None:
         fields["passes"] = tuple(args.passes.split(","))
     if getattr(args, "environment", None):
         fields["environment"] = args.environment
+    if getattr(args, "pose", None):
+        fields["pose"] = args.pose
     return fields or None
 
 
@@ -138,8 +140,15 @@ def print_report(result) -> None:
         print(f"render:  {label:<22} {state} {render['seconds']}s  {render['path']}")
     if report.get("contact_sheet"):
         print(f"sheet:   {report['contact_sheet']['path']}")
-    export = report.get("export", {})
-    print(f"export:  {'written' if export.get('written') else 'MISSING'} {export.get('bytes', 0)} bytes  {export.get('path')}")
+    for fmt, export in (report.get("exports") or {"glb": report.get("export", {})}).items():
+        print(f"export:  {fmt:<5} {'written' if export.get('written') else 'MISSING'} {export.get('bytes', 0)} bytes  {export.get('path')}")
+    rig_info = report.get("rig")
+    if rig_info:
+        clips = ", ".join(f"{c['id']} ({c['duration']}s)" for c in rig_info["clips"]) or "none"
+        print(f"rig:     {rig_info['joints']} joints, skinned {rig_info['skinned'] or 'none'}, clips {clips}")
+    for part_id, stats in report["parts"].items():
+        for lod in stats.get("lods", []):
+            print(f"lod:     {part_id} level {lod['level']} at {lod['distance']} m: {lod.get('triangles')} tris")
     for warning in report.get("warnings", []):
         print(f"warning: {warning['code']}: {warning['message']}")
     print(f"seconds: {report.get('wall_seconds', report.get('seconds'))}")
@@ -147,7 +156,8 @@ def print_report(result) -> None:
 
 def cmd_build(args) -> int:
     result = build(args.asset, out_root=args.out, force=args.force, render=_render_overrides(args),
-                   quality_overrides=_quality_overrides(args))
+                   quality_overrides=_quality_overrides(args),
+                   formats=tuple(args.formats.split(",")) if getattr(args, "formats", None) else None)
     print_report(result)
     if not result.ok:
         error = result.report.get("error", {})
@@ -218,8 +228,10 @@ def main(argv: list[str] | None = None) -> int:
         p.add_argument("--views", default=None, help="Comma-separated: perspective,front,side,top")
         p.add_argument("--passes", default=None, help="Comma-separated: shaded,clay,wireframe,normals,uv")
         p.add_argument("--environment", default=None, help="studio, overcast, sunny, sunset or an .hdr/.exr path")
+        p.add_argument("--pose", default=None, help="Render the rig in this pose")
         p.add_argument("--texture-resolution", type=int, default=None, help="Override quality.texture_resolution")
         p.add_argument("--bake-samples", type=int, default=None, help="Override quality.bake_samples")
+        p.add_argument("--formats", default=None, help="Comma-separated export formats: glb,usdz")
         p.set_defaults(func=func)
     sub.choices["recipe"].add_argument("--compact", action="store_true")
     sub.choices["build"].add_argument("--out", default="build")

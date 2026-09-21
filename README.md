@@ -113,6 +113,29 @@ Boolean の後に Bevel を掛けると切り口の細かい面で幅が収ま�
 `old_wood(color, seed, weathering)`, `ceramic_glaze(color, seed, crazing)`, `concrete(color, seed, staining)`。
 `assets/rusty_can.py` と `assets/leather_journal.py` を参照。
 
+### リグとアニメーション（M5）
+
+`Asset(rig=Rig(id, joints=(Joint(id, head, tail, parent), ...)), poses=(Pose(id, {joint: JointTransform(rotation, translation)}), ...),
+clips=(Clip(id, duration, keyframes=(Keyframe(time, pose_id_or_None), ...), loop, interpolation), ...))`。
+`Part(skinned=True)` は距離ベースの自動ウェイト（最大 4 影響）でリグに結合し、`Part(parent_joint="j")` は関節に剛体で追従する。
+ポーズの回転は各関節のローカル座標系（Y が head → tail）で指定する。クリップは NLA トラックとして glTF の
+アニメーションに書き出され、ランタイムのステートマシンはエンジン側に任せる。`RenderSettings(pose=...)` または
+`--pose` でポーズ付きの検証レンダができる。関節 ID とパーツ ID は書き出し先で同じノード名空間になるので別名にする。
+`assets/desk_lamp.py`（剛体アタッチ）と `assets/tentacle.py`（スキン）を参照。
+
+### 散布・毛・クロス・LOD・USDZ（M5）
+
+| 機能 | 内容 |
+| --- | --- |
+| `Scatter(surface, instance, density, seed, scale, min_distance, mask)` | 他パーツの表面にインスタンスを散布（法線に整列、ランダム回転・スケール）。`mask` は密度係数 |
+| `Fur(surface, density, length, thickness, segments, sides, droop, curl, mask)` | 先細りの細い筒として毛を生やす。三角形数 = 本数 × segments × sides × 2 なので密度は控えめに |
+| `ClothDrape(frames, mass, stiffness, bending, damping, pin, collide, thickness)` | クロスシミュレーションを `frames` フレーム進めて凍結。他パーツは衝突体になる。`pin` フィールドで固定 |
+| `Part(lods=(LOD(distance, ratio), ...))` | デシメートした `<id>:lod<n>` ノードを親子付けして書き出す（`lod_distance` を extras に記録、レンダには出ない） |
+| `ExportSettings(formats=("glb", "usdz"))` / `--formats glb,usdz` | glTF に加えて USDZ を書き出す |
+
+散布・毛のパーツは自己交差と非マニフォールドの警告対象外（`report.parts.<id>.generated`）。
+`report.stages` に工程別の秒数が入る。`assets/mossy_rock.py` と `assets/draped_cloth.py` を参照。
+
 ### 検証レンダ（M3）
 
 `RenderSettings(views, passes, environment, engine)`:
@@ -122,6 +145,7 @@ Boolean の後に Bevel を掛けると切り口の細かい面で幅が収ま�
 | `views` | `perspective`, `front`, `side`, `top` |
 | `passes` | `shaded`（ベイク済みマテリアル）, `clay`（無彩色の粘土）, `wireframe`（粘土 + 辺）, `normals`（ワールド法線）, `uv`（チェッカー） |
 | `environment` | `studio`（勾配環境 + エリアライト）, `overcast`, `sunny` / `sunset`（物理空 + 太陽）, または `.hdr` / `.exr` のパス |
+| `pose` | リグのポーズ ID。指定時はクリップを無効にしてそのポーズで描く |
 | `engine` | `eevee`（反復用）, `cycles`（最終確認。CPU、デノイズあり） |
 
 パス × ビューの全レンダを `renders/contact_sheet.png` に並べる（ホスト側、Pillow がある場合）。

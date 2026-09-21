@@ -10,7 +10,8 @@ import hashlib
 import json
 from typing import Any
 
-from .asset import Asset, GenerationInput, RenderSettings
+from .asset import Asset, ExportSettings, GenerationInput, RenderSettings
+from .diagnostics import ModelingError
 
 RECIPE_VERSION = 1
 
@@ -21,13 +22,19 @@ def build_recipe(
     render: RenderSettings | None = None,
     parameters: Any = None,
     generator_version: int | None = None,
+    export: ExportSettings | None = None,
 ) -> dict:
     render = render or RenderSettings()
     render.validate()
+    export = export or ExportSettings()
+    export.validate()
+    if render.pose is not None and render.pose not in asset.pose_ids():
+        raise ModelingError("render.pose", f"render.pose {render.pose!r} is not a pose of the asset.")
     recipe: dict = {
         "recipe_version": RECIPE_VERSION,
         "asset": asset.to_recipe(),
         "render": render.to_recipe(),
+        "export": export.to_recipe(),
     }
     if input is not None:
         recipe["input"] = {

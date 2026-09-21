@@ -44,7 +44,7 @@ def self_intersections(mesh: bpy.types.Mesh) -> int | None:
     return count
 
 
-def part_statistics(obj: bpy.types.Object, depsgraph) -> dict:
+def part_statistics(obj: bpy.types.Object, depsgraph, skip_intersections: bool = False) -> dict:
     evaluated = obj.evaluated_get(depsgraph)
     mesh = evaluated.to_mesh()
     try:
@@ -75,7 +75,7 @@ def part_statistics(obj: bpy.types.Object, depsgraph) -> dict:
             "degenerate_faces": degenerate,
             "watertight": watertight,
             "volume": None if volume is None else round(volume, 9),
-            "self_intersections": self_intersections(mesh),
+            "self_intersections": None if skip_intersections else self_intersections(mesh),
             "material_slots": [m.name if m else None for m in mesh.materials],
         }
     finally:
@@ -84,8 +84,13 @@ def part_statistics(obj: bpy.types.Object, depsgraph) -> dict:
 
 def build_report(scene: CompiledScene, recipe: dict) -> dict:
     depsgraph = bpy.context.evaluated_depsgraph_get()
-    parts = {part_id: part_statistics(obj, depsgraph) for part_id, obj in scene.parts.items()}
+    parts = {part_id: part_statistics(obj, depsgraph, skip_intersections=part_id in scene.generated)
+             for part_id, obj in scene.parts.items()}
     for part_id, stats in parts.items():
+        if part_id in scene.generated:
+            stats["generated"] = scene.generated[part_id]
+        if part_id in scene.lod_stats:
+            stats["lods"] = scene.lod_stats[part_id]
         if part_id in scene.uv_stats:
             stats["uv"] = scene.uv_stats[part_id]
         if part_id in scene.textures:
@@ -114,7 +119,7 @@ def build_report(scene: CompiledScene, recipe: dict) -> dict:
     if max_triangles is not None and totals["triangles"] > max_triangles:
         warnings.append({"code": "budget.triangles", "message": f"{totals['triangles']} triangles exceed the budget of {max_triangles}."})
     for part_id, stats in parts.items():
-        if stats["non_manifold_edges"]:
+        if stats["non_manifold_edges"] and "generated" not in stats:
             warnings.append({"code": "geometry.nonManifold", "message": f"Part {part_id!r} has {stats['non_manifold_edges']} non-manifold edges."})
         if stats["inconsistent_winding_edges"]:
             warnings.append({"code": "geometry.winding", "message": f"Part {part_id!r} has {stats['inconsistent_winding_edges']} edges with inconsistent winding."})
@@ -122,7 +127,7 @@ def build_report(scene: CompiledScene, recipe: dict) -> dict:
             warnings.append({"code": "geometry.degenerate", "message": f"Part {part_id!r} has {stats['degenerate_faces']} degenerate faces."})
         if stats["self_intersections"]:
             warnings.append({"code": "geometry.selfIntersection", "message": f"Part {part_id!r} has {stats['self_intersections']} self-intersecting triangle pairs."})
-        if stats["self_intersections"] is None:
+        if stats["self_intersections"] is None and "generated" not in stats:
             warnings.append({"code": "geometry.selfIntersectionSkipped", "message": f"Part {part_id!r} exceeds the self-intersection check limit."})
         if "uv" in stats and stats["uv"]["coverage"] < 0.2:
             warnings.append({"code": "uv.coverage", "message": f"Part {part_id!r} uses only {stats['uv']['coverage']:.0%} of its texture atlas."})
