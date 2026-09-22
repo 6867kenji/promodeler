@@ -174,3 +174,16 @@ class GeneratorTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class AssetExtrasTests(unittest.TestCase):
+    def test_extras_are_validated_and_in_recipe(self):
+        from promodeler.core import Asset, Box, Material, ModelingError, Part, build_recipe
+        part = Part("p", Box(size=(0.1, 0.1, 0.1)), "m")
+        asset = Asset("x", (Material("m"),), (part,), extras={"physics": {"gravity": [0, -9.81, 0]}, "note": "a"})
+        asset.validate()
+        self.assertEqual(build_recipe(asset)["asset"]["extras"]["physics"]["gravity"][1], -9.81)
+        with self.assertRaises(ModelingError):
+            Asset("x", (Material("m"),), (part,), extras={"bad": object()}).validate()
+        with self.assertRaises(ModelingError):
+            Asset("x", (Material("m"),), (part,), extras=["not", "a", "dict"]).validate()

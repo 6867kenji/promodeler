@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 import math
 from dataclasses import dataclass, field
 from typing import Any
@@ -274,11 +276,19 @@ class Asset:
     rig: Rig | None = None
     poses: tuple[Pose, ...] = ()
     clips: tuple[Clip, ...] = ()
+    extras: dict | None = None  # JSON-serializable metadata written to extras.json and the glTF root extras
 
     def validate(self) -> None:
         self._validate_rig()
         if not isinstance(self.name, str) or not self.name.strip():
             raise ModelingError("asset.name", "asset.name must be a nonempty string.")
+        if self.extras is not None:
+            if not isinstance(self.extras, dict) or not all(isinstance(k, str) and k for k in self.extras):
+                raise ModelingError("asset.extras", "asset.extras must be a dict with string keys.")
+            try:
+                json.dumps(self.extras, ensure_ascii=False)
+            except (TypeError, ValueError) as error:
+                raise ModelingError("asset.extras", f"asset.extras must be JSON-serializable: {error}") from None
         if not self.parts:
             raise ModelingError("asset.parts", "An asset needs at least one part.")
         material_ids: set[str] = set()
@@ -362,6 +372,7 @@ class Asset:
             "rig": None if self.rig is None else self.rig.to_recipe(),
             "poses": [p.to_recipe() for p in self.poses],
             "clips": [c.to_recipe() for c in self.clips],
+            "extras": self.extras,
         }
 
 

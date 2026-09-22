@@ -17,7 +17,7 @@ PRIMITIVE_KINDS = ("box", "plane", "cylinder", "cone", "sphere")
 GENERATED_KINDS = ("scatter", "fur")
 
 
-MESH_FILE_WEIGHTS: dict[str, tuple[list[str], "object"]] = {}
+MESH_FILE_WEIGHTS: dict[str, tuple[list[str], "object", "object"]] = {}  # name -> (groups, weights [V, G], vertices)
 
 
 def build_mesh_file(name: str, shape: dict) -> bpy.types.Mesh:
@@ -41,7 +41,7 @@ def build_mesh_file(name: str, shape: dict) -> bpy.types.Mesh:
                 flat[loop_index] = uv_per_loop[loop_tris[face_index][corner]]
         uv_layer.data.foreach_set("uv", flat.ravel())
     if "weights" in data and "group_names" in data:
-        MESH_FILE_WEIGHTS[name] = ([str(n) for n in data["group_names"]], data["weights"])
+        MESH_FILE_WEIGHTS[name] = ([str(n) for n in data["group_names"]], data["weights"], blender_vertices)
     mesh.validate()
     mesh.update()
     return mesh

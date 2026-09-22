@@ -142,15 +142,26 @@ clips=(Clip(id, duration, keyframes=(Keyframe(time, pose_id_or_None), ...), loop
 - 準備: `external/mhr/assets/` に MHR 配布物（`mhr_model.pt`, `lod1.fbx`, `compact_v6_1.model`）を置き、
   `blender -b --python tools/mhr_dump_lod1.py -- external/mhr` で FBX からトポロジ・ウェイト・ボーン階層を
   `cache/` に書き出す。`pip install torch numpy`（`pip install -e .[human]`）。Blender 側に torch は不要。
-- `assets/haruka.py`（05-woman 設計書）が実例。設計値との差は身長 +2 mm、股下 −3 mm、肩幅 0 mm、
-  バスト +2 mm、ウエスト −4 mm、ヒップ −11 mm、アンダーバスト +20 mm（v0 ロフト素体では ±5 cm 以上ずれていた）。
+- `assets/haruka.py`（05-woman 設計書）が実例。設計値との差は身長 +1 mm、股下 −1 mm、肩幅 0 mm、足長 0 mm、
+  バスト +1 mm、ウエスト 0 mm、ヒップ −4 mm、アンダーバスト +10 mm（v0 ロフト素体では ±5 cm 以上ずれていた）。
+  設計書の断面幅/奥行きは周長と両立しないため計測・報告のみ（`tools/blueprint_check.py`）。
 - 素体以外は設計書からコードで作る: 実測した胴の断面に沿わせたワンピース（前下がりの U ネック、胸元中央
   120 mm に 12 本のギャザーを断面形状で作り、クロスで凍結）、頭蓋の楕円体に沿う `Strands` の髪束
   （前髪 13 束・顔周り 4 束・後ろ 3 層 64 束、毛先 0.66 m）、足の実測外形から作る白スニーカー
   （底 25 mm・アッパー・5 穴の靴紐、`parent_joint` で足関節に追従、身体は底の上に立つので靴込み 1.625 m）、
   頬・目の下・唇・鼻の位置マスク付きの肌、設計書の全クリップ（idle/walk/turn/sit/raise-arms/physics-settle）と
   可動域確認ポーズ `range_check`。`Camera("face"/"neckline"/"sneaker")` で設計書の QA 静止画を出す。
-  顔の個体差（MHR 頭部係数）、眼球・歯（MHR LOD1 は閉じた一枚殻）、指のポーズ、ランタイム物理は未着手。
+- 目: MHR LOD1 は瞼のある閉じた殻なので、目関節の位置に楕円体の `Boolean("difference")` で眼窩を開け、
+  眼球パーツ（直径 24 mm、虹彩 11.5 mm、瞳孔 3.5 mm を `Position` マスクで描く）を `parent_joint="l_eye"` で
+  載せる（視線ポーズ `gaze_left`）。ブーリアン後も `MeshFile` のウェイトは最近傍頂点で転写される。
+- 手: 指関節をジョイント座標で丸めた `hands` を全ポーズにマージ（`rest` ポーズが休止姿勢）。
+- 頭部: MHR 頭部係数 20 個を首・頭の断面幅/奥行きにフィット（胴の係数とは別ステージ。同時に最適化すると
+  首を太くするために胴の周長が犠牲になった）。
+- `Asset(extras={...})`: GLB に入らない納品物（設計書の physics ブロック、エンジン目標、フィット結果）を
+  `extras.json` と glTF ルート extras (`promodeler_extras`) に書き出す。
+- 設計書との照合: `python tools/blueprint_check.py blueprints/japan-realistic-v1/05-woman/blueprint.json` が
+  最新ビルドの寸法・部位ボックス・三角形予算・警告を設計値と並べる。
+  歯（口は閉じている）、ランタイム物理そのもの、髪のカーブ書き出しは未着手。
 
 ### 散布・毛・クロス・LOD・USDZ（M5）
 

@@ -55,12 +55,26 @@ def _segment_distance(p: Vector, a: Vector, b: Vector) -> float:
     return (p - (a + ab * t)).length
 
 
-def skin_part_from_file(scene: CompiledScene, obj: bpy.types.Object, group_names: list[str], weights) -> dict | None:
-    """Authored weights from a MeshFile; used when the vertex count still matches and joints share the group names."""
+def skin_part_from_file(scene: CompiledScene, obj: bpy.types.Object, group_names: list[str], weights,
+                        source_vertices=None) -> dict | None:
+    """Authored weights from a MeshFile. When modifiers changed the vertex count (booleans, subdivision),
+    every vertex takes the weights of the nearest source vertex."""
+    import numpy as np
+    from mathutils.kdtree import KDTree
+
     armature = scene.armature
     mesh = obj.data
+    transferred = False
     if weights.shape[0] != len(mesh.vertices):
-        return None
+        if source_vertices is None:
+            return None
+        tree = KDTree(len(source_vertices))
+        for index, co in enumerate(source_vertices):
+            tree.insert(co, index)
+        tree.balance()
+        nearest = np.array([tree.find(v.co)[1] for v in mesh.vertices], dtype=np.int64)
+        weights = weights[nearest]
+        transferred = True
     bone_names = {b.name for b in armature.data.bones}
     used = 0
     for column, name in enumerate(group_names):
@@ -83,7 +97,7 @@ def skin_part_from_file(scene: CompiledScene, obj: bpy.types.Object, group_names
     modifier = obj.modifiers.new("armature", "ARMATURE")
     modifier.object = armature
     modifier.use_vertex_groups = True
-    return {"joints": used, "influences": "file"}
+    return {"joints": used, "influences": "file:nearest" if transferred else "file"}
 
 
 def skin_part(scene: CompiledScene, obj: bpy.types.Object, influences: int = 4) -> dict:
@@ -137,8 +151,8 @@ def bind_all(scene: CompiledScene, recipe: dict) -> dict | None:
             for obj in objects:
                 binding = None
                 if part["id"] in scene.file_weights and obj is scene.parts[part["id"]]:
-                    group_names, weights = scene.file_weights[part["id"]]
-                    binding = skin_part_from_file(scene, obj, group_names, weights)
+                    group_names, weights, source_vertices = scene.file_weights[part["id"]]
+                    binding = skin_part_from_file(scene, obj, group_names, weights, source_vertices)
                 bindings[obj.name] = binding or skin_part(scene, obj)
         elif part.get("parent_joint"):
             for obj in objects:

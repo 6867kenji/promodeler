@@ -56,6 +56,10 @@ def main() -> int:
         report["renders"] = stage("render", render.render_views, scene, recipe["render"], renders_dir)
         has_clips = bool(recipe["asset"].get("clips"))
         formats = (recipe.get("export") or {}).get("formats", ["glb"])
+        if scene.extras:
+            with open(os.path.join(out_dir, "extras.json"), "w", encoding="utf-8") as f:
+                json.dump(scene.extras, f, indent=2, ensure_ascii=False)
+            report["extras"] = os.path.join(out_dir, "extras.json")
         report["export"] = stage("export_glb", export.export_gltf, scene, os.path.join(out_dir, "model.glb"), has_clips)
         report["exports"] = {"glb": report["export"]}
         if "usdz" in formats:

@@ -31,7 +31,8 @@ class CompiledScene:
     joints: dict = field(default_factory=dict)
     pose_specs: dict = field(default_factory=dict)
     cloth_frames: int = 0
-    file_weights: dict = field(default_factory=dict)  # part id -> (group names, weights [V, G]) from a MeshFile
+    file_weights: dict = field(default_factory=dict)  # part id -> (group names, weights [V, G], source vertices) from a MeshFile
+    extras: dict = field(default_factory=dict)  # asset extras, written to extras.json and glTF extras
     frozen: bool = False
 
 
@@ -62,6 +63,10 @@ def compile_recipe(recipe: dict) -> CompiledScene:
     root.empty_display_type = "PLAIN_AXES"
     collection.objects.link(root)
     scene = CompiledScene(root=root)
+    if asset.get("extras"):
+        scene.extras = asset["extras"]
+        import json
+        root["promodeler_extras"] = json.dumps(asset["extras"], ensure_ascii=False)  # exported as node extras
 
     for spec in asset["materials"]:
         mat, procedural = materials.build_material(spec)

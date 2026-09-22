@@ -13,8 +13,13 @@ the blueprint's 0.66 m; white sneakers with laces on each foot (the body
 stands on the 25 mm soles, so the shod height is 1.625 m); and the
 blueprint's poses and clips in MHR joint names.
 
-Still open: face identity (MHR head coefficients), eyes and teeth (the
-MHR LOD1 body is a closed shell), finger poses, runtime physics.
+Eyes: the MHR LOD1 body is a closed shell with lids but no sockets, so two
+ellipsoid booleans open the sockets at the MHR eye joints and eyeball
+parts (24 mm, 11.5 mm iris, attached to the eye joints for gaze) sit in
+them. Teeth stay open (the mouth is closed). Head identity coefficients
+are fitted to the blueprint's head/neck width and depth; the blueprint
+gives no other face numbers. Runtime physics cannot live in a GLB: the
+blueprint's physics block is delivered as ``extras.json`` and glTF extras.
 
 Run:  python -m promodeler build assets/haruka.py --texture-resolution 512 --bake-samples 8
 Pose check:  --pose raise_arms --views front,side   (also step_r, sit, range_check, turn_180)
@@ -32,9 +37,9 @@ from pathlib import Path
 import numpy as np
 
 from promodeler.core import (
-    Asset, AssetGenerator, Bevel, Camera, Clip, ClothDrape, Extrude, GenerationInput, JointTransform, Keyframe,
-    Layer, Loft, LoftSection, Material, MeshFile, ModelingError, Noise, Part, Pose, Position, Profile,
-    QualityProfile, RenderSettings, Solidify, Strands, Subdivision, Sweep, Transform, curves, srgb,
+    Asset, AssetGenerator, Bevel, Boolean, Camera, Clip, ClothDrape, Cutter, Extrude, GenerationInput, JointTransform,
+    Keyframe, Layer, Loft, LoftSection, Material, MeshFile, ModelingError, Noise, Part, Pose, Position, Profile,
+    QualityProfile, RenderSettings, Solidify, Sphere, Strands, Subdivision, Sweep, Transform, curves, srgb,
 )
 from promodeler.human.mhr import blueprint_targets, fitted_body, rig_from_file
 
@@ -51,7 +56,7 @@ class HarukaParameters:
     gathers: int = 12
     hair_length: float = 0.66
     hair_thickness: float = 0.012
-    hair_bundles: int = 64
+    hair_bundles: int = 96
     cloth_frames: int = 60
 
 
@@ -75,7 +80,7 @@ def validate(p: HarukaParameters) -> None:
 
 
 SEGMENTS = 40
-DRESS_SEGMENTS = 160  # 5.6 mm spacing; smooth subdivision doubles it to shape the 10 mm gathers
+DRESS_SEGMENTS = 128  # 7 mm spacing, 3.5 mm after smooth subdivision; keeps the dress under 22k triangles
 
 
 def ellipse(width: float, depth: float, points: int = SEGMENTS):
@@ -186,9 +191,32 @@ def build(input: GenerationInput) -> Asset:
 
     # --- body ---------------------------------------------------------------------------
     rig = rig_from_file(fit["rig"], rig_id="haruka", offset=(0.0, lift, 0.0))
+    joint_heads = {j["id"]: tuple(j["head"]) for j in json.loads(Path(fit["rig"]).read_text(encoding="utf-8"))["joints"]}
+    # Eye sockets: the MHR shell has lids but no openings. An ellipsoid centred 6 mm in front of the eye
+    # joint cuts an almond-shaped opening at the lid surface and leaves a cavity for the eyeball.
+    socket_cutters = tuple(
+        Cutter(shape=Sphere(radius=0.01, segments=24, rings=12),
+               transform=Transform(translation=(ex, ey, ez + 0.006), scale=(1.4, 1.0, 1.8)))
+        for ex, ey, ez in (joint_heads["l_eye"], joint_heads["r_eye"])
+    )
     body = Part(
         id="body", shape=MeshFile(fit["mesh"]), material="skin", transform=Transform(translation=(0.0, lift, 0.0)),
+        modifiers=tuple(Boolean("difference", cutter=c) for c in socket_cutters),
         smooth_angle=math.radians(60), skinned=True,
+    )
+    eye = Material(  # 24 mm eyeball, 11.5 mm brown iris, 3.5 mm pupil; masks are object-space heights along +Z
+        "eye", base_color=srgb(0.93, 0.91, 0.89), roughness=0.12,
+        layers=(
+            Layer(base_color=srgb(0.30, 0.17, 0.10), mask=Position("z", 0.0101, 0.0108)),
+            Layer(base_color=srgb(0.45, 0.27, 0.16), mask=Position("z", 0.0110, 0.0114) * Position("z", 0.0119, 0.0116)),
+            Layer(base_color=srgb(0.02, 0.02, 0.02), mask=Position("z", 0.01185, 0.01195)),
+        ),
+    )
+    eyeballs = tuple(
+        Part(id=f"eye_{tag}", shape=Sphere(radius=0.012, segments=32, rings=16), material="eye",
+             transform=Transform(translation=(ex, ey + lift, ez + 0.003)), parent_joint=f"{tag}_eye",
+             smooth_angle=math.radians(80))
+        for tag, (ex, ey, ez) in (("l", joint_heads["l_eye"]), ("r", joint_heads["r_eye"]))
     )
 
     # --- dress: U-neck with chest gathers, fitted tube, A-line skirt, cloth-draped ----------------
@@ -206,11 +234,13 @@ def build(input: GenerationInput) -> Asset:
             ring.append((x, zz))
         return tuple(ring)
 
-    top_w, top_d, top_z = measure.slice(1.27)
+    # Top ring tilted 28 degrees: the front dips to about 1.23 m (loose U-neck), the back rises to
+    # about 1.34 m over the shoulder blades, the sides pass under the arms.
+    top_w, top_d, top_z = measure.slice(1.29)
     ring_w, ring_d, ring_z = measure.slice(1.21)
     dress_sections = (
         LoftSection(gathered_ring(top_w + ease, top_d + ease, 0.004),
-                    Transform(translation=(0.0, 1.27 + lift, top_z), rotation=(math.radians(20), 0.0, 0.0))),
+                    Transform(translation=(0.0, 1.285 + lift, top_z), rotation=(math.radians(28), 0.0, 0.0))),
         LoftSection(gathered_ring(ring_w + ease, ring_d + ease, 0.0025), Transform(translation=(0.0, 1.21 + lift, ring_z))),
         fitted(1.18, ease, points=DRESS_SEGMENTS),
         fitted(1.06, ease, points=DRESS_SEGMENTS),
@@ -230,7 +260,7 @@ def build(input: GenerationInput) -> Asset:
         modifiers=(
             Subdivision(levels=1, smooth=True),
             ClothDrape(frames=p.cloth_frames, mass=0.14, stiffness=10.0, bending=0.05, damping=6.0, quality=6,
-                       thickness=0.004, pin=Position("y", 1.17 + lift, 1.23 + lift)),
+                       thickness=0.004, pin=Position("y", 1.17 + lift, 1.24 + lift)),
             Solidify(thickness=0.0015, offset=0.0),
         ),
         smooth_angle=math.radians(60),
@@ -333,10 +363,10 @@ def build(input: GenerationInput) -> Asset:
                 target = (x_exit * 0.75, shoulder_back - 0.02 - 0.012 * layer)
             else:
                 target = (math.copysign(0.13 + 0.01 * layer, x_exit), min(shoulder_back - 0.02, back_at_waist - 0.05))
-            end_y = tip_y + rng.uniform(-0.03, 0.04) + 0.03 * layer
+            end_y = tip_y + rng.uniform(0.0, 0.03) + 0.015 * layer  # lowest tips reach the blueprint length
             path += hanging(path[-1], target, end_y)
             width = 2.2 * (0.1 * span / per_layer) * (1.0 + 0.15 * rng.random())
-            strands.append(strand(path, width, 0.005 + 0.002 * layer, 0.3, up=normal_at(az, pol0)))
+            strands.append(strand(path, width, 0.005 + 0.002 * layer, 0.5, up=normal_at(az, pol0)))
     hair_strands = Part(id="hair_strands", shape=Strands(strands=tuple(strands)), material="hair",
                         smooth_angle=math.radians(60), skinned=True)
 
@@ -418,39 +448,62 @@ def build(input: GenerationInput) -> Asset:
     def rot(x: float = 0.0, y: float = 0.0, z: float = 0.0, translation=(0.0, 0.0, 0.0)) -> JointTransform:
         return JointTransform(rotation=(math.radians(x), math.radians(y), math.radians(z)), translation=translation, space=W)
 
-    raise_arms = Pose("raise_arms", {"r_uparm": rot(z=-95), "l_uparm": rot(z=95)})
-    step_r = Pose("step_r", {"r_upleg": rot(x=28), "l_upleg": rot(x=-22), "l_lowleg": rot(x=-30),
+    # Relaxed hands: fingers curl in their own joint frames (MHR rests with fingers straight); the thumb
+    # is already abducted in the rest pose. Every pose carries these so the hands never snap open.
+    hands: dict[str, JointTransform] = {}
+    for side in ("l", "r"):
+        for finger, curl in (("index", (22, 28, 18)), ("middle", (26, 32, 20)), ("ring", (30, 34, 22)), ("pinky", (34, 36, 24))):
+            for segment, angle in zip((1, 2, 3), curl):
+                hands[f"{side}_{finger}{segment}"] = JointTransform(rotation=(math.radians(angle), 0.0, 0.0))
+        for segment, angle in zip((1, 2, 3), (8, 14, 10)):
+            hands[f"{side}_thumb{segment}"] = JointTransform(rotation=(math.radians(angle), 0.0, 0.0))
+
+    def pose(pose_id: str, joints: dict) -> Pose:
+        return Pose(pose_id, {**hands, **joints})
+
+    rest = pose("rest", {})
+    raise_arms = pose("raise_arms", {"r_uparm": rot(z=-95), "l_uparm": rot(z=95)})
+    step_r = pose("step_r", {"r_upleg": rot(x=28), "l_upleg": rot(x=-22), "l_lowleg": rot(x=-30),
                              "r_uparm": rot(x=-20), "l_uparm": rot(x=24)})
-    step_l = Pose("step_l", {"l_upleg": rot(x=28), "r_upleg": rot(x=-22), "r_lowleg": rot(x=-30),
+    step_l = pose("step_l", {"l_upleg": rot(x=28), "r_upleg": rot(x=-22), "r_lowleg": rot(x=-30),
                              "l_uparm": rot(x=-20), "r_uparm": rot(x=24)})
-    breathe = Pose("breathe", {"c_spine3": rot(x=-2.0, translation=(0.0, 0.004, 0.0)), "c_head": rot(x=1.5)})
-    sit = Pose("sit", {
+    breathe = pose("breathe", {"c_spine3": rot(x=-2.0, translation=(0.0, 0.004, 0.0)), "c_head": rot(x=1.5)})
+    sit = pose("sit", {
         "root": rot(translation=(0.0, -0.36, 0.0)),
         "l_upleg": rot(x=88), "r_upleg": rot(x=88), "l_lowleg": rot(x=-90), "r_lowleg": rot(x=-90),
         "c_spine1": rot(x=4), "l_uparm": rot(x=12), "r_uparm": rot(x=12),
     })
-    turn_90 = Pose("turn_90", {"root": rot(y=90)})
-    turn_180 = Pose("turn_180", {"root": rot(y=180)})
+    turn_90 = pose("turn_90", {"root": rot(y=90)})
+    turn_180 = pose("turn_180", {"root": rot(y=180)})
     # Blueprint QA: knee 120, elbow 135, hip 90, shoulder elevation 150 (arm 110 degrees above the A-pose).
-    range_check = Pose("range_check", {
+    range_check = pose("range_check", {
         "l_upleg": rot(x=90), "l_lowleg": rot(x=-120), "r_lowarm": rot(z=-135), "r_uparm": rot(z=-110),
     })
+    gaze_left = pose("gaze_left", {"l_eye": rot(y=18), "r_eye": rot(y=18), "c_head": rot(y=6)})
     clips = (
-        Clip("idle", duration=4.0, keyframes=(Keyframe(0.0, None), Keyframe(2.0, "breathe"), Keyframe(4.0, None))),
+        Clip("idle", duration=4.0, keyframes=(Keyframe(0.0, "rest"), Keyframe(2.0, "breathe"), Keyframe(4.0, "rest"))),
         Clip("walk", duration=1.2, keyframes=(Keyframe(0.0, "step_r"), Keyframe(0.6, "step_l"), Keyframe(1.2, "step_r"))),
         Clip("turn", duration=2.0, loop=False,
-             keyframes=(Keyframe(0.0, None), Keyframe(1.0, "turn_90"), Keyframe(2.0, "turn_180"))),
-        Clip("sit", duration=3.0, loop=False, keyframes=(Keyframe(0.0, None), Keyframe(2.4, "sit"), Keyframe(3.0, "sit"))),
+             keyframes=(Keyframe(0.0, "rest"), Keyframe(1.0, "turn_90"), Keyframe(2.0, "turn_180"))),
+        Clip("sit", duration=3.0, loop=False, keyframes=(Keyframe(0.0, "rest"), Keyframe(2.4, "sit"), Keyframe(3.0, "sit"))),
         Clip("raise-arms", duration=3.0, loop=False,
-             keyframes=(Keyframe(0.0, None), Keyframe(1.5, "raise_arms"), Keyframe(3.0, None))),
+             keyframes=(Keyframe(0.0, "rest"), Keyframe(1.5, "raise_arms"), Keyframe(3.0, "rest"))),
         Clip("physics-settle", duration=6.0, loop=False,
-             keyframes=(Keyframe(0.0, None), Keyframe(2.0, None), Keyframe(2.3, "step_r"), Keyframe(2.9, "step_l"),
-                        Keyframe(3.5, "step_r"), Keyframe(4.0, None), Keyframe(6.0, None))),
+             keyframes=(Keyframe(0.0, "rest"), Keyframe(2.0, "rest"), Keyframe(2.3, "step_r"), Keyframe(2.9, "step_l"),
+                        Keyframe(3.5, "step_r"), Keyframe(4.0, "rest"), Keyframe(6.0, "rest"))),
     )
+    # Deliverables the GLB cannot carry: the blueprint's runtime physics settings and engine targets.
+    extras = {
+        "blueprint": {"folder": blueprint["folder"], "id": blueprint["id"], "schema": blueprint["schema"]},
+        "physics": blueprint.get("physics", {}),
+        "target": blueprint.get("target", {}),
+        "fit": {k: round(v, 4) for k, v in fit["measurements"].items()},
+    }
     return Asset(
-        name="Haruka", materials=(skin, hair, cloth, rubber, canvas, lace),
-        parts=(body, dress, hair_cap_part, hair_strands, *shoe_parts), rig=rig,
-        poses=(raise_arms, step_r, step_l, breathe, sit, turn_90, turn_180, range_check), clips=clips,
+        name="Haruka", materials=(skin, hair, cloth, rubber, canvas, lace, eye),
+        parts=(body, dress, hair_cap_part, hair_strands, *eyeballs, *shoe_parts), rig=rig,
+        poses=(rest, raise_arms, step_r, step_l, breathe, sit, turn_90, turn_180, range_check, gaze_left), clips=clips,
+        extras=extras,
     )
 
 
@@ -463,5 +516,6 @@ render = RenderSettings(
         Camera("face", position=(0.0, 1.50 + LIFT, 0.75), target=(0.0, 1.49 + LIFT, 0.06), fov=math.radians(22)),
         Camera("neckline", position=(0.0, 1.28 + LIFT, 0.85), target=(0.0, 1.24 + LIFT, 0.1), fov=math.radians(24)),
         Camera("sneaker", position=(0.55, 0.32, 0.55), target=(0.18, 0.05, 0.0), fov=math.radians(28)),
+        Camera("hand", position=(0.90, 0.92 + LIFT, 0.55), target=(0.58, 0.99 + LIFT, 0.16), fov=math.radians(16)),
     ),
 )

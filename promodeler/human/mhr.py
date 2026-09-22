@@ -34,20 +34,27 @@ import numpy as np
 from ..core import Joint, Rig
 from ..core.diagnostics import ModelingError
 
-FIT_VERSION = 2
+FIT_VERSION = 8
 DEFAULT_ASSETS = Path(__file__).resolve().parent.parent.parent / "external" / "mhr"
 
 # Blueprint landmark heights as fractions of standing height (05-woman cross sections).
 LANDMARKS = {"hip": 0.95 / 1.6, "waist": 1.06 / 1.6, "underbust": 1.18 / 1.6, "bust": 1.25 / 1.6}
+# Landmarks measured for width/depth only (no circumference target in the blueprint).
+EXTENT_LANDMARKS = {**LANDMARKS, "shoulders": 1.34 / 1.6, "neck": 1.405 / 1.6, "head": 1.49 / 1.6}
 SCALE_PARAMS = (
     "scale_spine_length", "scale_neck_length", "scale_shoulder_width", "scale_uparms", "scale_lowarms",
     "scale_hip_width", "scale_hip_height", "scale_hip_depth", "scale_uplegs", "scale_lowlegs",
     "scale_ankle_height", "scale_foot_length",
 )
 DEFAULT_WEIGHTS = {
-    "height": 40.0, "inseam": 10.0, "shoulder_width": 6.0, "foot_length": 4.0, "head_height": 2.0,
+    "height": 80.0, "inseam": 10.0, "shoulder_width": 6.0, "foot_length": 4.0, "head_height": 2.0,
     "bust": 8.0, "underbust": 6.0, "waist": 8.0, "hip": 8.0,
 }
+# Section width/depth targets. Where the blueprint also gives a circumference the two cannot both hold
+# (an ellipse of the 05-woman hip section is 9 cm short of its circumference); even a 0.3 weight on the
+# torso extents cost 2-3 cm of circumference, so torso extents are measured and reported but not fitted.
+# Neck and head have no circumference and are fitted on extents alone.
+EXTENT_WEIGHTS = {"hip": 0.0, "waist": 0.0, "underbust": 0.0, "bust": 0.0, "shoulders": 0.0, "neck": 0.0, "head": 8.0}
 
 
 def assets_dir() -> Path:
@@ -135,9 +142,8 @@ class MHRModel:
 
     # --- differentiable measurements ------------------------------------------------------
 
-    def slice_perimeter(self, vertices, y: float, x_limit: float = 0.3):
-        """Length of the torso outline where the horizontal plane at ``y`` cuts the mesh."""
-        torch = self.torch
+    def slice_points(self, vertices, y: float, x_limit: float = 0.3):
+        """(x, z) points where the horizontal plane at ``y`` cuts the torso/head edges (arms excluded)."""
         a = vertices[self.torso_edges[:, 0]]
         b = vertices[self.torso_edges[:, 1]]
         crossing = ((a[:, 1] - y) * (b[:, 1] - y) < 0)
@@ -145,7 +151,19 @@ class MHRModel:
         t = ((y - a[:, 1]) / (b[:, 1] - a[:, 1])).unsqueeze(1)
         points = a + t * (b - a)
         torso = points[:, 0].abs() < x_limit
-        points = points[torso][:, [0, 2]]
+        return points[torso][:, [0, 2]]
+
+    def slice_extents(self, vertices, y: float, x_limit: float = 0.3):
+        """(width, depth) of the slice at ``y``: x and z extents of the outline points."""
+        points = self.slice_points(vertices, y, x_limit)
+        if points.shape[0] < 6:
+            return self.torch.tensor(0.0), self.torch.tensor(0.0)
+        return points[:, 0].max() - points[:, 0].min(), points[:, 1].max() - points[:, 1].min()
+
+    def slice_perimeter(self, vertices, y: float, x_limit: float = 0.3):
+        """Length of the torso outline where the horizontal plane at ``y`` cuts the mesh."""
+        torch = self.torch
+        points = self.slice_points(vertices, y, x_limit)
         if points.shape[0] < 6:
             return torch.tensor(0.0)
         center = points.detach().mean(0)
@@ -168,27 +186,37 @@ class MHRModel:
                "head_height": head_height}
         for name, fraction in LANDMARKS.items():
             out[name] = self.slice_perimeter(vertices, float((floor + fraction * height).detach()))
+        for name, fraction in EXTENT_LANDMARKS.items():
+            width, depth = self.slice_extents(vertices, float((floor + fraction * height).detach()))
+            out[f"{name}_width"], out[f"{name}_depth"] = width, depth
         return out
 
     # --- fitting ------------------------------------------------------------------------
 
     SKELETAL = ("height", "inseam", "shoulder_width", "foot_length", "head_height")
-    SURFACE = ("bust", "underbust", "waist", "hip")
+    SURFACE = ("bust", "underbust", "waist", "hip") + tuple(
+        f"{name}_{axis}" for name in ("hip", "waist", "underbust", "bust", "shoulders") for axis in ("width", "depth"))
+    # Head coefficients only shape the skull: neck extents and head height are body/skeleton matters and
+    # chasing them with head coefficients drove them to the clamps (distorted jaw, pencil neck).
+    HEAD = ("head_width", "head_depth")
 
-    def fit(self, targets: dict, iterations: int = 500, weights: dict | None = None, log=None) -> Body:
+    def fit(self, targets: dict, iterations: int = 600, weights: dict | None = None, log=None) -> Body:
         """Three stages: skeletal scales for lengths, identity for girths, then a joint refinement."""
         torch = self.torch
         weights = {**DEFAULT_WEIGHTS, **(weights or {})}
-        identity = torch.zeros(45, requires_grad=True)
+        body_coeffs = torch.zeros(20, requires_grad=True)  # identity[0:20]: body surface
+        head_coeffs = torch.zeros(20, requires_grad=True)  # identity[20:40]: head surface
+        hands = torch.zeros(5)  # identity[40:45] stay at the mean
         scales = torch.zeros(len(SCALE_PARAMS), requires_grad=True)
         scale_idx = torch.tensor([self.param_index[n] for n in SCALE_PARAMS])
-        body_mask = torch.zeros(45)
-        body_mask[:20] = 1.0
         started = time.perf_counter()
+
+        def identity_vector():
+            return torch.cat([body_coeffs, head_coeffs, hands])
 
         def evaluate():
             parameters = torch.zeros(204).index_add(0, scale_idx, scales)
-            vertices, joints = self.forward(identity * body_mask, parameters)
+            vertices, joints = self.forward(identity_vector(), parameters)
             return vertices, joints, self.measure(vertices, joints)
 
         def loss_for(measured, names):
@@ -196,29 +224,38 @@ class MHRModel:
             for name in names:
                 target = targets.get(name)
                 if target and name in measured:
-                    loss = loss + weights.get(name, 1.0) * ((measured[name] - target) / target) ** 2
+                    default = EXTENT_WEIGHTS.get(name.rsplit("_", 1)[0], 1.0)
+                    weight = weights.get(name, default)
+                    if weight:
+                        loss = loss + weight * ((measured[name] - target) / target) ** 2
             return loss
 
         # Alternate: scales set the lengths, identity sets the girths, then both are re-tightened.
         # Joint optimisation of both sets diverged (perimeter gradients swamp the length terms).
-        share = (0.25, 0.4, 0.15, 0.2)
+        # Body coefficients also move the neck and head, so head targets get their own coefficients and
+        # stage; otherwise a thicker neck is bought with torso circumference.
+        share = (0.2, 0.3, 0.15, 0.1, 0.15, 0.1)
         steps = [int(iterations * f) for f in share]
         stages = (
             ("skeleton", [scales], self.SKELETAL, 0.05, steps[0]),
-            ("surface", [identity], self.SURFACE, 0.04, steps[1]),
-            ("skeleton", [scales], self.SKELETAL, 0.02, steps[2]),
-            ("surface", [identity], self.SURFACE, 0.015, steps[3]),
+            ("surface", [body_coeffs], self.SURFACE, 0.04, steps[1]),
+            ("head", [head_coeffs], self.HEAD, 0.04, steps[2]),
+            ("skeleton", [scales], self.SKELETAL, 0.02, steps[3]),
+            ("surface", [body_coeffs], self.SURFACE, 0.015, steps[4]),
+            ("skeleton", [scales], self.SKELETAL, 0.01, steps[5]),  # lengths last: identity moves the crotch
         )
         for stage_name, variables, names, lr, count in stages:
             optimizer = torch.optim.Adam(variables, lr=lr)
             for step in range(count):
                 optimizer.zero_grad()
                 _, _, measured = evaluate()
-                loss = loss_for(measured, names) + 0.003 * (identity * body_mask).pow(2).sum() + 0.01 * scales.pow(2).sum()
+                loss = (loss_for(measured, names) + 0.003 * body_coeffs.pow(2).sum() + 0.02 * head_coeffs.pow(2).sum()
+                        + 0.01 * scales.pow(2).sum())
                 loss.backward()
                 optimizer.step()
                 with torch.no_grad():
-                    identity.clamp_(-3.5, 3.5)
+                    body_coeffs.clamp_(-3.5, 3.5)
+                    head_coeffs.clamp_(-2.0, 2.0)
                     scales.clamp_(-2.5, 2.5)
                 if log and (step % 50 == 0 or step == count - 1):
                     log(f"{stage_name:8s} step {step:3d} loss {float(loss.detach()):.5f} "
@@ -233,7 +270,7 @@ class MHRModel:
             vertices[:, 1] -= floor
             joints[:, 1] -= floor
         measured["fit_seconds"] = round(time.perf_counter() - started, 1)
-        return Body(vertices.numpy(), joints.numpy(), (identity * body_mask).detach().numpy(), parameters.detach().numpy(), measured)
+        return Body(vertices.numpy(), joints.numpy(), identity_vector().detach().numpy(), parameters.detach().numpy(), measured)
 
     # --- export -------------------------------------------------------------------------
 
@@ -322,4 +359,9 @@ def blueprint_targets(blueprint: dict) -> dict:
         "foot_length": dims.get("foot_length_m"), "head_height": dims.get("head_height_m"),
         "bust": circ.get("bust"), "underbust": circ.get("underbust"), "waist": circ.get("waist"), "hip": circ.get("hip"),
     }
+    for section in blueprint.get("cross_sections", []):
+        name = section.get("landmark")
+        if name in EXTENT_LANDMARKS:
+            targets[f"{name}_width"] = section.get("width_m")
+            targets[f"{name}_depth"] = section.get("depth_m")
     return {k: v for k, v in targets.items() if v}

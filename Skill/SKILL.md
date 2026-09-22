@@ -112,7 +112,11 @@ Rules:
 - Clothing: build the loft as the garment's inner surface from body slices plus ease, keep the cloth quads near square (rings every 5 to 10 cm, `Subdivision(levels=1, smooth=True)`), pin the neckline band and let `ClothDrape` settle; a dense ring with sparse rings buckles into an accordion. Shape gathers in the ring points, not in a texture.
 - Shoes: measure the foot print and ankle from the body slices, extrude the sole outline, loft the upper as the inner surface with 6 mm clearance and `Solidify(offset=1.0)` outward, attach every shoe part with `parent_joint=<side>_subtalar`, and lift the body and rig by the sole (`rig_from_file(..., offset=(0, sole, 0))`, `Part(transform=Transform(translation=(0, sole, 0)))`).
 - Bakes fill texels no UV island touched with the mean baked value, so meshes with tiny islands (MHR faces) no longer show black specks; the face still needs 2048 px or more (`QualityProfile(texture_resolution=2048)` on the generator).
-- The blueprint's QA stills come from authored cameras (`face`, `neckline`, `sneaker`); its range-of-motion check is a pose (`range_check`) rendered with `--pose`.
+- The blueprint's QA stills come from authored cameras (`face`, `neckline`, `sneaker`, `hand`); its range-of-motion check is a pose (`range_check`) rendered with `--pose`.
+- Eyes on an MHR body: cut sockets with two ellipsoid `Boolean("difference")` cutters centred 6 mm in front of the `l_eye`/`r_eye` joints (scale about 1.4 x 1.0 x 1.8 of a 10 mm sphere) and add 12 mm `Sphere` parts with `parent_joint="l_eye"`; the iris and pupil are `Position("z", ...)` layers in the sphere's object space. File weights survive the boolean (nearest-vertex transfer, `influences: "file:nearest"` in the report).
+- Hands: MHR rests with straight fingers. Curl `<side>_<finger>1..3` in joint space (20-35 degrees about local X) in a `hands` dict merged into every pose, and key a `rest` pose instead of `None` so clips keep the curl.
+- `Asset(extras={...})` carries JSON the GLB cannot express (runtime physics settings, engine targets); it lands in `extras.json` and the glTF root node's `promodeler_extras`.
+- After a humanoid build run `python tools/blueprint_check.py <blueprint.json>` and report its table: fit residuals, part boxes, triangle budgets and warnings against the blueprint. Blueprint numbers can contradict each other (an ellipse of the 05-woman hip section is 9 cm short of its hip circumference); circumferences lead, torso widths/depths are reported, and you say which side you kept.
 
 ## Interiors and architecture
 
