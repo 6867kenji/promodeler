@@ -33,7 +33,8 @@ class Compatibility:
 @dataclass(frozen=True)
 class Runtime:
     status: str = field(default="placeholder", metadata={"enum": STATUSES})
-    uma_wardrobe_recipe: str | None = None
+    uma_wardrobe_recipe: str | None = field(default=None, metadata={"description": "UMA wardrobe recipe asset name (race neutral)."})
+    uma_wardrobe_recipe_by_race: dict[str, str] = field(default_factory=dict, metadata={"description": "Race -> UMA wardrobe recipe asset name; wins over uma_wardrobe_recipe."})
     addressable: str | None = None
 
 

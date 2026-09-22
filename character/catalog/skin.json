@@ -20,7 +20,8 @@
       "runtime": {
         "status": "placeholder",
         "uma_wardrobe_recipe": null,
-        "addressable": "character/skin/skin_jp_light_01"
+        "addressable": "character/skin/skin_jp_light_01",
+        "uma_wardrobe_recipe_by_race": {}
       },
       "base_color_srgb": "#EBD2C3",
       "materials": {},
@@ -60,7 +61,8 @@
       "runtime": {
         "status": "placeholder",
         "uma_wardrobe_recipe": null,
-        "addressable": "character/skin/skin_jp_light_02"
+        "addressable": "character/skin/skin_jp_light_02",
+        "uma_wardrobe_recipe_by_race": {}
       },
       "base_color_srgb": "#DFC1AD",
       "materials": {},
@@ -100,7 +102,8 @@
       "runtime": {
         "status": "placeholder",
         "uma_wardrobe_recipe": null,
-        "addressable": "character/skin/skin_jp_medium_01"
+        "addressable": "character/skin/skin_jp_medium_01",
+        "uma_wardrobe_recipe_by_race": {}
       },
       "base_color_srgb": "#CFAE95",
       "materials": {},
@@ -140,7 +143,8 @@
       "runtime": {
         "status": "placeholder",
         "uma_wardrobe_recipe": null,
-        "addressable": "character/skin/skin_jp_medium_02"
+        "addressable": "character/skin/skin_jp_medium_02",
+        "uma_wardrobe_recipe_by_race": {}
       },
       "base_color_srgb": "#C39C82",
       "materials": {},
@@ -180,7 +184,8 @@
       "runtime": {
         "status": "placeholder",
         "uma_wardrobe_recipe": null,
-        "addressable": "character/skin/skin_jp_tan_01"
+        "addressable": "character/skin/skin_jp_tan_01",
+        "uma_wardrobe_recipe_by_race": {}
       },
       "base_color_srgb": "#B08968",
       "materials": {},

@@ -691,7 +691,7 @@ Unity は GLB を読み（UnityGLTF）、`socket` の Humanoid ボーン相対�
 | 段階 | 内容 | 完了判定 |
 | --- | --- | --- |
 | **M9 Recipe 層（Python のみ）** 完了 2026-09-22 | `promodeler/character/{recipe,schema,from_blueprint,catalog,consistency,check}`、`schemas/*.json`、CLI `character recipe/validate/diff/catalog`、`generate` の振り分け、カタログ雛形（ID とライセンス欄だけ、実体なし）、15 体 + 2 衣装の Recipe 生成、整合性検査結果の一覧、単体テスト（Unity 不要） | `character/recipes/*.json` 17 件がスキーマ検証を通り、`validate --mhr` が設計書間の矛盾を表として出す |
-| **M10 Unity MVP（1 体、原案 §31）** | Unity プロジェクト作成、HDRP と UMA 導入、Intel iGPU でのバッチレンダ実測、`RecipeLoader`、`BodyMeasurer`、`DnaCalibrationTool`、`BodyResolver`、UMA 同梱資産だけで `businessman`（男性・スーツに最も近い既定衣装）を組み、`build.json` + front/side/back レンダ + FBX/GLB、`bridge.build`、`character check` | `promodeler character build businessman` が一発で通り、身長 ±2 mm、周長の残差が表に出る。対応パラメータは原案 §31 の 15–20 項目 |
+| **M10 Unity MVP（1 体、原案 §31）** 着手 2026-09-22（18.1 節） | Unity プロジェクト作成、HDRP と UMA 導入、Intel iGPU でのバッチレンダ実測、`RecipeLoader`、`BodyMeasurer`、`DnaCalibrationTool`、`BodyResolver`、UMA 同梱資産だけで `businessman`（男性・スーツに最も近い既定衣装）を組み、`build.json` + front/side/back レンダ + FBX/GLB、`bridge.build`、`character check` | `promodeler character build businessman` が一発で通り、身長 ±2 mm、周長の残差が表に出る。対応パラメータは原案 §31 の 15–20 項目 |
 | **M11 寸法精度と全員** | 独自 DNA（肩幅・胴長・頭高）の追加と校正、顔 DNA 表、靴による接地補正、`GarmentMeasurer`、15 体すべてのビルドと照合表、コンタクトシート、`.claude/skills` の更新 | 15 体で身長 ±2 mm、周長 ±1 cm 以内（UMA の限界は残差として明記）。全員のコンタクトシートが並ぶ |
 | **M12 カタログと装備・衣装** | `tools/uma_slot_from_glb.py`、MakeHuman CC0 資産の変換と登録（髪 10、上衣 10、下衣 8、靴 6、眉・まつ毛・髭）、肌・眼球テクスチャ、`assets/props/` の装備品 8 点とソケット装着、Outfit 36・37、Addressables、`character edit` GUI（Face/Body/Hair/Skin/Wardrobe、Save は Recipe のみ） | 設計書の衣装語彙の 8 割が `catalog_id` で解決され、`wardrobe.missing` 警告が例外になる。GUI 保存 → `character diff` で差分追跡できる |
 | **M13 生成モード** | `presets`（性別・年齢別の人体計測事前分布）、`character random`、`character prompt`（LLM → Recipe、スキーマ制約、カタログ ID の実在検証）、クリップ動画記録、`physics_settings` 書き出し | 1,000 体を seed 決定的に生成して全件 `validate` を通す。プロンプト 1 文から `build` まで人手なし |
@@ -715,7 +715,27 @@ M10 の最初に **HDRP のヘッドレスレンダが Intel iGPU で動くか**
 
 ---
 
-## 18. 未決事項（実装フェーズで決める）
+## 18. 実装記録
+
+### 18.1 M10 の着手状況（2026-09-22）
+
+決めたこと・作ったもの（Unity エディタ未起動のため **C# は未コンパイル**）:
+
+| 項目 | 決定 / 状態 |
+| --- | --- |
+| Unity プロジェクト | エディタの同梱 HDRP テンプレート（`com.unity.template.3d-high-end`）の `ProjectData~` から骨格を作成（エディタ不要）。`ProjectVersion.txt` は 6000.3.21f1 (c02631ffc030) |
+| ライセンス | `Unity.exe -batchmode` が終了コード 198「No valid Unity Editor license found」で停止。Unity Hub でのサインインとライセンス有効化は利用者の作業。`bridge.build` は 198 を `unity.license` として `build.json` に記録する |
+| UMA | v3.05（2026-08-31、MIT）。UPM 配布ではなく 1.16 GB の unitypackage。`UMAProject/Assets/UMA` に `package.json` はあるが、HDRP 用コンテンツ（`SRP/UMAHDRP.unitypackage`）とセットアップスクリプトが `Assets/UMA/...` を前提にするため、**`external/uma` に sparse clone（約 3.5 GB、gitignore）し、`Assets/UMA` へディレクトリ・ジャンクション**で取り込む。`promodeler character setup --no-unity` が作成する |
+| UMA 3 の語彙 | レース `Human Male 3.0` / `Human Female 3.0`。衣装スロット Chest / Legs / Feet / Hair / Eyebrows / Beard / TopUnderlayer / BottomUnderlayer / Hands。体 DNA に `shoulderWidth` `height` `legsSize` `chestSize` `waist` `belly` `gluteusSize` `upperWeight` `lowerWeight` `feetSize` があり、10.1 で懸念した「肩幅の独立 DNA がない」は UMA 3 では解消 |
+| 同期生成 | `DynamicCharacterAvatar.GenerateNow()`（同期）。ジェネレータは `UMAAssetIndexer.Instance.generator`。`UMA_GLIB.prefab` はダミー |
+| パッケージ | HDRP / Core / ShaderGraph 17.3.0（UMA 3 プロジェクトと同じ）、`com.unity.formats.fbx` 5.1.6、`com.unity.nuget.newtonsoft-json` 3.2.1、UnityGLTF `release/2.20.0`（git URL）。glTFast はモーフターゲット書き出し非対応なので GLB は UnityGLTF、FBX は FBX Exporter。両者はリフレクション経由で呼び、欠けても警告で済むようにした |
+| バッチ契約 | `-quit` を渡さず、`CharacterBatchBuilder.Build` が `build.json` を書いて `EditorApplication.Exit` する。初回セットアップ（HDRP パッケージ取込 → ドメインリロード）は別エントリ `ProjectSetup.Run`（`promodeler character setup`）。取込直後は 2 回目の実行が必要 |
+| カタログ | 53 項目に UMA 3 サンプル資産を **代替（stand_in）** として `runtime.uma_wardrobe_recipe_by_race` に登録。`status` は placeholder のまま、ビルド時に `catalog.placeholder` 警告 |
+| 制約 | UMA 3 サンプルにはインナー（TopUnderlayer）用の衣装がないため、`inner` と `upper` が同じ Chest スロットを取り合う。後着が勝ち、`wardrobe.slotConflict` で報告 |
+
+次の手順: ライセンス有効化 → `promodeler character setup`（HDRP 取込、必要なら 2 回）→ `promodeler character build businessman` → C# のコンパイルエラーと `build.json` の結果を見て修正。
+
+## 19. 未決事項（実装フェーズで決める）
 
 - Unity 6 の具体的な LTS 番号、UMA の取得元（Asset Store か GitHub）、UMA HDRP シェーダの入手経路。
 - GLB 書き出しライブラリ（UnityGLTF を第一候補。スキン + モーフ + アニメーションの書き出し実績を M10 で確認）。
@@ -745,4 +765,4 @@ M10 の最初に **HDRP のヘッドレスレンダが Intel iGPU で動くか**
 | §23 ProModeler で生成するもの・§30 例外 | 12 章 |
 | §24 最終構成・§36 採用アーキテクチャ | 2 章 |
 | §28 保存するもの | 13 章 |
-| §31–§34 MVP・Phase 2–4 | 16 章 M10–M12 |
+| §31–§34 MVP・Phase 2–4 | 16 章 M10–M12、18.1 |

@@ -217,36 +217,89 @@ def cmd_character_schema(args) -> int:
     return 0
 
 
+def print_build(result: bridge.CharacterBuildResult) -> None:
+    build = result.build
+    print(f"hash:     {result.hash[:12]}{' (cached)' if result.cached else ''}")
+    print(f"out:      {result.out_dir}")
+    print(f"status:   {build.get('status')}")
+    if not result.ok:
+        error = build.get("error", {})
+        print(f"error:    {error.get('code')}: {error.get('message')}")
+        print(f"log:      {result.out_dir / 'unity.log'}")
+        return
+    env = build.get("environment", {})
+    print(f"unity:    {env.get('unity')} hdrp {env.get('hdrp')} uma {env.get('uma')}")
+    resolved = build.get("resolved", {})
+    if resolved:
+        residuals = ", ".join(f"{k} {v * 1000:+.0f} mm" for k, v in sorted((resolved.get("residuals_m") or {}).items()))
+        print(f"resolved: race {resolved.get('race')}, {resolved.get('iterations')} iterations; residuals {residuals}")
+    totals = build.get("totals", {})
+    if totals:
+        print(f"geometry: {totals.get('triangles')} tris, {totals.get('materials')} materials")
+    for entry in build.get("wardrobe", []):
+        print(f"wardrobe: {entry['slot']:9s} {entry.get('catalog_id')}  {'fitted' if entry.get('fitted') else 'MISSING'}")
+    for render in build.get("renders", []):
+        print(f"render:   {render.get('pass', 'shaded')}/{render['view']:<14} {'written' if render.get('written') else 'MISSING'}  {render['path']}")
+    if build.get("contact_sheet"):
+        print(f"sheet:    {build['contact_sheet']['path']}")
+    for fmt, export in (build.get("exports") or {}).items():
+        if isinstance(export, dict):
+            print(f"export:   {fmt:<5} {'written' if export.get('written') else 'MISSING'} {export.get('bytes', 0)} bytes  {export.get('path')}")
+        else:
+            print(f"export:   {fmt:<5} {export}")
+    for warning in build.get("warnings", []):
+        print(f"warning:  {warning['code']}: {warning['message']}")
+    print(f"seconds:  {build.get('wall_seconds', build.get('seconds'))}")
+
+
 def cmd_character_build(args) -> int:
     path = resolve_recipe_path(args.target)
     recipe = load_recipe(path)
-    catalog = Catalog()
+    if not isinstance(recipe, CharacterRecipe):
+        raise ModelingError("character.build", f"{path} is an outfit; build its base character with --outfit {recipe.id}.")
     outfit = None
     if args.outfit:
         outfit = load_recipe(resolve_recipe_path(args.outfit))
         if not isinstance(outfit, OutfitRecipe):
             raise ModelingError("character.outfit", f"{args.outfit} is not an outfit recipe.")
-    payload = {"recipe": recipe.to_json(), "outfit": outfit.to_json() if outfit else None}
-    digest = recipe.hash(outfit=outfit.to_json() if outfit else None, catalog_version=catalog.version, unity=bridge.project_version(), uma=bridge.uma_version())
-    out_dir = Path(args.out).resolve() / recipe.id / digest[:12]
-    print(f"recipe:  {path}")
-    print(f"hash:    {digest[:12]}")
-    print(f"out:     {out_dir}")
-    if not bridge.UNITY_PROJECT.is_dir():
-        print(f"error:   Unity project not present at {bridge.UNITY_PROJECT} (planned for M10). The recipe and hash above are what it will receive.", file=sys.stderr)
-        return 3
+    catalog = Catalog()
+    print(f"recipe:   {path}")
     try:
-        unity = bridge.find_unity()
+        result = bridge.build(
+            recipe, outfit, catalog, out_root=args.out, force=args.force,
+            views=tuple(args.views.split(",")) if args.views else None, passes=tuple(args.passes.split(",")) if args.passes else None,
+            formats=tuple(args.formats.split(",")) if args.formats else None, render=not args.no_render,
+            log=print if args.verbose else None,
+        )
     except bridge.UnityNotFound as exc:
-        print(f"error:   {exc}", file=sys.stderr)
+        print(f"error:    {exc}", file=sys.stderr)
         return 3
-    out_dir.mkdir(parents=True, exist_ok=True)
-    write_json(out_dir / "recipe.json", payload["recipe"])
-    if payload["outfit"]:
-        write_json(out_dir / "outfit.json", payload["outfit"])
-    print(f"unity:   {unity}")
-    print("error:   batch build is not implemented yet (M10); recipe.json was staged in the output directory.", file=sys.stderr)
-    return 3
+    print_build(result)
+    return 0 if result.ok else 1
+
+
+def cmd_character_setup(args) -> int:
+    """Link UMA into the Unity project and run the editor-side setup (HDRP content import, UMA asset index)."""
+    try:
+        linked = bridge.link_uma()
+    except bridge.UnityNotFound as exc:
+        print(f"error:    {exc}", file=sys.stderr)
+        return 3
+    print(f"uma:      {linked['target']} -> {linked['source']} ({'created' if linked['created'] else 'already linked'}), version {linked['uma']}")
+    if args.no_unity:
+        return 0
+    try:
+        status = bridge.run_setup(log=print if args.verbose else None)
+    except bridge.UnityNotFound as exc:
+        print(f"error:    {exc}", file=sys.stderr)
+        return 3
+    for key in ("Ok", "UmaPresent", "HdrpContentPresent", "HdrpImported", "IndexRebuilt", "RaceMalePresent", "RaceFemalePresent", "Note", "Error", "error"):
+        if key in status and status[key] not in (None, "", False):
+            print(f"{key + ':':<20} {status[key]}")
+    print(f"exit code:           {status.get('unity_exit_code')}  (log {status.get('log')})")
+    if status.get("Note"):
+        print("hint: run `promodeler character setup` once more so the imported UMA HDRP setup can apply.")
+    return 0 if status.get("Ok") else 1
 
 
 def cmd_generate(args) -> int:
@@ -269,8 +322,9 @@ def cmd_generate(args) -> int:
     print_warnings(warnings)
     if kind == "humanoid" and not args.no_build:
         args.target = blueprint["id"]
-        args.outfit = None
-        args.out = "build/character"
+        for name, value in (("outfit", None), ("out", "build/character"), ("views", None), ("passes", None), ("formats", None),
+                            ("no_render", False), ("verbose", False)):
+            setattr(args, name, value)
         return cmd_character_build(args)
     return 0
 
@@ -321,8 +375,19 @@ def add_parsers(sub) -> None:
     sch.add_argument("--write", action="store_true")
     sch.set_defaults(func=cmd_character_schema)
 
-    build = csub.add_parser("build", help="Stage a recipe for the Unity batch build (the build itself arrives with M10).")
-    build.add_argument("target")
-    build.add_argument("--outfit", default=None)
+    setup = csub.add_parser("setup", help="Link external/uma into the Unity project (Assets/UMA junction) and run the editor setup.")
+    setup.add_argument("--no-unity", action="store_true", help="Only create the link; skip the editor-side setup.")
+    setup.add_argument("--verbose", "-v", action="store_true")
+    setup.set_defaults(func=cmd_character_setup)
+
+    build = csub.add_parser("build", help="Build a character with the Unity + UMA batch pipeline and read back build.json.")
+    build.add_argument("target", help="Character recipe id or path.")
+    build.add_argument("--outfit", default=None, help="Outfit recipe id to dress the character with.")
     build.add_argument("--out", default="build/character")
+    build.add_argument("--force", action="store_true", help="Ignore the cached build and rebuild accessories.")
+    build.add_argument("--views", default=None, help="Comma-separated: front,side,back,perspective,face,hand")
+    build.add_argument("--passes", default=None, help="Comma-separated: shaded,clay")
+    build.add_argument("--formats", default=None, help="Comma-separated: fbx,glb")
+    build.add_argument("--no-render", action="store_true", help="Skip verification renders (runs Unity with -nographics).")
+    build.add_argument("--verbose", "-v", action="store_true")
     build.set_defaults(func=cmd_character_build)

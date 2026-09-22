@@ -23,7 +23,8 @@
       "runtime": {
         "status": "placeholder",
         "uma_wardrobe_recipe": null,
-        "addressable": "character/eyes/eye_brown_01"
+        "addressable": "character/eyes/eye_brown_01",
+        "uma_wardrobe_recipe_by_race": {}
       },
       "base_color_srgb": "#574335",
       "materials": {},
@@ -63,7 +64,8 @@
       "runtime": {
         "status": "placeholder",
         "uma_wardrobe_recipe": null,
-        "addressable": "character/eyes/eye_dark_brown_01"
+        "addressable": "character/eyes/eye_dark_brown_01",
+        "uma_wardrobe_recipe_by_race": {}
       },
       "base_color_srgb": "#3E2C22",
       "materials": {},

@@ -20,7 +20,8 @@
       "runtime": {
         "status": "placeholder",
         "uma_wardrobe_recipe": null,
-        "addressable": "character/teeth/teeth_natural_01"
+        "addressable": "character/teeth/teeth_natural_01",
+        "uma_wardrobe_recipe_by_race": {}
       },
       "base_color_srgb": "#DCD4C3",
       "materials": {},

@@ -27,7 +27,11 @@
       "runtime": {
         "status": "placeholder",
         "uma_wardrobe_recipe": null,
-        "addressable": "character/footwear/oxford_lace_01"
+        "addressable": "character/footwear/oxford_lace_01",
+        "uma_wardrobe_recipe_by_race": {
+          "human_male": "male_shoes_tall_Recipe",
+          "human_female": "shoes_tall_white_Recipe"
+        }
       },
       "base_color_srgb": null,
       "materials": {},
@@ -41,7 +45,8 @@
       },
       "provenance": {
         "origin": "placeholder",
-        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12).",
+        "stand_in": "UMA 3.05 sample content (MIT) stands in until the real asset exists"
       },
       "version": "2026.09",
       "tags": [
@@ -72,7 +77,10 @@
       "runtime": {
         "status": "placeholder",
         "uma_wardrobe_recipe": null,
-        "addressable": "character/footwear/pumps_low_01"
+        "addressable": "character/footwear/pumps_low_01",
+        "uma_wardrobe_recipe_by_race": {
+          "human_female": "shoes_tall_white_Recipe"
+        }
       },
       "base_color_srgb": null,
       "materials": {},
@@ -86,7 +94,8 @@
       },
       "provenance": {
         "origin": "placeholder",
-        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12).",
+        "stand_in": "UMA 3.05 sample content (MIT) stands in until the real asset exists"
       },
       "version": "2026.09",
       "tags": [
@@ -117,7 +126,11 @@
       "runtime": {
         "status": "placeholder",
         "uma_wardrobe_recipe": null,
-        "addressable": "character/footwear/sneaker_low_01"
+        "addressable": "character/footwear/sneaker_low_01",
+        "uma_wardrobe_recipe_by_race": {
+          "human_male": "male_shoe_low_white.001_Recipe",
+          "human_female": "shoe_low_white_Recipe"
+        }
       },
       "base_color_srgb": null,
       "materials": {},
@@ -131,7 +144,8 @@
       },
       "provenance": {
         "origin": "placeholder",
-        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12).",
+        "stand_in": "UMA 3.05 sample content (MIT) stands in until the real asset exists"
       },
       "version": "2026.09",
       "tags": [
@@ -162,7 +176,11 @@
       "runtime": {
         "status": "placeholder",
         "uma_wardrobe_recipe": null,
-        "addressable": "character/footwear/work_shoe_01"
+        "addressable": "character/footwear/work_shoe_01",
+        "uma_wardrobe_recipe_by_race": {
+          "human_male": "male_shoes_tall_Recipe",
+          "human_female": "shoes_tall_white_Recipe"
+        }
       },
       "base_color_srgb": null,
       "materials": {},
@@ -176,7 +194,8 @@
       },
       "provenance": {
         "origin": "placeholder",
-        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12).",
+        "stand_in": "UMA 3.05 sample content (MIT) stands in until the real asset exists"
       },
       "version": "2026.09",
       "tags": [
@@ -206,7 +225,10 @@
       "runtime": {
         "status": "placeholder",
         "uma_wardrobe_recipe": null,
-        "addressable": "character/footwear/flat_shoe_01"
+        "addressable": "character/footwear/flat_shoe_01",
+        "uma_wardrobe_recipe_by_race": {
+          "human_female": "shoe_low_white_Recipe"
+        }
       },
       "base_color_srgb": null,
       "materials": {},
@@ -220,7 +242,8 @@
       },
       "provenance": {
         "origin": "placeholder",
-        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12).",
+        "stand_in": "UMA 3.05 sample content (MIT) stands in until the real asset exists"
       },
       "version": "2026.09",
       "tags": [
@@ -252,7 +275,11 @@
       "runtime": {
         "status": "placeholder",
         "uma_wardrobe_recipe": null,
-        "addressable": "character/footwear/walking_shoe_01"
+        "addressable": "character/footwear/walking_shoe_01",
+        "uma_wardrobe_recipe_by_race": {
+          "human_male": "male_shoe_low_white.001_Recipe",
+          "human_female": "shoe_low_white_Recipe"
+        }
       },
       "base_color_srgb": null,
       "materials": {},
@@ -266,7 +293,8 @@
       },
       "provenance": {
         "origin": "placeholder",
-        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12).",
+        "stand_in": "UMA 3.05 sample content (MIT) stands in until the real asset exists"
       },
       "version": "2026.09",
       "tags": [
@@ -297,7 +325,11 @@
       "runtime": {
         "status": "placeholder",
         "uma_wardrobe_recipe": null,
-        "addressable": "character/footwear/loafer_01"
+        "addressable": "character/footwear/loafer_01",
+        "uma_wardrobe_recipe_by_race": {
+          "human_male": "male_shoes_tall_Recipe",
+          "human_female": "shoes_tall_white_Recipe"
+        }
       },
       "base_color_srgb": null,
       "materials": {},
@@ -311,7 +343,8 @@
       },
       "provenance": {
         "origin": "placeholder",
-        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12).",
+        "stand_in": "UMA 3.05 sample content (MIT) stands in until the real asset exists"
       },
       "version": "2026.09",
       "tags": [
@@ -343,7 +376,11 @@
       "runtime": {
         "status": "placeholder",
         "uma_wardrobe_recipe": null,
-        "addressable": "character/footwear/running_shoe_01"
+        "addressable": "character/footwear/running_shoe_01",
+        "uma_wardrobe_recipe_by_race": {
+          "human_male": "male_shoe_low_white.001_Recipe",
+          "human_female": "shoe_low_white_Recipe"
+        }
       },
       "base_color_srgb": null,
       "materials": {},
@@ -357,7 +394,8 @@
       },
       "provenance": {
         "origin": "placeholder",
-        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12).",
+        "stand_in": "UMA 3.05 sample content (MIT) stands in until the real asset exists"
       },
       "version": "2026.09",
       "tags": [
@@ -389,7 +427,10 @@
       "runtime": {
         "status": "placeholder",
         "uma_wardrobe_recipe": null,
-        "addressable": "character/footwear/boots_short_leather_01"
+        "addressable": "character/footwear/boots_short_leather_01",
+        "uma_wardrobe_recipe_by_race": {
+          "human_female": "shoes_tall_white_Recipe"
+        }
       },
       "base_color_srgb": null,
       "materials": {},
@@ -403,7 +444,8 @@
       },
       "provenance": {
         "origin": "placeholder",
-        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12).",
+        "stand_in": "UMA 3.05 sample content (MIT) stands in until the real asset exists"
       },
       "version": "2026.09",
       "tags": [

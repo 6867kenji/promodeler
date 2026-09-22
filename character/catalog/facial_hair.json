@@ -22,7 +22,10 @@
       "runtime": {
         "status": "placeholder",
         "uma_wardrobe_recipe": null,
-        "addressable": "character/facial_hair/stubble_light_01"
+        "addressable": "character/facial_hair/stubble_light_01",
+        "uma_wardrobe_recipe_by_race": {
+          "human_male": "Beard_Trimmed_Recipe"
+        }
       },
       "base_color_srgb": null,
       "materials": {},
@@ -36,7 +39,8 @@
       },
       "provenance": {
         "origin": "placeholder",
-        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12).",
+        "stand_in": "UMA 3.05 sample content (MIT) stands in until the real asset exists"
       },
       "version": "2026.09",
       "tags": []

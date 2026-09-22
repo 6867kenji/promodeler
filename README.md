@@ -192,7 +192,12 @@ python -m promodeler character check <id> [--build <dir>]             # 設計�
 python -m promodeler character diff <id>                              # Recipe と設計書再生成の差分
 python -m promodeler character catalog list [--category wardrobe --slot upper --race human_male]
 python -m promodeler character schema [--write]                       # dataclass から schemas/*.json を生成・照合
+python -m promodeler character setup [--no-unity]                     # external/uma を Assets/UMA へ接続し、Unity 側の初期化（HDRP 取込・UMA 索引）
+python -m promodeler character build <id> [--outfit <id>] [--views front,side] [--no-render]   # Unity + UMA バッチビルド → build/character/<id>/<hash>/build.json
 ```
+
+Unity 側は `unity/ProModelerCharacterCreator/`（Unity 6000.3.21f1、HDRP 17.3、UMA 3.05 を `external/uma` から接続）。エディタのライセンスが
+有効でないと `build` は `unity.license` で失敗する。M10 の状況は docs/03 の 18.1 節。
 
 - Recipe の身体寸法はメートルの絶対値（`body.measurements_m`、設計書と同じ語彙）。0..1 のスライダーは寸法のない項目だけ（`body.shape`, `face.shape`）。
 - 髪・肌・衣服・靴はカタログ ID（`character/catalog/*.json`、Unity と共有）。現在の 65 項目は **すべてプレースホルダ**（中身なし）で、参照ごとに `catalog.placeholder` 警告が出る。

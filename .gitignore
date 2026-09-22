@@ -11,3 +11,8 @@ unity/**/Logs/
 unity/**/UserSettings/
 unity/**/obj/
 unity/**/Assets/ProModeler/Generated/
+unity/**/Assets/UMA/
+unity/**/Assets/UMA
+unity/**/Assets/UMA.meta
+unity/**/Assets/ProModeler/setup.json
+unity/**/Assets/ProModeler/setup.json.meta

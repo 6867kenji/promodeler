@@ -19,7 +19,10 @@
       "runtime": {
         "status": "placeholder",
         "uma_wardrobe_recipe": null,
-        "addressable": "character/eyebrows/brow_natural_m_01"
+        "addressable": "character/eyebrows/brow_natural_m_01",
+        "uma_wardrobe_recipe_by_race": {
+          "human_male": "HDEyeBrows2_Wardrobe"
+        }
       },
       "base_color_srgb": null,
       "materials": {},
@@ -33,7 +36,8 @@
       },
       "provenance": {
         "origin": "placeholder",
-        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12).",
+        "stand_in": "UMA 3.05 sample content (MIT) stands in until the real asset exists"
       },
       "version": "2026.09",
       "tags": []
@@ -55,7 +59,10 @@
       "runtime": {
         "status": "placeholder",
         "uma_wardrobe_recipe": null,
-        "addressable": "character/eyebrows/brow_natural_f_01"
+        "addressable": "character/eyebrows/brow_natural_f_01",
+        "uma_wardrobe_recipe_by_race": {
+          "human_female": "HDEyeBrowsArched_Wardrobe"
+        }
       },
       "base_color_srgb": null,
       "materials": {},
@@ -69,7 +76,8 @@
       },
       "provenance": {
         "origin": "placeholder",
-        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12).",
+        "stand_in": "UMA 3.05 sample content (MIT) stands in until the real asset exists"
       },
       "version": "2026.09",
       "tags": []

@@ -26,7 +26,11 @@
       "runtime": {
         "status": "placeholder",
         "uma_wardrobe_recipe": null,
-        "addressable": "character/hair/hair_short_01"
+        "addressable": "character/hair/hair_short_01",
+        "uma_wardrobe_recipe_by_race": {
+          "human_male": "bb_male_haircut_Recipe",
+          "human_female": "Hair_CurveUnder_Recipe"
+        }
       },
       "base_color_srgb": null,
       "materials": {},
@@ -40,7 +44,8 @@
       },
       "provenance": {
         "origin": "placeholder",
-        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12).",
+        "stand_in": "UMA 3.05 sample content (MIT) stands in until the real asset exists"
       },
       "version": "2026.09",
       "tags": [
@@ -69,7 +74,11 @@
       "runtime": {
         "status": "placeholder",
         "uma_wardrobe_recipe": null,
-        "addressable": "character/hair/hair_short_side_part_01"
+        "addressable": "character/hair/hair_short_side_part_01",
+        "uma_wardrobe_recipe_by_race": {
+          "human_male": "Hair_LeftPart_Recipe",
+          "human_female": "Hair_LeftPart_Recipe"
+        }
       },
       "base_color_srgb": null,
       "materials": {},
@@ -83,7 +92,8 @@
       },
       "provenance": {
         "origin": "placeholder",
-        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12).",
+        "stand_in": "UMA 3.05 sample content (MIT) stands in until the real asset exists"
       },
       "version": "2026.09",
       "tags": [
@@ -111,7 +121,11 @@
       "runtime": {
         "status": "placeholder",
         "uma_wardrobe_recipe": null,
-        "addressable": "character/hair/hair_short_mash_01"
+        "addressable": "character/hair/hair_short_mash_01",
+        "uma_wardrobe_recipe_by_race": {
+          "human_male": "HairMessyUp_Recipe",
+          "human_female": "HairMessyUp_Recipe"
+        }
       },
       "base_color_srgb": null,
       "materials": {},
@@ -125,7 +139,8 @@
       },
       "provenance": {
         "origin": "placeholder",
-        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12).",
+        "stand_in": "UMA 3.05 sample content (MIT) stands in until the real asset exists"
       },
       "version": "2026.09",
       "tags": [
@@ -152,7 +167,11 @@
       "runtime": {
         "status": "placeholder",
         "uma_wardrobe_recipe": null,
-        "addressable": "character/hair/hair_bob_01"
+        "addressable": "character/hair/hair_bob_01",
+        "uma_wardrobe_recipe_by_race": {
+          "human_male": "Hair_Bob_Recipe",
+          "human_female": "Hair_Bob_Recipe"
+        }
       },
       "base_color_srgb": null,
       "materials": {},
@@ -166,7 +185,8 @@
       },
       "provenance": {
         "origin": "placeholder",
-        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12).",
+        "stand_in": "UMA 3.05 sample content (MIT) stands in until the real asset exists"
       },
       "version": "2026.09",
       "tags": [
@@ -193,7 +213,11 @@
       "runtime": {
         "status": "placeholder",
         "uma_wardrobe_recipe": null,
-        "addressable": "character/hair/hair_short_bob_01"
+        "addressable": "character/hair/hair_short_bob_01",
+        "uma_wardrobe_recipe_by_race": {
+          "human_male": "Hair_CurveUnder_Recipe",
+          "human_female": "Hair_CurveUnder_Recipe"
+        }
       },
       "base_color_srgb": null,
       "materials": {},
@@ -207,7 +231,8 @@
       },
       "provenance": {
         "origin": "placeholder",
-        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12).",
+        "stand_in": "UMA 3.05 sample content (MIT) stands in until the real asset exists"
       },
       "version": "2026.09",
       "tags": [
@@ -235,7 +260,11 @@
       "runtime": {
         "status": "placeholder",
         "uma_wardrobe_recipe": null,
-        "addressable": "character/hair/hair_low_ponytail_01"
+        "addressable": "character/hair/hair_low_ponytail_01",
+        "uma_wardrobe_recipe_by_race": {
+          "human_male": "HairPonytail_Recipe",
+          "human_female": "HairPonytail_Recipe"
+        }
       },
       "base_color_srgb": null,
       "materials": {},
@@ -249,7 +278,8 @@
       },
       "provenance": {
         "origin": "placeholder",
-        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12).",
+        "stand_in": "UMA 3.05 sample content (MIT) stands in until the real asset exists"
       },
       "version": "2026.09",
       "tags": [
@@ -276,7 +306,11 @@
       "runtime": {
         "status": "placeholder",
         "uma_wardrobe_recipe": null,
-        "addressable": "character/hair/hair_ponytail_01"
+        "addressable": "character/hair/hair_ponytail_01",
+        "uma_wardrobe_recipe_by_race": {
+          "human_male": "HairPonytail_Recipe",
+          "human_female": "HairPonytail_Recipe"
+        }
       },
       "base_color_srgb": null,
       "materials": {},
@@ -290,7 +324,8 @@
       },
       "provenance": {
         "origin": "placeholder",
-        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12).",
+        "stand_in": "UMA 3.05 sample content (MIT) stands in until the real asset exists"
       },
       "version": "2026.09",
       "tags": [
@@ -317,7 +352,11 @@
       "runtime": {
         "status": "placeholder",
         "uma_wardrobe_recipe": null,
-        "addressable": "character/hair/hair_low_bun_01"
+        "addressable": "character/hair/hair_low_bun_01",
+        "uma_wardrobe_recipe_by_race": {
+          "human_male": "Hair_Bun_Recipe",
+          "human_female": "Hair_Bun_Recipe"
+        }
       },
       "base_color_srgb": null,
       "materials": {},
@@ -331,7 +370,8 @@
       },
       "provenance": {
         "origin": "placeholder",
-        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12).",
+        "stand_in": "UMA 3.05 sample content (MIT) stands in until the real asset exists"
       },
       "version": "2026.09",
       "tags": [
@@ -359,7 +399,11 @@
       "runtime": {
         "status": "placeholder",
         "uma_wardrobe_recipe": null,
-        "addressable": "character/hair/hair_high_bun_01"
+        "addressable": "character/hair/hair_high_bun_01",
+        "uma_wardrobe_recipe_by_race": {
+          "human_male": "Hair_UpwardBun_Recipe",
+          "human_female": "Hair_UpwardBun_Recipe"
+        }
       },
       "base_color_srgb": null,
       "materials": {},
@@ -373,7 +417,8 @@
       },
       "provenance": {
         "origin": "placeholder",
-        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12).",
+        "stand_in": "UMA 3.05 sample content (MIT) stands in until the real asset exists"
       },
       "version": "2026.09",
       "tags": [
@@ -400,7 +445,11 @@
       "runtime": {
         "status": "placeholder",
         "uma_wardrobe_recipe": null,
-        "addressable": "character/hair/hair_long_wave_01"
+        "addressable": "character/hair/hair_long_wave_01",
+        "uma_wardrobe_recipe_by_race": {
+          "human_male": "Hair_LongSwept_Recipe",
+          "human_female": "Hair_LongSwept_Recipe"
+        }
       },
       "base_color_srgb": null,
       "materials": {},
@@ -414,7 +463,8 @@
       },
       "provenance": {
         "origin": "placeholder",
-        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12).",
+        "stand_in": "UMA 3.05 sample content (MIT) stands in until the real asset exists"
       },
       "version": "2026.09",
       "tags": [
@@ -442,7 +492,11 @@
       "runtime": {
         "status": "placeholder",
         "uma_wardrobe_recipe": null,
-        "addressable": "character/hair/hair_long_straight_01"
+        "addressable": "character/hair/hair_long_straight_01",
+        "uma_wardrobe_recipe_by_race": {
+          "human_male": "Hair_Straight_Recipe",
+          "human_female": "Hair_Straight_Recipe"
+        }
       },
       "base_color_srgb": null,
       "materials": {},
@@ -456,7 +510,8 @@
       },
       "provenance": {
         "origin": "placeholder",
-        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12).",
+        "stand_in": "UMA 3.05 sample content (MIT) stands in until the real asset exists"
       },
       "version": "2026.09",
       "tags": [
@@ -483,7 +538,11 @@
       "runtime": {
         "status": "placeholder",
         "uma_wardrobe_recipe": null,
-        "addressable": "character/hair/hair_long_braided_back_01"
+        "addressable": "character/hair/hair_long_braided_back_01",
+        "uma_wardrobe_recipe_by_race": {
+          "human_male": "Hair_PulledBack_Recipe",
+          "human_female": "Hair_PulledBack_Recipe"
+        }
       },
       "base_color_srgb": null,
       "materials": {},
@@ -497,7 +556,8 @@
       },
       "provenance": {
         "origin": "placeholder",
-        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12).",
+        "stand_in": "UMA 3.05 sample content (MIT) stands in until the real asset exists"
       },
       "version": "2026.09",
       "tags": [
