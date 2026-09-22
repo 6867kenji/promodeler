@@ -11,6 +11,7 @@ from promodeler.core.diagnostics import ModelingError
 from . import geometry, materials, space
 
 GENERATED_KINDS = ("scatter", "fur")
+OVERLAPPING_KINDS = ("strands",)  # closed shells that may overlap by design; no self-intersection check
 
 
 @dataclass
@@ -23,6 +24,7 @@ class CompiledScene:
     textures: dict = field(default_factory=dict)  # part id -> channel -> texture metadata
     uv_stats: dict = field(default_factory=dict)  # part id -> coverage/density
     generated: dict = field(default_factory=dict)  # part id -> shape kind for scatter/fur parts
+    overlapping: set = field(default_factory=set)  # part ids whose shells overlap by design (strands)
     lods: dict = field(default_factory=dict)  # part id -> [lod objects]
     lod_stats: dict = field(default_factory=dict)  # part id -> [{level, distance, ratio, triangles}]
     armature: bpy.types.Object | None = None
@@ -85,6 +87,8 @@ def compile_recipe(recipe: dict) -> CompiledScene:
         mesh = geometry.build_mesh(f"mesh:{part['id']}", part["shape"], quality)
         if f"mesh:{part['id']}" in geometry.MESH_FILE_WEIGHTS:
             scene.file_weights[part["id"]] = geometry.MESH_FILE_WEIGHTS[f"mesh:{part['id']}"]
+        if part["shape"]["kind"] in OVERLAPPING_KINDS:
+            scene.overlapping.add(part["id"])
         if part["shape"]["kind"] not in GENERATED_KINDS:
             geometry.apply_shading(mesh, part["smooth_angle"])
         mesh.materials.append(scene.materials[part["material"]])

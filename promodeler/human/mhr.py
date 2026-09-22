@@ -287,11 +287,14 @@ def fitted_body(targets: dict, out_root: str | Path = "build/human", name: str =
     return result
 
 
-def rig_from_file(path: str | Path, rig_id: str = "mhr", keep: set[str] | None = None) -> Rig:
+def rig_from_file(path: str | Path, rig_id: str = "mhr", keep: set[str] | None = None,
+                  offset: tuple[float, float, float] = (0.0, 0.0, 0.0)) -> Rig:
     """Build a promodeler ``Rig`` from an exported ``rig.json``.
 
     ``keep`` restricts the rig to the named joints (their ancestors are
-    kept as needed); by default every joint is included.
+    kept as needed); by default every joint is included. ``offset`` moves
+    every joint, matching a translated body part (for example lifted by a
+    shoe sole).
     """
     data = json.loads(Path(path).read_text(encoding="utf-8"))
     joints = data["joints"]
@@ -304,8 +307,10 @@ def rig_from_file(path: str | Path, rig_id: str = "mhr", keep: set[str] | None =
                 wanted.add(current)
                 current = by_id[current]["parent"]
         joints = [j for j in joints if j["id"] in wanted]
+    def shift(p):
+        return (p[0] + offset[0], p[1] + offset[1], p[2] + offset[2])
     return Rig(rig_id, joints=tuple(
-        Joint(j["id"], head=tuple(j["head"]), tail=tuple(j["tail"]), parent=j["parent"]) for j in joints))
+        Joint(j["id"], head=shift(j["head"]), tail=shift(j["tail"]), parent=j["parent"]) for j in joints))
 
 
 def blueprint_targets(blueprint: dict) -> dict:

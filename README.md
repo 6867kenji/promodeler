@@ -57,7 +57,8 @@ API 早見表、無駄なビルドを避ける規則、検証と報告の契約�
 | `Box`, `Plane`, `Cylinder`, `Cone`, `Sphere` | 原点中心のプリミティブ。高さは局所 Y |
 | `Extrude(profile, depth, axis)` | 穴あり 2D プロファイルを軸方向に押し出す。`axis="y"` で地面に描いた形を上へ押し出す |
 | `Revolve(profile, segments, angle, cap_ends)` | (半径, 高さ) 列を Y 軸周りに回転。端点の半径 0 は極で閉じる。巻き方向は自動正規化 |
-| `Sweep(profile, path, scales, twist, capped)` | 穴なしプロファイルを 3D 折れ線に沿って回転最小フレームで掃引 |
+| `Sweep(profile, path, scales, twist, capped, up)` | 穴なしプロファイルを 3D 折れ線に沿って回転最小フレームで掃引。`up` は最初の断面の向きの基準（面法線を渡すと平たい断面が面に沿う） |
+| `Strands(strands=(Sweep, ...))` | 多数の掃引をブーリアンなしで 1 メッシュに束ねる（髪の束、靴紐、ケーブル）。殻の重なりは前提なので自己交差チェックは省く（`report.parts.<id>.overlapping`） |
 | `Loft(sections, capped)` | 同じ点数の断面（各断面は `LoftSection(points, transform)`）を張る |
 
 `promodeler.core.curves` に `circle`, `regular_polygon`, `rect`, `rounded_rect`, `arc`, `bezier`,
@@ -143,7 +144,13 @@ clips=(Clip(id, duration, keyframes=(Keyframe(time, pose_id_or_None), ...), loop
   `cache/` に書き出す。`pip install torch numpy`（`pip install -e .[human]`）。Blender 側に torch は不要。
 - `assets/haruka.py`（05-woman 設計書）が実例。設計値との差は身長 +2 mm、股下 −3 mm、肩幅 0 mm、
   バスト +2 mm、ウエスト −4 mm、ヒップ −11 mm、アンダーバスト +20 mm（v0 ロフト素体では ±5 cm 以上ずれていた）。
-  顔の個体差（MHR 頭部係数）、指のポーズ、靴は未着手。
+- 素体以外は設計書からコードで作る: 実測した胴の断面に沿わせたワンピース（前下がりの U ネック、胸元中央
+  120 mm に 12 本のギャザーを断面形状で作り、クロスで凍結）、頭蓋の楕円体に沿う `Strands` の髪束
+  （前髪 13 束・顔周り 4 束・後ろ 3 層 64 束、毛先 0.66 m）、足の実測外形から作る白スニーカー
+  （底 25 mm・アッパー・5 穴の靴紐、`parent_joint` で足関節に追従、身体は底の上に立つので靴込み 1.625 m）、
+  頬・目の下・唇・鼻の位置マスク付きの肌、設計書の全クリップ（idle/walk/turn/sit/raise-arms/physics-settle）と
+  可動域確認ポーズ `range_check`。`Camera("face"/"neckline"/"sneaker")` で設計書の QA 静止画を出す。
+  顔の個体差（MHR 頭部係数）、眼球・歯（MHR LOD1 は閉じた一枚殻）、指のポーズ、ランタイム物理は未着手。
 
 ### 散布・毛・クロス・LOD・USDZ（M5）
 

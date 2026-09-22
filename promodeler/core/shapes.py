@@ -216,9 +216,11 @@ class Sweep(Shape):
     """A hole-free profile swept along an open 3D polyline with rotation-minimizing frames.
 
     The profile's (u, v) axes follow the frame's normal and binormal, which
-    start as close to +Y as the first tangent allows. ``scales`` gives one
-    factor per path point; ``twist`` is the total rotation in radians
-    distributed along the path length.
+    start as close to ``up`` (default +Y) as the first tangent allows.
+    ``scales`` gives one factor per path point; ``twist`` is the total
+    rotation in radians distributed along the path length. Set ``up`` to a
+    surface normal to lay a flat profile against that surface (hair
+    bundles, straps).
     """
 
     kind: ClassVar[str] = "sweep"
@@ -227,12 +229,20 @@ class Sweep(Shape):
     scales: tuple[float, ...] | None = None
     twist: float = 0.0
     capped: bool = True
+    up: tuple[float, float, float] | None = None
 
     def validate(self, label: str) -> None:
         super().validate(label)
         self.profile.validate(f"{label}.profile")
         if self.profile.holes:
             raise ModelingError("sweep.profile", f"{label}.profile must not have holes.")
+        if self.up is not None:
+            try:
+                up = tuple(float(c) for c in self.up)
+            except (TypeError, ValueError):
+                raise ModelingError("sweep.up", f"{label}.up must be an (x, y, z) direction.") from None
+            if len(up) != 3 or not all(is_finite(c) for c in up) or sum(c * c for c in up) < 1e-12:
+                raise ModelingError("sweep.up", f"{label}.up must be a nonzero finite (x, y, z) direction.")
         try:
             path = tuple((float(p[0]), float(p[1]), float(p[2])) for p in self.path)
         except (TypeError, IndexError):
@@ -267,6 +277,7 @@ class Sweep(Shape):
             "scales": None if self.scales is None else [float(s) for s in self.scales],
             "twist": float(self.twist),
             "capped": bool(self.capped),
+            "up": None if self.up is None else [float(c) for c in self.up],
         }
 
 
@@ -402,6 +413,30 @@ class Fur(Shape):
 
 
 @dataclass(frozen=True)
+class Strands(Shape):
+    """Many sweeps merged into one mesh without booleans: hair bundles, laces, cables, grass tufts.
+
+    Each strand is a closed ``Sweep`` shell; shells may overlap, so the
+    report skips the self-intersection check for parts of this kind and
+    the part must not be used as a boolean operand.
+    """
+
+    kind: ClassVar[str] = "strands"
+    strands: tuple[Sweep, ...] = ()
+
+    def validate(self, label: str) -> None:
+        if not isinstance(self.strands, (tuple, list)) or not 1 <= len(self.strands) <= 4096:
+            raise ModelingError("strands.count", f"{label}.strands needs 1...4096 sweeps.")
+        for index, strand in enumerate(self.strands):
+            if not isinstance(strand, Sweep):
+                raise ModelingError("strands.kind", f"{label}.strands[{index}] must be a Sweep.")
+            strand.validate(f"{label}.strands[{index}]")
+
+    def to_recipe(self) -> dict:
+        return {"kind": self.kind, "strands": [s.to_recipe() for s in self.strands]}
+
+
+@dataclass(frozen=True)
 class MeshFile(Shape):
     """A mesh authored elsewhere, loaded from an ``.npz`` written by promodeler tooling.
 
@@ -434,4 +469,4 @@ class MeshFile(Shape):
 
 
 GENERATED_KINDS = ("scatter", "fur")
-SHAPE_KINDS = {cls.kind: cls for cls in (Box, Plane, Cylinder, Cone, Sphere, Extrude, Revolve, Sweep, Loft, Scatter, Fur, MeshFile)}
+SHAPE_KINDS = {cls.kind: cls for cls in (Box, Plane, Cylinder, Cone, Sphere, Extrude, Revolve, Sweep, Loft, Scatter, Fur, MeshFile, Strands)}

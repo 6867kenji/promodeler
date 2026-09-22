@@ -64,7 +64,8 @@ All randomness derives from `input.seed`; pass it into presets and fields. Keep 
 | `Box(size)`, `Plane(size)`, `Cylinder(radius, height)`, `Cone(radius, height, top_radius)`, `Sphere(radius)` | segments default to `input.quality.curve_segments` |
 | `Extrude(profile=Profile(outer, holes), depth, axis="y")` | profile on the ground (u along X, v along -Z), extruded up; holes are triangulated with constrained Delaunay |
 | `Revolve(profile=[(radius, height), ...], segments, angle, cap_ends)` | around Y; zero radius only at the ends (poles); winding is normalized |
-| `Sweep(profile=Profile(outer), path=[(x, y, z), ...], scales, twist, capped)` | rotation-minimizing frames; no holes; no reversals |
+| `Sweep(profile=Profile(outer), path=[(x, y, z), ...], scales, twist, capped, up)` | rotation-minimizing frames; no holes; no reversals; `up` fixes the first frame (pass a surface normal to lay a flat profile on a surface) |
+| `Strands(strands=(Sweep, ...))` | many sweeps in one mesh without booleans (hair bundles, laces, cables); shells may overlap, self-intersections are not checked, never a boolean operand |
 | `Loft(sections=(LoftSection(points, transform), ...), capped)` | equal point counts; point 0 corresponds |
 
 Point helpers in `curves`: `circle`, `regular_polygon`, `rect`, `rounded_rect`, `arc`, `bezier`, `symmetric` (mirror a half outline into a full ring), `join`. Prefer many profile points and `Subdivision(smooth=False)` when a surface will be displaced.
@@ -107,6 +108,11 @@ Rules:
 - Fit clothing and hair to the fitted surface, not to the blueprint numbers: slice `body.npz` at the section heights (`assets/haruka.py` has `BodyMeasure.slice`) and add ease. Loft sections must run bottom to top or the closed shell faces inward (`geometry.insideOut`).
 - Requires `torch` and `numpy` on the host Python and the MHR assets under `external/mhr` (see `tools/mhr_dump_lod1.py`); Blender never loads torch. If `mhr.assets` is raised, report it instead of falling back to a loft body.
 - Check the fitted measurements in `build/human/<name>-<hash>/rig.json` (`measurements`) against the blueprint before judging renders; a few millimeters on lengths and 1 to 2 cm on circumferences is the current accuracy.
+- Hair: a thin scalp cap plus `Strands` bundles whose paths follow a skull ellipsoid measured from the body, then hang with an eased drift to a target behind or in front of the shoulders. Pass the skull normal as `Sweep.up` so flat bundles lie on the scalp, make bundle widths about twice their spacing, and start outer layers lower than inner ones so they emerge from underneath.
+- Clothing: build the loft as the garment's inner surface from body slices plus ease, keep the cloth quads near square (rings every 5 to 10 cm, `Subdivision(levels=1, smooth=True)`), pin the neckline band and let `ClothDrape` settle; a dense ring with sparse rings buckles into an accordion. Shape gathers in the ring points, not in a texture.
+- Shoes: measure the foot print and ankle from the body slices, extrude the sole outline, loft the upper as the inner surface with 6 mm clearance and `Solidify(offset=1.0)` outward, attach every shoe part with `parent_joint=<side>_subtalar`, and lift the body and rig by the sole (`rig_from_file(..., offset=(0, sole, 0))`, `Part(transform=Transform(translation=(0, sole, 0)))`).
+- Bakes fill texels no UV island touched with the mean baked value, so meshes with tiny islands (MHR faces) no longer show black specks; the face still needs 2048 px or more (`QualityProfile(texture_resolution=2048)` on the generator).
+- The blueprint's QA stills come from authored cameras (`face`, `neckline`, `sneaker`); its range-of-motion check is a pose (`range_check`) rendered with `--pose`.
 
 ## Interiors and architecture
 

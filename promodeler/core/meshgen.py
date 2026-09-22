@@ -81,6 +81,8 @@ def generate(shape: dict, quality: dict) -> MeshSpec:
         return sweep(shape)
     if kind == "loft":
         return loft(shape)
+    if kind == "strands":
+        return strands(shape)
     raise ModelingError("shape.kind", f"meshgen does not handle shape kind {kind!r}.")
 
 
@@ -154,7 +156,7 @@ def revolve(shape: dict, quality: dict) -> MeshSpec:
     return spec
 
 
-def _frames(path: list[Vec3]) -> list[tuple[Vec3, Vec3, Vec3]]:
+def _frames(path: list[Vec3], up: Vec3 | None = None) -> list[tuple[Vec3, Vec3, Vec3]]:
     """Rotation-minimizing (tangent, normal, binormal) frames via the double-reflection method."""
     n = len(path)
     tangents = []
@@ -168,7 +170,7 @@ def _frames(path: list[Vec3]) -> list[tuple[Vec3, Vec3, Vec3]]:
             if dot(t, t) < 1e-12:
                 t = sub(path[i + 1], path[i])
         tangents.append(normalize(t))
-    up = (0.0, 1.0, 0.0)
+    up = normalize(up) if up is not None else (0.0, 1.0, 0.0)
     r0 = sub(up, scale(tangents[0], dot(up, tangents[0])))
     if dot(r0, r0) < 1e-8:
         alt = (1.0, 0.0, 0.0)
@@ -194,7 +196,8 @@ def sweep(shape: dict) -> MeshSpec:
     path = [tuple(float(c) for c in p) for p in shape["path"]]
     scales = shape["scales"] or [1.0] * len(path)
     twist = shape["twist"]
-    frames = _frames(path)
+    up = shape.get("up")
+    frames = _frames(path, tuple(float(c) for c in up) if up else None)
     lengths = [0.0]
     for i in range(1, len(path)):
         lengths.append(lengths[-1] + math.dist(path[i - 1], path[i]))
@@ -214,6 +217,19 @@ def sweep(shape: dict) -> MeshSpec:
     if shape["capped"]:
         spec.faces.append(list(reversed(rings[0])))
         spec.faces.append(list(rings[-1]))
+    return spec
+
+
+def strands(shape: dict) -> MeshSpec:
+    """Concatenate the sweeps' shells into one spec (indices offset, no merging)."""
+    spec = MeshSpec()
+    for strand in shape["strands"]:
+        part = sweep(strand)
+        base = len(spec.vertices)
+        spec.vertices.extend(part.vertices)
+        spec.faces.extend([i + base for i in face] for face in part.faces)
+        for fill in part.fills:
+            spec.fills.append(Fill([[i + base for i in loop] for loop in fill.loops], fill.normal))
     return spec
 
 

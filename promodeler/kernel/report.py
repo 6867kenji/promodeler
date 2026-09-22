@@ -87,11 +87,14 @@ def part_statistics(obj: bpy.types.Object, depsgraph, skip_intersections: bool =
 
 def build_report(scene: CompiledScene, recipe: dict) -> dict:
     depsgraph = bpy.context.evaluated_depsgraph_get()
-    parts = {part_id: part_statistics(obj, depsgraph, skip_intersections=part_id in scene.generated)
+    parts = {part_id: part_statistics(obj, depsgraph,
+                                      skip_intersections=part_id in scene.generated or part_id in scene.overlapping)
              for part_id, obj in scene.parts.items()}
     for part_id, stats in parts.items():
         if part_id in scene.generated:
             stats["generated"] = scene.generated[part_id]
+        if part_id in scene.overlapping:
+            stats["overlapping"] = True
         if part_id in scene.lod_stats:
             stats["lods"] = scene.lod_stats[part_id]
         if part_id in scene.uv_stats:
@@ -130,7 +133,7 @@ def build_report(scene: CompiledScene, recipe: dict) -> dict:
             warnings.append({"code": "geometry.degenerate", "message": f"Part {part_id!r} has {stats['degenerate_faces']} degenerate faces."})
         if stats["self_intersections"]:
             warnings.append({"code": "geometry.selfIntersection", "message": f"Part {part_id!r} has {stats['self_intersections']} self-intersecting triangle pairs."})
-        if stats["self_intersections"] is None and "generated" not in stats:
+        if stats["self_intersections"] is None and "generated" not in stats and "overlapping" not in stats:
             warnings.append({"code": "geometry.selfIntersectionSkipped", "message": f"Part {part_id!r} exceeds the self-intersection check limit."})
         if "uv" in stats and stats["uv"]["coverage"] < 0.2:
             warnings.append({"code": "uv.coverage", "message": f"Part {part_id!r} uses only {stats['uv']['coverage']:.0%} of its texture atlas."})

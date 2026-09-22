@@ -156,13 +156,38 @@ def _configure_bake(samples: int) -> None:
     scene.cycles.use_adaptive_sampling = False
     scene.cycles.seed = 0
     scene.render.bake.use_selected_to_active = False
-    scene.render.bake.use_clear = True
+    scene.render.bake.use_clear = False  # images are pre-filled with a sentinel; see _fill_unbaked
+
+
+SENTINEL = (1.0, 0.0, 1.0, 1.0)  # magenta: never a plausible baked value
 
 
 def _new_image(name: str, resolution: int, color: bool) -> bpy.types.Image:
     image = bpy.data.images.new(name, resolution, resolution, alpha=False, float_buffer=False)
     image.colorspace_settings.name = "sRGB" if color else "Non-Color"
+    import numpy as np
+
+    count = image.size[0] * image.size[1]
+    image.pixels.foreach_set(np.tile(np.array(SENTINEL, dtype=np.float32), count))
     return image
+
+
+def _fill_unbaked(image: bpy.types.Image) -> int:
+    """Replace texels the bake never wrote (tiny UV islands between texel centers, far from any
+    island margin) with the mean of the baked texels, so they sample the material's average
+    instead of black. Returns the number of texels filled."""
+    import numpy as np
+
+    count = image.size[0] * image.size[1]
+    buffer = np.empty(count * 4, dtype=np.float32)
+    image.pixels.foreach_get(buffer)
+    px = buffer.reshape(-1, 4)
+    unbaked = (px[:, 0] > 0.999) & (px[:, 1] < 0.001) & (px[:, 2] > 0.999)
+    filled = int(unbaked.sum())
+    if filled and filled < count:
+        px[unbaked] = px[~unbaked].mean(axis=0)
+        image.pixels.foreach_set(px.ravel())
+    return filled
 
 
 def _bake_into(proc: ProceduralMaterial, image: bpy.types.Image, bake_type: str, source=None, margin: int = 8) -> None:
@@ -187,11 +212,12 @@ def _bake_into(proc: ProceduralMaterial, image: bpy.types.Image, bake_type: str,
         tree.links.new(proc.bsdf.outputs["BSDF"], surface)
     try:
         result = bpy.ops.object.bake(
-            type=bake_type, margin=margin, use_clear=True, normal_space="TANGENT",
+            type=bake_type, margin=margin, use_clear=False, normal_space="TANGENT",
             target="IMAGE_TEXTURES", save_mode="INTERNAL",
         )
         if "FINISHED" not in result:
             raise ModelingError("bake.failed", f"Bake {bake_type} did not finish: {result}.")
+        _fill_unbaked(image)
     finally:
         for node in temp:
             tree.nodes.remove(node)

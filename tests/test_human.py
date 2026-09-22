@@ -22,6 +22,8 @@ class HumanModuleTests(unittest.TestCase):
             rig.validate()
             self.assertEqual([j.id for j in rig.joints], ["root", "c_spine0", "c_head"])
             self.assertEqual(len(mhr.rig_from_file(path).joints), 4)
+            lifted = mhr.rig_from_file(path, offset=(0.0, 0.025, 0.0))
+            self.assertAlmostEqual(lifted.joints[0].head[1], 0.925)
 
     def test_blueprint_targets(self):
         blueprint = {"dimensions": {"barefoot_height_m": 1.6, "inseam_m": 0.735,

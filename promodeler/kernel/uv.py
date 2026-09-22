@@ -10,6 +10,14 @@ from promodeler.core.diagnostics import ModelingError
 
 
 def unwrap(obj: bpy.types.Object, angle_limit: float = math.radians(66.0), margin: float = 0.02) -> None:
+    """Smart-project charts; when a fragmented mesh (cloth folds, hundreds of tubes) leaves the atlas
+    mostly margin, redo it with a wide angle limit and a tight margin."""
+    _smart_project(obj, angle_limit, margin)
+    if uv_statistics(obj.data, 1)["coverage"] < 0.15:
+        _smart_project(obj, math.radians(89.0), 0.001)
+
+
+def _smart_project(obj: bpy.types.Object, angle_limit: float, margin: float) -> None:
     for other in bpy.context.scene.objects:
         other.select_set(False)
     obj.select_set(True)
