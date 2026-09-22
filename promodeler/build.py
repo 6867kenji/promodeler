@@ -22,6 +22,7 @@ from pathlib import Path
 
 from . import KERNEL_VERSION
 from .contact_sheet import make_contact_sheet
+from .video import encode_frames
 from .core import Asset, AssetGenerator, ExportSettings, ModelingError, RenderSettings, build_recipe, dump_recipe, recipe_hash
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -201,6 +202,11 @@ def build(path: str, out_root: str = "build", force: bool = False, render=None,
     report["blender_exit_code"] = completed.returncode
     report["wall_seconds"] = round(time.perf_counter() - started, 3)
     if report.get("status") == "ok":
+        for entry in report.get("renders", []):
+            if entry.get("video") and entry.get("frames_dir"):
+                encoded = encode_frames(entry["frames_dir"], entry.get("fps", 24), Path(entry["frames_dir"]))
+                entry.update({"path": encoded["path"], "format": encoded["format"], "encoder": encoded["encoder"],
+                              "written": entry["written"] and encoded["written"]})
         report["contact_sheet"] = make_contact_sheet(report, renders_dir / "contact_sheet.png")
     with open(report_path, "w", encoding="utf-8") as f:
         json.dump(report, f, indent=2, ensure_ascii=False)

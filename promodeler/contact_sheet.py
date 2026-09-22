@@ -11,7 +11,7 @@ def make_contact_sheet(report: dict, out_path: Path, cell: int = 384) -> dict | 
         from PIL import Image, ImageDraw
     except ImportError:
         return None
-    renders = [r for r in report.get("renders", []) if r.get("written")]
+    renders = [r for r in report.get("renders", []) if r.get("written") and not r.get("video")]
     if not renders:
         return None
     views = list(dict.fromkeys(r["view"] for r in renders))

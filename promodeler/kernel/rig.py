@@ -164,8 +164,12 @@ def bind_all(scene: CompiledScene, recipe: dict) -> dict | None:
     }
 
 
-def apply_pose(scene: CompiledScene, pose_id: str | None) -> None:
-    """Set every pose bone to the pose, or to rest when ``pose_id`` is None."""
+def apply_pose(scene: CompiledScene, pose_id: str | None, update: bool = True) -> None:
+    """Set every pose bone to the pose, or to rest when ``pose_id`` is None.
+
+    ``update=False`` skips the depsgraph update: while an action is assigned for keying, an update
+    re-evaluates the action and overwrites the values just set (every key would record the rest pose).
+    """
     armature = scene.armature
     if armature is None:
         return
@@ -191,7 +195,28 @@ def apply_pose(scene: CompiledScene, pose_id: str | None) -> None:
         else:
             bone.rotation_euler = Euler(transform["rotation"], "XYZ")
             bone.location = Vector(transform["translation"])
+    if update:
+        bpy.context.view_layer.update()
+
+
+def solo_clip(scene: CompiledScene, clip_id: str | None) -> int:
+    """Play only ``clip_id`` from the NLA (or nothing when None). Returns the clip's last frame at ``FPS``."""
+    armature = scene.armature
+    if armature is None or armature.animation_data is None:
+        raise ModelingError("render.clip", "The asset has no rig or clips to render.")
+    tracks = armature.animation_data.nla_tracks
+    if clip_id is not None and clip_id not in tracks:
+        raise ModelingError("render.clip", f"Unknown clip {clip_id!r}; clips are {[t.name for t in tracks]}.")
+    for track in tracks:
+        track.is_solo = False
+        track.mute = clip_id is not None and track.name != clip_id
+    armature.animation_data.use_nla = clip_id is not None
+    end = 1
+    if clip_id is not None:
+        for strip in tracks[clip_id].strips:
+            end = max(end, int(round(strip.frame_end)))
     bpy.context.view_layer.update()
+    return end
 
 
 def author_clip(scene: CompiledScene, clip: dict) -> dict:
@@ -208,7 +233,7 @@ def author_clip(scene: CompiledScene, clip: dict) -> dict:
         for key in clip["keyframes"]:
             frame = 1 + key["time"] * FPS
             bpy.context.scene.frame_set(int(round(frame)))
-            apply_pose(scene, key["pose"])
+            apply_pose(scene, key["pose"], update=False)
             for bone in armature.pose.bones:
                 bone.keyframe_insert("rotation_euler", frame=frame)
                 bone.keyframe_insert("location", frame=frame)
@@ -219,6 +244,9 @@ def author_clip(scene: CompiledScene, clip: dict) -> dict:
     track.name = clip["id"]
     strip = track.strips.new(clip["id"], 1, action)
     strip.name = clip["id"]
+    # Blender 4.4+ layered actions: a strip evaluates nothing until it points at the action's slot.
+    if hasattr(strip, "action_slot") and getattr(action, "slots", None):
+        strip.action_slot = action.slots[0]
     if clip["loop"]:
         strip.repeat = 1.0
     bpy.context.scene.frame_set(1)

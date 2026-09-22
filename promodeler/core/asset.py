@@ -133,10 +133,16 @@ class RenderSettings:
     pose: str | None = None
     cameras: tuple[Camera, ...] = ()
     lights: tuple[Light, ...] = ()
+    clip: str | None = None  # render this clip as a video (one .mp4 per view/camera, shaded pass) instead of stills
+    clip_fps: int = 24
 
     def validate(self) -> None:
         if self.pose is not None and (not isinstance(self.pose, str) or not self.pose):
             raise ModelingError("render.pose", "render.pose must be a pose id or None.")
+        if self.clip is not None and (not isinstance(self.clip, str) or not self.clip):
+            raise ModelingError("render.clip", "render.clip must be a clip id or None.")
+        if not isinstance(self.clip_fps, int) or not 1 <= self.clip_fps <= 120:
+            raise ModelingError("render.clipFps", "render.clip_fps must be an integer in 1...120.")
         ids: set[str] = set()
         for index, camera in enumerate(self.cameras):
             camera.validate(f"render.cameras[{index}]")
@@ -174,6 +180,8 @@ class RenderSettings:
             "lights": [l.to_recipe() for l in self.lights],
             "samples": self.samples,
             "background": [float(v) for v in self.background],
+            "clip": self.clip,
+            "clip_fps": self.clip_fps,
         }
 
 

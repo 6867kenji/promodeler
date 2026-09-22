@@ -22,6 +22,20 @@ def blender_available() -> bool:
         return False
 
 
+def read_glb_accessor(path: str, gltf: dict, index: int) -> list[list[float]]:
+    """Float accessor data from a .glb (rotation/translation samplers)."""
+    import struct
+    data = open(path, "rb").read()
+    json_length = struct.unpack_from("<I", data, 12)[0]
+    binary_start = 28 + json_length
+    accessor = gltf["accessors"][index]
+    view = gltf["bufferViews"][accessor["bufferView"]]
+    components = {"SCALAR": 1, "VEC3": 3, "VEC4": 4}[accessor["type"]]
+    offset = binary_start + view.get("byteOffset", 0) + accessor.get("byteOffset", 0)
+    flat = struct.unpack_from(f"<{accessor['count'] * components}f", data, offset)
+    return [list(flat[i:i + components]) for i in range(0, len(flat), components)]
+
+
 def read_glb_json(path: str) -> dict:
     with open(path, "rb") as f:
         magic, version, _ = struct.unpack("<4sII", f.read(12))
@@ -139,6 +153,16 @@ class BuildTests(unittest.TestCase):
             self.assertEqual(len(gltf["skins"]), 1)
             self.assertEqual(len(gltf["skins"][0]["joints"]), 4)
             self.assertEqual([a.get("name") for a in gltf["animations"]], ["wave"])
+            # The clip must carry motion: at least one rotation channel changes between its keys.
+            wave = gltf["animations"][0]
+            moving = 0
+            for channel in wave["channels"]:
+                if channel["target"]["path"] != "rotation":
+                    continue
+                values = read_glb_accessor(result.report["export"]["path"], gltf, wave["samplers"][channel["sampler"]]["output"])
+                if max(abs(v - values[0][i]) for row in values for i, v in enumerate(row)) > 1e-3:
+                    moving += 1
+            self.assertGreater(moving, 0, "exported clip has no motion")
 
     def test_mossy_rock_generated_parts_lods_and_usdz(self):
         with tempfile.TemporaryDirectory() as tmp:

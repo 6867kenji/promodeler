@@ -73,6 +73,10 @@ def _render_overrides(args) -> dict | None:
         fields["environment"] = args.environment
     if getattr(args, "pose", None):
         fields["pose"] = args.pose
+    if getattr(args, "clip", None):
+        fields["clip"] = args.clip
+    if getattr(args, "clip_fps", None):
+        fields["clip_fps"] = args.clip_fps
     return fields or None
 
 
@@ -137,6 +141,11 @@ def print_report(result) -> None:
     for render in report.get("renders", []):
         state = "written" if render["written"] else "MISSING"
         label = f"{render.get('pass', 'shaded')}/{render['view']}"
+        if render.get("video"):
+            label = f"clip {render['clip']}/{render['view']}"
+            print(f"video:   {label:<22} {state} {render['frames']} frames @ {render['fps']} fps "
+                  f"({render.get('encoder') or 'no encoder'}) {render['seconds']}s  {render['path']}")
+            continue
         print(f"render:  {label:<22} {state} {render['seconds']}s  {render['path']}")
     if report.get("contact_sheet"):
         print(f"sheet:   {report['contact_sheet']['path']}")
@@ -229,6 +238,8 @@ def main(argv: list[str] | None = None) -> int:
         p.add_argument("--passes", default=None, help="Comma-separated: shaded,clay,wireframe,normals,uv")
         p.add_argument("--environment", default=None, help="studio, overcast, sunny, sunset or an .hdr/.exr path")
         p.add_argument("--pose", default=None, help="Render the rig in this pose")
+        p.add_argument("--clip", default=None, help="Render this clip as an .mp4 per view instead of stills")
+        p.add_argument("--clip-fps", type=int, default=None, help="Frame rate of clip videos (default 24)")
         p.add_argument("--texture-resolution", type=int, default=None, help="Override quality.texture_resolution")
         p.add_argument("--bake-samples", type=int, default=None, help="Override quality.bake_samples")
         p.add_argument("--formats", default=None, help="Comma-separated export formats: glb,usdz")

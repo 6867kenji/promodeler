@@ -101,6 +101,7 @@ Rules:
 - `ClothDrape(frames, mass, stiffness, bending, pin=<field>)` simulates a part against the other parts and freezes the result; give the cloth a `Subdivision(smooth=False)` for resolution and expect a few self-intersections in folds.
 - `Part(lods=(LOD(distance, ratio), ...))` exports decimated `<id>:lod<n>` nodes. `ExportSettings(formats=("glb", "usdz"))` or `--formats glb,usdz` adds USDZ.
 - `report.stages` lists seconds per pipeline stage; use it before blaming Blender for a slow build.
+- Clip videos: `--clip <id> [--clip-fps 60]` (or `RenderSettings(clip=...)`) renders that clip for every view/camera as a PNG sequence that the host encodes to .mp4 (ffmpeg on PATH) or animated .webp (Pillow). Shaded pass only; the contact sheet skips videos. Budget frames x per-frame render time (about 5 s per 384 px EEVEE frame on this machine) and pick short clips or `--views front`.
 
 ## Human bodies
 

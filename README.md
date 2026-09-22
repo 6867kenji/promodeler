@@ -122,7 +122,10 @@ clips=(Clip(id, duration, keyframes=(Keyframe(time, pose_id_or_None), ...), loop
 `Part(skinned=True)` は距離ベースの自動ウェイト（最大 4 影響）でリグに結合し、`Part(parent_joint="j")` は関節に剛体で追従する。
 ポーズの回転は既定では各関節のローカル座標系（Y が head → tail、ロール依存）で指定する。検証ポーズには `JointTransform(..., space="world")` で作者座標系の軸（Z 回りで腕を横に上げる、X 回りで前後に振る）を使うと迷わない。クリップは NLA トラックとして glTF の
 アニメーションに書き出され、ランタイムのステートマシンはエンジン側に任せる。`RenderSettings(pose=...)` または
-`--pose` でポーズ付きの検証レンダができる。関節 ID とパーツ ID は書き出し先で同じノード名空間になるので別名にする。
+`--pose` でポーズ付きの検証レンダができる。`RenderSettings(clip="walk", clip_fps=24)` または `--clip walk [--clip-fps 60]`
+でクリップを各ビュー/カメラの動画にする（shaded のみ）。kernel は PNG 連番を書き、ホストが `ffmpeg` があれば H.264 mp4、
+なければ Pillow でアニメーション WebP に符号化する（この環境の Blender は FFmpeg 出力を持たない）。
+`report.renders[].video` に fps・フレーム数・エンコーダが入る。関節 ID とパーツ ID は書き出し先で同じノード名空間になるので別名にする。
 `assets/desk_lamp.py`（剛体アタッチ）と `assets/tentacle.py`（スキン）を参照。
 
 ### 人体素体: Meta MHR（M6）
@@ -161,6 +164,8 @@ clips=(Clip(id, duration, keyframes=(Keyframe(time, pose_id_or_None), ...), loop
   `extras.json` と glTF ルート extras (`promodeler_extras`) に書き出す。
 - 設計書との照合: `python tools/blueprint_check.py blueprints/japan-realistic-v1/05-woman/blueprint.json` が
   最新ビルドの寸法・部位ボックス・三角形予算・警告を設計値と並べる。
+- 髪の動力学ガイド（後ろ 8 本・左右 2 本ずつ・前髪 2 本、各 4–6 節）を束メッシュとは別に `extras.hair_guides` へ出す。
+- クリップ動画: `python -m promodeler build assets/haruka.py --clip walk --views front,side --resolution 384`。
   歯（口は閉じている）、ランタイム物理そのもの、髪のカーブ書き出しは未着手。
 
 ### 散布・毛・クロス・LOD・USDZ（M5）

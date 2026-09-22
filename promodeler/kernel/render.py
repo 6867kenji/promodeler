@@ -448,6 +448,71 @@ def setup_lights(specs: list[dict]) -> None:
         bpy.context.scene.collection.objects.link(obj)
 
 
+def _render_clip(scene: CompiledScene, settings: dict, shots: list[dict], camera, bounds, out_dir: str) -> list[dict]:
+    """One PNG frame sequence per view of the clip named in ``settings["clip"]`` (shaded pass only).
+
+    Clips are keyed at ``rig.FPS``; the scene's time remapping stretches them to ``clip_fps`` so
+    the sequence plays at real speed at any frame rate. The host encodes the frames to a video
+    (``promodeler.video``) because not every Blender build ships FFmpeg output.
+    """
+    from . import rig as rigging
+
+    clip_id = settings["clip"]
+    fps = int(settings.get("clip_fps") or rigging.FPS)
+    # Videos follow the requested views; authored cameras only when no view is requested.
+    shots = [s for s in shots if s["builtin"]] or shots
+    bscene = bpy.context.scene
+    render = bscene.render
+    saved = (render.image_settings.file_format, render.fps, render.frame_map_old, render.frame_map_new,
+             bscene.frame_start, bscene.frame_end, render.filepath)
+    end_at_rig_fps = rigging.solo_clip(scene, clip_id)
+    results = []
+    try:
+        render.fps = fps
+        render.fps_base = 1.0
+        render.frame_map_old = rigging.FPS
+        render.frame_map_new = fps
+        bscene.frame_start = 1
+        bscene.frame_end = max(1, int(round((end_at_rig_fps - 1) * fps / rigging.FPS)) + 1)
+        render.image_settings.file_format = "PNG"
+        for shot in shots:
+            view = shot["id"]
+            hidden = []
+            if shot["builtin"]:
+                camera.data.type = "PERSP"
+                camera.data.angle = math.radians(39.6)
+                frame_camera(camera, VIEW_DIRECTIONS[view], bounds)
+            else:
+                _place_camera(camera, shot)
+                for part_id in shot.get("hide_parts", []):
+                    for obj in [scene.parts.get(part_id)] + scene.lods.get(part_id, []):
+                        if obj is not None and not obj.hide_render:
+                            obj.hide_render = True
+                            hidden.append(obj)
+            frames_dir = os.path.join(out_dir, f"{clip_id}_{view}")
+            os.makedirs(frames_dir, exist_ok=True)
+            render.filepath = os.path.join(frames_dir, "frame_")
+            started = time.perf_counter()
+            bpy.ops.render.render(animation=True)
+            for obj in hidden:
+                obj.hide_render = False
+            frames = sorted(f for f in os.listdir(frames_dir) if f.startswith("frame_") and f.endswith(".png"))
+            expected = bscene.frame_end - bscene.frame_start + 1
+            results.append({
+                "view": view, "pass": "shaded", "clip": clip_id, "video": True, "fps": fps,
+                "frames": len(frames), "frames_dir": frames_dir, "path": None, "written": len(frames) == expected,
+                "bytes": sum(os.path.getsize(os.path.join(frames_dir, f)) for f in frames),
+                "seconds": round(time.perf_counter() - started, 3),
+            })
+    finally:
+        (render.image_settings.file_format, render.fps, render.frame_map_old, render.frame_map_new,
+         bscene.frame_start, bscene.frame_end, render.filepath) = saved
+        rigging.solo_clip(scene, None)
+        rigging.apply_pose(scene, None)
+        bscene.frame_set(1)
+    return results
+
+
 def render_views(scene: CompiledScene, settings: dict, out_dir: str) -> list[dict]:
     bounds = world_bounds(scene)
     if bounds is None:
@@ -466,6 +531,8 @@ def render_views(scene: CompiledScene, settings: dict, out_dir: str) -> list[dic
     if scene.armature is not None:
         from . import rig as rigging
         rigging.apply_pose(scene, settings.get("pose"))
+    if settings.get("clip"):
+        return _render_clip(scene, settings, shots, camera, bounds, out_dir)
     try:
         for pass_name in passes:
             state.apply(pass_name)

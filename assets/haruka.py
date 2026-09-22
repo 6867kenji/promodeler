@@ -325,6 +325,13 @@ def build(input: GenerationInput) -> Asset:
         return out
 
     strands: list[Sweep] = []
+    guides: list[dict] = []  # blueprint physics: 8 back + 2 per side + 2 bang guide chains of 4-6 nodes
+
+    def guide(group: str, path: list[np.ndarray], nodes: int = 5) -> None:
+        picks = [path[round(i * (len(path) - 1) / (nodes - 1))] for i in range(nodes)]
+        guides.append({"id": f"{group}_{sum(g['group'] == group for g in guides)}", "group": group,
+                       "nodes": [[round(float(q[0]), 4), round(float(q[1] + lift), 4), round(float(q[2]), 4)] for q in picks]})
+
     # Bangs: overlapping short bundles from the front hairline down over the forehead to the brow.
     for i in range(13):
         az = math.radians(-33 + 5.5 * i) + rng.uniform(-0.02, 0.02)
@@ -333,6 +340,8 @@ def build(input: GenerationInput) -> Asset:
         path = [on_skull(az, pol0 + math.radians(9) * k, offset + 0.0015 * k) for k in range(5)]
         path[-1][1] = max(path[-1][1], height - 0.095)
         strands.append(strand(path, 0.018, 0.005, 0.45, up=normal_at(az, pol0)))
+        if i in (3, 9):
+            guide("bangs", path, nodes=4)
     # Face-framing bundles: two per side, falling in front of the shoulders onto the chest.
     for side in (-1, 1):
         for k in range(2):
@@ -343,6 +352,7 @@ def build(input: GenerationInput) -> Asset:
             target = (side * (0.07 + 0.02 * k), chest_front + 0.02 + 0.01 * k)
             path += hanging(path[-1], target, tip_y + 0.12 + rng.uniform(-0.03, 0.03))
             strands.append(strand(path, 0.018, 0.006, 0.35, up=normal_at(az, pol0)))
+            guide("side_l" if side > 0 else "side_r", path, nodes=6)
     # Back and side bundles in three layers over the 240 degrees behind the face. Inner bundles start near
     # the crown and hug the skull; outer layers start lower, emerge from under the inner ones and add the
     # blueprint's 20-35 mm back volume. Widths are about twice the azimuth spacing so the scalp is covered.
@@ -367,6 +377,8 @@ def build(input: GenerationInput) -> Asset:
             path += hanging(path[-1], target, end_y)
             width = 2.2 * (0.1 * span / per_layer) * (1.0 + 0.15 * rng.random())
             strands.append(strand(path, width, 0.005 + 0.002 * layer, 0.5, up=normal_at(az, pol0)))
+            if layer == 2 and i % max(1, per_layer // 8) == per_layer // 16 and sum(g["group"] == "back" for g in guides) < 8:
+                guide("back", path, nodes=6)
     hair_strands = Part(id="hair_strands", shape=Strands(strands=tuple(strands)), material="hair",
                         smooth_angle=math.radians(60), skinned=True)
 
@@ -498,6 +510,7 @@ def build(input: GenerationInput) -> Asset:
         "physics": blueprint.get("physics", {}),
         "target": blueprint.get("target", {}),
         "fit": {k: round(v, 4) for k, v in fit["measurements"].items()},
+        "hair_guides": guides,  # low-resolution dynamics guides separated from the bundle meshes
     }
     return Asset(
         name="Haruka", materials=(skin, hair, cloth, rubber, canvas, lace, eye),
