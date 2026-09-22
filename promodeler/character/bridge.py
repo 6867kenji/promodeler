@@ -197,7 +197,8 @@ def run_setup(project: Path = UNITY_PROJECT, timeout: float = 1800.0, log=None) 
     command = [unity, "-batchmode", "-projectPath", str(project), "-executeMethod", SETUP_METHOD, "-logFile", str(log_path)]
     if log:
         log("unity: " + " ".join(command))
-    completed = subprocess.run(command, capture_output=True, text=True, timeout=timeout, check=False, encoding="utf-8", errors="replace")
+    completed = subprocess.run(command, capture_output=True, text=True, timeout=timeout, check=False, encoding="utf-8", errors="replace",
+                               cwd=str(project))  # never let the editor mistake the repository root for a project
     status_path = project / "Assets" / "ProModeler" / "setup.json"
     status = _read_json(status_path) or {}
     status["unity_exit_code"] = completed.returncode
@@ -327,7 +328,8 @@ def build(recipe: CharacterRecipe, outfit: OutfitRecipe | None = None, catalog: 
     if log:
         log("unity: " + " ".join(command))
     started = time.perf_counter()
-    completed = subprocess.run(command, capture_output=True, text=True, timeout=timeout, check=False, encoding="utf-8", errors="replace")
+    completed = subprocess.run(command, capture_output=True, text=True, timeout=timeout, check=False, encoding="utf-8", errors="replace",
+                               cwd=str(project))  # never let the editor mistake the repository root for a project
     result = _read_json(build_path)
     if result is None or "status" not in result:
         result = {

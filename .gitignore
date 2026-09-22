@@ -21,3 +21,8 @@ Temp/
 Logs/
 UserSettings/
 obj/
+/Packages/
+/ProjectSettings/
+/Assets/
+assets/*.meta
+assets/**/*.meta
