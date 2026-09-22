@@ -152,17 +152,41 @@ namespace ProModeler.Measure
             return points;
         }
 
+        /// <summary>Tape-measure circumference: the perimeter of the convex hull of the slice outline. A tape spans
+        /// concavities (armpit folds, the cleft between the breasts) instead of following them, and the hull is smooth
+        /// in the parameters, which an angular-sorted polyline of a non-convex outline is not.</summary>
         public static float Perimeter(List<Vector2> points)
         {
             if (points.Count < 6) return 0f;
-            var center = Vector2.zero;
-            foreach (var p in points) center += p;
-            center /= points.Count;
-            points.Sort((p, q) => Mathf.Atan2(p.y - center.y, p.x - center.x).CompareTo(Mathf.Atan2(q.y - center.y, q.x - center.x)));
+            var hull = ConvexHull(points);
             var length = 0f;
-            for (var i = 0; i < points.Count; i++) length += Vector2.Distance(points[i], points[(i + 1) % points.Count]);
+            for (var i = 0; i < hull.Count; i++) length += Vector2.Distance(hull[i], hull[(i + 1) % hull.Count]);
             return length;
         }
+
+        /// <summary>Andrew's monotone chain; returns the hull counter-clockwise.</summary>
+        public static List<Vector2> ConvexHull(List<Vector2> points)
+        {
+            var sorted = new List<Vector2>(points);
+            sorted.Sort((a, b) => a.x != b.x ? a.x.CompareTo(b.x) : a.y.CompareTo(b.y));
+            var hull = new List<Vector2>(sorted.Count * 2);
+            foreach (var p in sorted)
+            {
+                while (hull.Count >= 2 && Cross(hull[hull.Count - 2], hull[hull.Count - 1], p) <= 0f) hull.RemoveAt(hull.Count - 1);
+                hull.Add(p);
+            }
+            var lower = hull.Count + 1;
+            for (var i = sorted.Count - 2; i >= 0; i--)
+            {
+                var p = sorted[i];
+                while (hull.Count >= lower && Cross(hull[hull.Count - 2], hull[hull.Count - 1], p) <= 0f) hull.RemoveAt(hull.Count - 1);
+                hull.Add(p);
+            }
+            hull.RemoveAt(hull.Count - 1);
+            return hull;
+        }
+
+        static float Cross(Vector2 o, Vector2 a, Vector2 b) => (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
 
         public static Vector2 Extents(List<Vector2> points)
         {

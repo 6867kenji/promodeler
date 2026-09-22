@@ -194,6 +194,9 @@ python -m promodeler character catalog list [--category wardrobe --slot upper --
 python -m promodeler character schema [--write]                       # dataclass から schemas/*.json を生成・照合
 python -m promodeler character setup [--no-unity]                     # external/uma を Assets/UMA へ接続し、Unity 側の初期化（HDRP 取込・UMA 索引）
 python -m promodeler character build <id> [--outfit <id>] [--views front,side] [--no-render]   # Unity + UMA バッチビルド → build/character/<id>/<hash>/build.json
+python -m promodeler character build --all                            # 15 体を順にビルド（Unity はプロジェクトを排他ロックするため逐次）
+python -m promodeler character build <id> --probe                     # 各パラメータを 0/1 にした計測差分 calibration.json（校正表）
+python -m promodeler character report [--write docs/x.md]             # 最新ビルドの残差を 1 表に（mm、* は許容超え）
 ```
 
 Unity 側は `unity/ProModelerCharacterCreator/`（Unity 6000.3.21f1、HDRP 17.3、UMA 3.05 を `external/uma` から接続）。エディタのライセンスが

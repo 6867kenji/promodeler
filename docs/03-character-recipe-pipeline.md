@@ -692,7 +692,7 @@ Unity は GLB を読み（UnityGLTF）、`socket` の Humanoid ボーン相対�
 | --- | --- | --- |
 | **M9 Recipe 層（Python のみ）** 完了 2026-09-22 | `promodeler/character/{recipe,schema,from_blueprint,catalog,consistency,check}`、`schemas/*.json`、CLI `character recipe/validate/diff/catalog`、`generate` の振り分け、カタログ雛形（ID とライセンス欄だけ、実体なし）、15 体 + 2 衣装の Recipe 生成、整合性検査結果の一覧、単体テスト（Unity 不要） | `character/recipes/*.json` 17 件がスキーマ検証を通り、`validate --mhr` が設計書間の矛盾を表として出す |
 | **M10 Unity MVP（1 体、原案 §31）** 完了 2026-09-23（18.1・18.2 節） | Unity プロジェクト作成、HDRP と UMA 導入、Intel iGPU でのバッチレンダ実測、`RecipeLoader`、`BodyMeasurer`、`DnaCalibrationTool`、`BodyResolver`、UMA 同梱資産だけで `businessman`（男性・スーツに最も近い既定衣装）を組み、`build.json` + front/side/back レンダ + FBX/GLB、`bridge.build`、`character check` | `promodeler character build businessman` が一発で通り、身長 ±2 mm、周長の残差が表に出る。対応パラメータは原案 §31 の 15–20 項目 |
-| **M11 寸法精度と全員** | 独自 DNA（肩幅・胴長・頭高）の追加と校正、顔 DNA 表、靴による接地補正、`GarmentMeasurer`、15 体すべてのビルドと照合表、コンタクトシート、`.claude/skills` の更新 | 15 体で身長 ±2 mm、周長 ±1 cm 以内（UMA の限界は残差として明記）。全員のコンタクトシートが並ぶ |
+| **M11 寸法精度と全員** 寸法部分は完了 2026-09-23（18.3・18.4 節）。GarmentMeasurer・顔 DNA の検証は M12 へ | 独自 DNA（肩幅・胴長・頭高）の追加と校正、顔 DNA 表、靴による接地補正、`GarmentMeasurer`、15 体すべてのビルドと照合表、コンタクトシート、`.claude/skills` の更新 | 15 体で身長 ±2 mm、周長 ±1 cm 以内（UMA の限界は残差として明記）。全員のコンタクトシートが並ぶ |
 | **M12 カタログと装備・衣装** | `tools/uma_slot_from_glb.py`、MakeHuman CC0 資産の変換と登録（髪 10、上衣 10、下衣 8、靴 6、眉・まつ毛・髭）、肌・眼球テクスチャ、`assets/props/` の装備品 8 点とソケット装着、Outfit 36・37、Addressables、`character edit` GUI（Face/Body/Hair/Skin/Wardrobe、Save は Recipe のみ） | 設計書の衣装語彙の 8 割が `catalog_id` で解決され、`wardrobe.missing` 警告が例外になる。GUI 保存 → `character diff` で差分追跡できる |
 | **M13 生成モード** | `presets`（性別・年齢別の人体計測事前分布）、`character random`、`character prompt`（LLM → Recipe、スキーマ制約、カタログ ID の実在検証）、クリップ動画記録、`physics_settings` 書き出し | 1,000 体を seed 決定的に生成して全件 `validate` を通す。プロンプト 1 文から `build` まで人手なし |
 
@@ -775,6 +775,60 @@ M10 の最初に **HDRP のヘッドレスレンダが Intel iGPU で動くか**
 ネクタイは代替がなく空。付属品の装着は M12。
 
 次の手順は M11（寸法精度と全員）: 断面奥行きの目標化、独自 DNA の校正、顔 DNA 表の検証、靴による接地補正、`GarmentMeasurer`、15 体のビルドと照合表。
+
+### 18.3 M11 の進捗（2026-09-23）
+
+- **独自パラメータ（10.1 の「独自 DNA」）を UMA 資産を編集せずに実装**: 生成後に UMA の葉「Adjust」補助骨（`Spine1Adjust`, `SpineAdjust`,
+  `LowerBackBelly`, `LowerBackAdjust`, `HeadAdjust`）をスケールし、`LeftArm`/`RightArm` の位置を外側へずらす（`adj:*`, `pos:arm_spread`、
+  0.5 が中立、スケール 0.7–1.4、位置 ±8 cm）。UMA は生成ごとに骨格を作り直すので `Rebuild()` の直後に毎回適用する。
+- **感度表（校正ツール）**: `character build --probe` が全パラメータを 0 と 1 にして計測差分を `calibration.json` に書く。男性の主な値
+  （全可動域あたり）: `height` 身長 +1730 mm、`adj:chest_depth` 胸奥行 +193 / 胸囲 +269、`adj:chest_width` 胸幅 +282、`adj:hip_width`
+  ヒップ +428、`shoulderWidth` 肩幅 +204、`pos:arm_spread` 肩幅 +30。効かないもの: `chestSize`（男性で +5）、`ShoulderAdjust` の
+  スケール（+6、削除）。`adj:head_height` は頭頂を動かすので身長比の断面平面すべてに波及する。
+- **目標の追加**: 断面の幅・奥行き（`cross_sections`）と `head_height` を目標に加えた。UMA の胴断面は楕円より角張っており、
+  周長・幅・奥行きの 3 目標は同時に満たせない。設計書の優先順位どおり周長を重み 1、断面を 0.25 とした。
+- **計測**: 周長は断面外形の **凸包** の周長（巻き尺は腋や胸の谷間を渡る）。角度順折れ線は非凸外形でギザギザになり、ソルバーの
+  ヤコビアンにノイズを入れていた。ソルバーは停滞時に差分ステップを半分にしてヤコビアンを作り直す（最大 2 回）。
+- **副作用**: 補助骨スケールは重みの境界で側面シルエットに段差を作る（ビジネスマンの側面クレイで胸下に棚）。可動域を 0.6–1.5 から
+  0.7–1.4 に絞った。滑らかさが要る場合は複数骨への分散か、UMA の DNA コンバータ（複数骨のカーブ）を作る必要がある。
+- **髪・髭・眉の色**: UMA 3 の髪シェーダーは共有色のチャンネルマスクではなく、共有色が運ぶシェーダープロパティ
+  `_BaseColor` / `_RootColor` / `_Tip_Color` を読む（`SRP/Colors/HairColors.asset` の構造）。`OverlayColorData.SetColorProperty` で
+  3 つを設定するようにした（根元 0.8 倍、毛先は白へ 15 % 寄せる）。
+
+全 15 体の残差は `promodeler character report` の表（18.4）。
+
+### 18.4 全 15 体の残差（2026-09-23、`promodeler character report`）
+
+段階解法（長さ → 周長 → 全体、各 6 / 8 / 14 反復、周長段階も全目標を評価）の結果。単位 mm、`*` は許容超え（身長 2 mm、他 5 mm）、
+`s` はビルド秒数（3 段階の解法で 1 体約 4 分）。
+
+| id | status | s | barefoot_height | inseam | shoulder_width | foot_length | head_height | chest | bust | underbust | waist | hip |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| businessman | ok | 230 | +0 | -1 | -1 | -0 |  | +4 |  |  | +4 | +2 |
+| businesswoman | ok | 239 | -0 | +1 | -1 | -0 |  |  | +2 |  | +2 | +3 |
+| cafe-clerk | ok | 238 | +0 | +1 | -1 | -0 |  |  | +3 |  | +2 | +3 |
+| convenience-clerk | ok | 224 | +0 | +1 | -1 | +0 |  | +9* |  |  | +6* | +3 |
+| convenience-customer | ok | 242 | -0 | +1 | -1 | -0 |  |  | +3 |  | +2 | +2 |
+| karate-master | ok | 217 | +0 | -15* | -1 | -1 |  | +15* |  |  | +4 | -2 |
+| karate-student | ok | 244 | +0 | -15* | -6* | -2 |  |  | +2 |  | +3 | -10* |
+| passerby-a | ok | 220 | +0 | -1 | -1 | -0 |  | +9* |  |  | +5* | +2 |
+| passerby-b | ok | 239 | -0 | +1 | -1 | -0 |  |  | +3 |  | +2 | +1 |
+| passerby-c | ok | 227 | -0 | +1 | -1 | -0 |  | +5 |  |  | +4 | +7* |
+| passerby-d | ok | 245 | +0 | +1 | -1 | +0 |  |  | +2 |  | +2 | +3 |
+| passerby-e | ok | 227 | -0 | -2 | -1 | -0 |  | +7* |  |  | +3 | +4 |
+| passerby-f | ok | 242 | -0 | +7* | -12* | -1 |  |  | +17* |  | +13* | -8* |
+| passerby-g | ok | 233 | +0 | +0 | -0 | -0 |  | +8* |  |  | +5* | +2 |
+| woman | ok | 233 | +0 | -11* | -1 | -1 | -32* |  | -29* | +52* | -0 | -2 |
+
+- 身長は 15 体すべて ±1 mm。股下・肩幅・足長は 12 体で ±2 mm 以内。
+- 周長は 11 体で ±1 cm 以内。超えるのは空手師範（胸囲 +15、股下 −15: 胸囲 1.04 m の筋肉質な体で `upperMuscle`/`upperWeight` が上限）、
+  通行人 F（バスト +17、腰 +13）、そして春香（バスト −29、アンダーバスト +52、頭高 −32）。
+- 春香のバストとアンダーバストは 7 cm しか離れておらず、UMA 女性素体では乳房の下端がアンダーバスト平面（身長比 0.7375）を割るため
+  同時には満たせない。`breastPosition` DNA を含めても解消しない。周長の優先順位は設計書どおりバストを重み 1.5 にしている。
+- 段階解法の前（全パラメータを同時に解く）は同じ 15 体で胸囲の残差が最大 +79 mm、女性 3 体は股下が −60〜−90 mm に発散していた。
+- 補助骨スケールによる側面シルエットの段差は残る（18.3）。滑らかにするには複数骨への分散か UMA の DNA コンバータ化が必要。
+- 髪・眉・髭の色は `SetRawColor` で解決（`SetColor` はプロパティブロックを捨てる）。全員の髪が設計書の色で描かれる。
+- 未着手: `GarmentMeasurer`（着衣後の完成寸法）、顔 DNA 表の妥当性確認、接地補正の検証、`.claude/skills` の同期（Skill/SKILL.md は更新済み）。
 
 ## 19. 未決事項（実装フェーズで決める）
 

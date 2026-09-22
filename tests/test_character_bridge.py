@@ -120,6 +120,28 @@ class BridgeTests(unittest.TestCase):
         result = bridge.build(self.recipe, catalog=self.catalog, out_root=self.tmp / "build", project=self.project, force=True)
         self.assertEqual(result.build["error"]["code"], "unity.license")
 
+    def test_cli_build_all_visits_every_recipe_once(self):
+        from types import SimpleNamespace
+        from promodeler.character import cli
+        import io, contextlib
+
+        saved = cli.bridge.UNITY_PROJECT
+        cli.bridge.UNITY_PROJECT = self.project
+        try:
+            args = SimpleNamespace(all=True, target=None, outfit=None, out=str(self.tmp / "build"), force=False, views="front", passes="shaded",
+                                   formats="fbx", no_render=False, verbose=False, probe=False)
+            out = io.StringIO()
+            with contextlib.redirect_stdout(out):
+                code = cli.cmd_character_build(args)
+        finally:
+            cli.bridge.UNITY_PROJECT = saved
+        text = out.getvalue()
+        recipes = sorted(p.stem for p in cli.RECIPES_DIR.glob("*.json"))
+        self.assertEqual(code, 0, text[-2000:])
+        self.assertEqual(text.count("====="), 2 * len(recipes))  # one banner per recipe, not a recursion
+        for recipe_id in recipes:
+            self.assertTrue((self.tmp / "build" / recipe_id).is_dir(), recipe_id)
+
     def test_batch_command_shape(self):
         staged = bridge.stage(self.recipe, None, self.catalog, out_root=self.tmp / "build", project=self.project)
         command = bridge.batch_command("Unity.exe", staged, ("front",), ("shaded",), ("fbx",), render=False, project=self.project)

@@ -27,8 +27,9 @@ namespace ProModeler.Resolve
         public float FiniteDifferenceStep = 0.08f;
         public float Damping = 0.3f;
         public float MaxStep = 0.35f;
-        public int MaxIterations = 10;
+        public int MaxIterations = 14;
         public int MaxDampingRetries = 4;
+        public int MaxStepRefinements = 2;   // on a stall, halve the finite-difference step and rebuild the Jacobian
 
         public Result Solve(
             IReadOnlyDictionary<string, float> initial,
@@ -48,6 +49,8 @@ namespace ProModeler.Resolve
             var r = Residuals(measured, targets, measureNames, weights);
             result.Log.Add($"start: {Describe(measured, targets, measureNames)}");
 
+            var fdStep = FiniteDifferenceStep;
+            var refinements = 0;
             for (var iteration = 0; iteration < MaxIterations; iteration++)
             {
                 if (Within(measured, targets, tolerances, measureNames))
@@ -59,7 +62,7 @@ namespace ProModeler.Resolve
                 var J = new float[m, n];
                 for (var j = 0; j < n; j++)
                 {
-                    var step = x[j] + FiniteDifferenceStep <= 1f ? FiniteDifferenceStep : -FiniteDifferenceStep;
+                    var step = x[j] + fdStep <= 1f ? fdStep : -fdStep;
                     var probe = (float[])x.Clone();
                     probe[j] = Clamp01(x[j] + step);
                     var actual = probe[j] - x[j];
@@ -103,7 +106,15 @@ namespace ProModeler.Resolve
                 }
                 if (!improved)
                 {
-                    result.Log.Add($"iteration {iteration + 1}: no improving step after {MaxDampingRetries} damping increases; stopping");
+                    if (refinements < MaxStepRefinements)
+                    {
+                        refinements++;
+                        fdStep *= 0.5f;
+                        Damping = Math.Max(Damping, 0.3f);
+                        result.Log.Add($"iteration {iteration + 1}: no improving step; refining the finite-difference step to {fdStep:F3}");
+                        continue;
+                    }
+                    result.Log.Add($"iteration {iteration + 1}: no improving step after {MaxDampingRetries} damping increases and {refinements} refinements; stopping");
                     break;
                 }
                 Damping = Math.Max(Damping * 0.5f, lambda * 0.25f);

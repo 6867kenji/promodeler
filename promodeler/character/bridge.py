@@ -286,7 +286,7 @@ def _read_json(path: Path) -> dict | None:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def batch_command(unity: str, staged: Staged, views, passes, formats, render: bool, project: Path = UNITY_PROJECT) -> list[str]:
+def batch_command(unity: str, staged: Staged, views, passes, formats, render: bool, project: Path = UNITY_PROJECT, probe: bool = False) -> list[str]:
     command = [unity, "-batchmode", "-projectPath", str(project), "-executeMethod", BATCH_METHOD,
                "-recipe", str(staged.recipe_path), "-out", str(staged.out_dir),
                "-views", ",".join(views), "-passes", ",".join(passes), "-formats", ",".join(formats),
@@ -295,12 +295,14 @@ def batch_command(unity: str, staged: Staged, views, passes, formats, render: bo
         command[command.index("-out"):command.index("-out")] = ["-outfit", str(staged.outfit_path)]
     if not render:
         command.insert(1, "-nographics")
+    if probe:
+        command.append("-probe")
     return command
 
 
 def build(recipe: CharacterRecipe, outfit: OutfitRecipe | None = None, catalog: Catalog | None = None,
           out_root: str | Path = "build/character", force: bool = False, views=None, passes=None, formats=None,
-          render: bool = True, timeout: float = 1800.0, log=None, project: Path = UNITY_PROJECT) -> CharacterBuildResult:
+          render: bool = True, timeout: float = 1800.0, log=None, project: Path = UNITY_PROJECT, probe: bool = False) -> CharacterBuildResult:
     """Stage the recipe, run the Unity batch build and return its ``build.json`` (cached when the hash already built)."""
     catalog = catalog or Catalog()
     views = tuple(views or DEFAULT_VIEWS)
@@ -324,7 +326,7 @@ def build(recipe: CharacterRecipe, outfit: OutfitRecipe | None = None, catalog: 
             stale.unlink()
     if (staged.out_dir / "renders").exists():
         shutil.rmtree(staged.out_dir / "renders")
-    command = batch_command(unity, staged, views, passes, formats, render, project)
+    command = batch_command(unity, staged, views, passes, formats, render, project, probe=probe)
     if log:
         log("unity: " + " ".join(command))
     started = time.perf_counter()

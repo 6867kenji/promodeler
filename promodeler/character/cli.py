@@ -253,6 +253,10 @@ def print_build(result: bridge.CharacterBuildResult) -> None:
 
 
 def cmd_character_build(args) -> int:
+    if getattr(args, "all", False):
+        return _build_all(args)
+    if not args.target:
+        raise ModelingError("character.build", "give a recipe id or --all.")
     path = resolve_recipe_path(args.target)
     recipe = load_recipe(path)
     if not isinstance(recipe, CharacterRecipe):
@@ -269,7 +273,7 @@ def cmd_character_build(args) -> int:
             recipe, outfit, catalog, out_root=args.out, force=args.force,
             views=tuple(args.views.split(",")) if args.views else None, passes=tuple(args.passes.split(",")) if args.passes else None,
             formats=tuple(args.formats.split(",")) if args.formats else None, render=not args.no_render,
-            log=print if args.verbose else None,
+            log=print if args.verbose else None, probe=getattr(args, "probe", False),
         )
     except bridge.UnityNotFound as exc:
         print(f"error:    {exc}", file=sys.stderr)
@@ -306,6 +310,54 @@ def cmd_character_setup(args) -> int:
     if status.get("Note"):
         print("hint: run `promodeler character setup` once more so the imported UMA HDRP setup can apply.")
     return 0 if status.get("Ok") else 1
+
+
+def _build_all(args) -> int:
+    """Build every character recipe in turn (Unity locks the project, so builds are sequential)."""
+    failures = 0
+    args.all = False  # the per-recipe call below must not re-enter this loop
+    for path in sorted(RECIPES_DIR.glob("*.json")):
+        args.target = path.stem
+        print(f"===== {path.stem} =====")
+        code = cmd_character_build(args)
+        failures += 1 if code else 0
+    print(f"built {len(list(RECIPES_DIR.glob('*.json')))} recipes, {failures} failed")
+    return 1 if failures else 0
+
+
+def cmd_character_report(args) -> int:
+    """One table of residuals over the newest build of every character (or the ids given)."""
+    ids = args.ids or sorted(p.stem for p in RECIPES_DIR.glob("*.json"))
+    keys = ["barefoot_height", "inseam", "shoulder_width", "foot_length", "head_height", "chest", "bust", "underbust", "waist", "hip"]
+    rows = []
+    for recipe_id in ids:
+        builds = sorted((Path(args.out) / recipe_id).glob("*/build.json"), key=lambda p: p.stat().st_mtime)
+        if not builds:
+            rows.append((recipe_id, None, {}))
+            continue
+        build = json.loads(builds[-1].read_text(encoding="utf-8"))
+        rows.append((recipe_id, build, (build.get("resolved") or {}).get("residuals_m") or {}))
+    header = "| id | status | s | " + " | ".join(keys) + " |"
+    lines = [header, "|" + " --- |" * (len(keys) + 3)]
+    for recipe_id, build, residuals in rows:
+        if build is None:
+            lines.append(f"| {recipe_id} | (no build) | | " + " | ".join("" for _ in keys) + " |")
+            continue
+        cells = []
+        for key in keys:
+            if key in residuals:
+                mm = residuals[key] * 1000
+                cells.append(f"{mm:+.0f}" + ("" if abs(mm) <= (2 if key == "barefoot_height" else 5) else "*"))
+            else:
+                cells.append("")
+        lines.append(f"| {recipe_id} | {build.get('status')} | {build.get('wall_seconds', build.get('seconds', 0)):.0f} | " + " | ".join(cells) + " |")
+    text = "\n".join(lines)
+    print("residuals in mm (* = outside tolerance: height 2 mm, others 5 mm)")
+    print(text)
+    if args.write:
+        Path(args.write).write_text(text + "\n", encoding="utf-8")
+        print(f"written: {args.write}")
+    return 0
 
 
 def cmd_generate(args) -> int:
@@ -387,7 +439,8 @@ def add_parsers(sub) -> None:
     setup.set_defaults(func=cmd_character_setup)
 
     build = csub.add_parser("build", help="Build a character with the Unity + UMA batch pipeline and read back build.json.")
-    build.add_argument("target", help="Character recipe id or path.")
+    build.add_argument("target", nargs="?", default=None, help="Character recipe id or path (omit with --all).")
+    build.add_argument("--all", action="store_true", help="Build every character/recipes/*.json in turn.")
     build.add_argument("--outfit", default=None, help="Outfit recipe id to dress the character with.")
     build.add_argument("--out", default="build/character")
     build.add_argument("--force", action="store_true", help="Ignore the cached build and rebuild accessories.")
@@ -395,5 +448,12 @@ def add_parsers(sub) -> None:
     build.add_argument("--passes", default=None, help="Comma-separated: shaded,clay")
     build.add_argument("--formats", default=None, help="Comma-separated: fbx,glb")
     build.add_argument("--no-render", action="store_true", help="Skip verification renders (runs Unity with -nographics).")
+    build.add_argument("--probe", action="store_true", help="Also write calibration.json: each body parameter at 0 and 1 against every target.")
     build.add_argument("--verbose", "-v", action="store_true")
     build.set_defaults(func=cmd_character_build)
+
+    report = csub.add_parser("report", help="Residual table over the newest builds (mm; * marks values outside tolerance).")
+    report.add_argument("ids", nargs="*", help="Recipe ids (default: all recipes).")
+    report.add_argument("--out", default="build/character")
+    report.add_argument("--write", default=None, help="Also write the markdown table to this file.")
+    report.set_defaults(func=cmd_character_report)

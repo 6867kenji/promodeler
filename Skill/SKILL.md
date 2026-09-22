@@ -109,6 +109,8 @@ Rules:
 - The recipe JSON is the source of truth for characters (it round-trips with the GUI editor). Never regenerate over an edited recipe without `--force`; use `character diff <id>` to see what an edit changed against the blueprint.
 - Do not build new hair, dresses or shoes from `Strands` / `Loft`; those are catalog assets. Props a character carries (bags, glasses, watches) stay ordinary `assets/props/<name>.py` assets referenced from `accessories[].source`.
 - `catalog.placeholder` warnings mean the catalog entry has no content yet; report them, do not silence them.
+- Building: `python -m promodeler character build <id> --views front,side --passes clay --formats fbx` is the quick (about 40 s) compile-and-measure loop; `character build --all` builds every recipe; `character report` prints one residual table (mm) over the newest builds; `character check <id> --build <dir>` prints the blueprint comparison. Read `build/character/<id>/<hash>/unity.log` for `[ProModeler] solve` lines and `contact_sheet.png` for the renders. `--probe` writes `calibration.json` (each body parameter at 0 and 1) when a measurement will not move.
+- Body measurements are taken on the naked race in an A-pose with convex-hull circumferences; UMA's torso sections are boxy, so circumferences lead and section extents carry a quarter of the weight. Report residuals; never loosen tolerances to hide them.
 
 ## Human bodies (Blender reference path, frozen)
 

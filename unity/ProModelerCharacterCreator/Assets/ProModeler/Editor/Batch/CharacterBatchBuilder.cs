@@ -43,8 +43,9 @@ namespace ProModeler.Editor
                 var formats = (args.Get("-formats") ?? "fbx,glb").Split(',').Select(v => v.Trim()).Where(v => v.Length > 0).ToList();
                 var resolution = int.TryParse(args.Get("-resolution"), out var r) ? r : 768;
                 var render = !args.Has("-nographics");
+                var probe = args.Has("-probe");
 
-                BuildCharacter(recipePath, outfitPath, outDir, views, passes, formats, resolution, render, report);
+                BuildCharacter(recipePath, outfitPath, outDir, views, passes, formats, resolution, render, report, probe);
                 code = report.Status == "ok" ? 0 : 1;
             }
             catch (Exception exc)
@@ -76,7 +77,7 @@ namespace ProModeler.Editor
         }
 
         public static void BuildCharacter(string recipePath, string outfitPath, string outDir, List<string> views, List<string> passes,
-                                          List<string> formats, int resolution, bool render, BuildReport report)
+                                          List<string> formats, int resolution, bool render, BuildReport report, bool probe = false)
         {
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
@@ -105,6 +106,14 @@ namespace ProModeler.Editor
                 // 1. Solve the body on the naked base race (UMA merges clothes into the body mesh).
                 var measurer = BodyMeasurer.ForRecipe(dressed);
                 var resolver = new BodyResolver(runtime, measurer, dressed);
+                if (probe)
+                {
+                    // Sensitivity table before solving: which parameter moves which measurement, at the race defaults.
+                    var keys = resolver.Targets().Keys.ToList();
+                    var table = resolver.Probe(keys);
+                    RecipeJson.WriteFile(Path.Combine(outDir, "calibration.json"), new { race = runtime.RaceName, parameters = table });
+                    report.Exports["calibration"] = Path.Combine(outDir, "calibration.json");
+                }
                 report.Resolved = resolver.Solve(report);
 
                 var faceDna = FaceResolver.ToDna(dressed.Face.Shape);
