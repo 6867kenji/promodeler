@@ -102,19 +102,27 @@ namespace ProModeler.Editor
                 if (!runtime.Rebuild(120f)) throw new RecipeException("uma.build", "UMA did not produce a body mesh");
                 Debug.Log("[ProModeler] DNA available: " + string.Join(", ", runtime.AllDnaNames()));
 
+                // 1. Solve the body on the naked base race (UMA merges clothes into the body mesh).
                 var measurer = BodyMeasurer.ForRecipe(dressed);
                 var resolver = new BodyResolver(runtime, measurer, dressed);
                 report.Resolved = resolver.Solve(report);
 
                 var faceDna = FaceResolver.ToDna(dressed.Face.Shape);
-                if (faceDna.Count > 0)
-                {
-                    runtime.SetDna(faceDna, report.Warn);
-                    if (!runtime.Rebuild(120f)) throw new RecipeException("uma.build", "rebuild after face DNA failed");
-                }
+                if (faceDna.Count > 0) runtime.SetDna(faceDna, report.Warn);
+                var measured = resolver.Measure();  // naked, after the solve: these are the numbers the recipe is judged by
+                report.Parts["body_naked"] = new Dictionary<string, int> { { "triangles", TriangleCount(runtime) } };
 
-                var measured = resolver.Measure();
+                // 2. Dress and rebuild for renders and exports.
+                runtime.Dress();
+                if (!runtime.Rebuild(120f)) throw new RecipeException("uma.build", "rebuild after dressing failed");
+                var dressedMeasured = resolver.Measure();
                 report.MeasuredM = JObject.FromObject(measured);
+                if (dressedMeasured.TryGetValue("barefoot_height", out var dressedHeight) && measured.TryGetValue("barefoot_height", out var nakedHeight))
+                {
+                    report.MeasuredM["dressed_height"] = dressedHeight;
+                    if (Mathf.Abs(dressedHeight - nakedHeight) > 0.03f)
+                        report.Warn("wardrobe.height", $"dressed height differs from the naked body by {(dressedHeight - nakedHeight) * 1000f:+0} mm (soles or hair); barefoot_height is the naked value");
+                }
                 if (dressed.GarmentInSlot("footwear")?.SoleHeightM is float sole && measured.TryGetValue("barefoot_height", out var barefoot))
                     report.MeasuredM["standing_shod_height"] = barefoot + sole;
 
@@ -139,6 +147,18 @@ namespace ProModeler.Editor
                 report.Exports = CharacterExporter.Export(runtime, outDir, formats, report);
                 report.Status = "ok";
             }
+        }
+
+        static int TriangleCount(UMACharacterRuntime runtime)
+        {
+            var total = 0;
+            foreach (var renderer in runtime.AllRenderers)
+            {
+                Mesh mesh = renderer is SkinnedMeshRenderer smr ? smr.sharedMesh : renderer.GetComponent<MeshFilter>()?.sharedMesh;
+                if (mesh == null) continue;
+                for (var i = 0; i < mesh.subMeshCount; i++) total += (int)mesh.GetIndexCount(i) / 3;
+            }
+            return total;
         }
 
         static void CountGeometry(UMACharacterRuntime runtime, BuildReport report)

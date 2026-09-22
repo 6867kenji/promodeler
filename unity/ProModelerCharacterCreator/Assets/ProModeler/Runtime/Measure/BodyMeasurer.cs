@@ -25,6 +25,33 @@ namespace ProModeler.Measure
         public static readonly Regex ArmBonePattern = new Regex("(Arm|Hand|Thumb|Index|Middle|Ring|Pinky|Finger)", RegexOptions.IgnoreCase);
         public const float TorsoHalfWidthLimit = 0.3f;
         public const float AcromionFraction = 0.818f;  // adult acromial height / stature when the recipe gives no shoulders section
+        public const float MeasurementArmDropDegrees = 55f;  // T-pose arms lowered to the blueprint A-pose (35 degrees from the torso) while measuring
+
+        public static bool DebugLog = false;
+
+        /// <summary>Rotate an upper arm about world Z so the hand moves down, whichever side of the body the arm extends to.</summary>
+        static void LowerArm(Transform upperArm, string handName)
+        {
+            if (upperArm == null) return;
+            var hand = FindChild(upperArm, handName);
+            var direction = hand != null ? (hand.position - upperArm.position) : (upperArm.position.x < 0f ? Vector3.left : Vector3.right);
+            // Rotating a +X arm by a negative angle about +Z (and a -X arm by a positive one) lowers the hand toward -Y.
+            var angle = direction.x >= 0f ? -MeasurementArmDropDegrees : MeasurementArmDropDegrees;
+            upperArm.Rotate(Vector3.forward, angle, Space.World);
+        }
+
+        static Transform FindChild(Transform root, string name)
+        {
+            foreach (var t in root.GetComponentsInChildren<Transform>(true)) if (t.name == name) return t;
+            return null;
+        }
+
+        static int CountTrue(bool[] flags)
+        {
+            var n = 0;
+            foreach (var f in flags) if (f) n++;
+            return n;
+        }
 
         /// <summary>Landmark name -> fraction of the standing height.</summary>
         public readonly Dictionary<string, float> Landmarks = new Dictionary<string, float>();
@@ -55,7 +82,10 @@ namespace ProModeler.Measure
         public static Sample SampleBody(SkinnedMeshRenderer body)
         {
             var baked = new Mesh();
-            body.BakeMesh(baked, true);  // local space with the renderer scale applied
+            // BakeMesh skins with the bones' world matrices, so ancestor scale (the resolver's root scale) is already in the
+            // result; only the renderer's position and rotation remain to be applied. Measured: applying localToWorldMatrix
+            // here doubled a 0.5 % root scale.
+            body.BakeMesh(baked, false);
             var toWorld = Matrix4x4.TRS(body.transform.position, body.transform.rotation, Vector3.one);
             var local = baked.vertices;
             var vertices = new Vector3[local.Length];
@@ -146,10 +176,31 @@ namespace ProModeler.Measure
             return new Vector2(maxX - minX, maxZ - minZ);
         }
 
-        /// <summary>All measurements in metres, keyed like the recipe's body.measurements_m (plus joint_shoulder_width).</summary>
+        /// <summary>All measurements in metres, keyed like the recipe's body.measurements_m (plus joint_shoulder_width).
+        /// The upper arms are rotated down into an A-pose for the duration of the sampling and restored afterwards.</summary>
         public Dictionary<string, float> Measure(SkinnedMeshRenderer body, Transform headBone, Transform leftUpperArm, Transform rightUpperArm)
         {
-            var sample = SampleBody(body);
+            var savedLeft = leftUpperArm != null ? leftUpperArm.localRotation : Quaternion.identity;
+            var savedRight = rightUpperArm != null ? rightUpperArm.localRotation : Quaternion.identity;
+            Sample sample;
+            try
+            {
+                // T-pose arms point along +X (left) and -X (right); rotating about world Z lowers them toward -Y.
+                var hand = leftUpperArm != null ? FindChild(leftUpperArm, "LeftHand") : null;
+                var before = hand != null ? hand.position : Vector3.zero;
+                LowerArm(leftUpperArm, "LeftHand");
+                LowerArm(rightUpperArm, "RightHand");
+                sample = SampleBody(body);
+                if (DebugLog && leftUpperArm != null)
+                    Debug.Log($"[ProModeler] measure: arm {leftUpperArm.name} parent {leftUpperArm.parent?.name} pos {leftUpperArm.position} lossyScale {leftUpperArm.lossyScale} " +
+                              $"hand {(hand != null ? hand.position.ToString("F3") : "n/a")} (was {before:F3}); floor {sample.Floor:F3} height {sample.Height:F3} " +
+                              $"renderer {body.name} bones {body.bones?.Length} verts {sample.Vertices.Length} torsoEdges {sample.TorsoEdges.Count} armVerts {CountTrue(sample.ArmVertex)}");
+            }
+            finally
+            {
+                if (leftUpperArm != null) leftUpperArm.localRotation = savedLeft;
+                if (rightUpperArm != null) rightUpperArm.localRotation = savedRight;
+            }
             var out_ = new Dictionary<string, float> { { "barefoot_height", sample.Height } };
             var floor = sample.Floor;
             var height = sample.Height;

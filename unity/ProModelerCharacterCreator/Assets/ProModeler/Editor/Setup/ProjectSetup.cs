@@ -1,8 +1,10 @@
-// One-time project preparation, run as its own editor invocation because it imports scripts (domain reload):
+// One-time project preparation, run as its own editor invocation:
 //   Unity.exe -batchmode -projectPath <project> -executeMethod ProModeler.Editor.ProjectSetup.Run -logFile <log>
-// 1. imports UMA's HDRP content package (Assets/UMA/SRP/UMAHDRP.unitypackage) when its setup prefab is missing,
+// 1. checks that UMA's HDRP content (unpacked by `promodeler character setup` from Assets/UMA/SRP/UMAHDRP.unitypackage,
+//    because AssetDatabase.ImportPackage is asynchronous in batch mode) is present,
 // 2. makes sure the UMA asset index knows the UMA 3 human races (rebuilding it from the asset database otherwise),
-// 3. writes Assets/ProModeler/setup.json with what it found, then exits.
+// 3. writes Assets/ProModeler/setup.json, then lets the editor run a few update ticks so UMA's own
+//    [InitializeOnLoad] HDRP setup hook (diffusion profile, skin shader repair) can apply before exiting.
 // Safe to run repeatedly.
 
 using System;
@@ -35,16 +37,18 @@ namespace ProModeler.Editor
                     throw new InvalidOperationException("Assets/UMA is missing; run `promodeler character setup` to link external/uma into the project.");
 
                 status.HdrpContentPresent = File.Exists(HdrpSetupPrefab);
-                if (!status.HdrpContentPresent && File.Exists(HdrpPackagePath))
+                if (!status.HdrpContentPresent)
+                    status.Note = "UMA HDRP content is missing (Assets/UMA/SRP/HDRPSetup); run `promodeler character setup` so the unitypackage is unpacked, then rerun.";
+                else
                 {
-                    Debug.Log("[ProModeler] importing " + HdrpPackagePath);
-                    AssetDatabase.ImportPackage(HdrpPackagePath, false);
-                    AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
-                    status.HdrpContentPresent = File.Exists(HdrpSetupPrefab);
-                    status.HdrpImported = status.HdrpContentPresent;
-                    // Importing adds scripts: the domain reloads after this method returns. The next invocation
-                    // (or the build itself) will see the compiled UMAHDRPSetup and its InitializeOnLoad hook.
-                    status.Note = "HDRP package imported; run setup once more so the UMA HDRP setup hook can apply.";
+                    var setupPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(HdrpSetupPrefab);
+                    var setup = setupPrefab != null ? setupPrefab.GetComponent("UMAHDRPSetup") : null;
+                    if (setup != null)
+                    {
+                        // Same entry point as the prefab's context menu; runs synchronously here.
+                        var method = setup.GetType().GetMethod("ApplySetup");
+                        if (method != null) { method.Invoke(setup, null); status.HdrpSetupApplied = true; }
+                    }
                 }
 
                 var indexer = UMAAssetIndexer.Instance;
@@ -60,7 +64,7 @@ namespace ProModeler.Editor
                     status.RaceMalePresent = indexer.GetRace("Human Male 3.0") != null;
                     status.RaceFemalePresent = indexer.GetRace("Human Female 3.0") != null;
                 }
-                status.Ok = status.RaceMalePresent && status.RaceFemalePresent;
+                status.Ok = status.RaceMalePresent && status.RaceFemalePresent && status.HdrpContentPresent;
                 if (!status.Ok) code = 1;
             }
             catch (Exception exc)
@@ -77,8 +81,28 @@ namespace ProModeler.Editor
                 File.WriteAllText(StatusPath, JsonUtility.ToJson(status, true));
                 AssetDatabase.SaveAssets();
                 Debug.Log("[ProModeler] setup " + (status.Ok ? "ok" : "incomplete") + ": " + JsonUtility.ToJson(status));
-                if (exitWhenDone) EditorApplication.Exit(code);
+                if (exitWhenDone) ExitAfterTicks(code, 60);
             }
+        }
+
+        static int _ticksLeft;
+        static int _exitCode;
+
+        /// <summary>Let delayCall-based hooks (UMA's HDRP setup queue) run before the editor quits.</summary>
+        static void ExitAfterTicks(int code, int ticks)
+        {
+            _ticksLeft = ticks;
+            _exitCode = code;
+            EditorApplication.update += Tick;
+        }
+
+        static void Tick()
+        {
+            if (EditorApplication.isCompiling || EditorApplication.isUpdating) return;
+            if (--_ticksLeft > 0) return;
+            EditorApplication.update -= Tick;
+            AssetDatabase.SaveAssets();
+            EditorApplication.Exit(_exitCode);
         }
 
         [Serializable]
@@ -88,6 +112,7 @@ namespace ProModeler.Editor
             public bool UmaPresent;
             public bool HdrpContentPresent;
             public bool HdrpImported;
+            public bool HdrpSetupApplied;
             public bool IndexRebuilt;
             public bool RaceMalePresent;
             public bool RaceFemalePresent;

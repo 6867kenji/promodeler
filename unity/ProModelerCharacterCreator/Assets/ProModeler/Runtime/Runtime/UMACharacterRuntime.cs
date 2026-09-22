@@ -31,8 +31,8 @@ namespace ProModeler.Runtime
         // Preferred UMA 3 body DNA in the order the resolver may move them; filtered against what the race exposes.
         public static readonly string[] PreferredBodyDna =
         {
-            "height", "legsSize", "shoulderWidth", "feetSize", "chestSize", "breastSize", "upperWeight", "waist", "belly",
-            "gluteusSize", "lowerWeight",
+            "height", "legsSize", "shoulderWidth", "feetSize", "chestSize", "breastSize", "upperWeight", "upperMuscle", "waist", "belly",
+            "gluteusSize", "lowerWeight", "lowerMuscle",
         };
 
         public GameObject Root { get; private set; }
@@ -61,25 +61,34 @@ namespace ProModeler.Runtime
             Root = new GameObject(recipe.Id);
             Root.transform.position = Vector3.zero;
             Avatar = Root.AddComponent<DynamicCharacterAvatar>();
-            Avatar.editorTimeGeneration = false;   // we drive generation ourselves
-            Avatar.umaGenerator = Generator;
+            Avatar.editorTimeGeneration = false;   // we drive generation ourselves; UMAData.umaGenerator reads UMAAssetIndexer.Instance.Generator
             Avatar.RacePreset = race;
             Avatar.ChangeRace(race);
+            _catalog = catalog;
+            _warn = warn;
+            // Wardrobe is applied by Dress() after the body has been solved: UMA merges body and clothes into one
+            // skinned mesh, so measuring a dressed avatar would tape-measure the jacket and the shoes.
+        }
 
-            ApplyWardrobe(recipe, catalog, warn);
-            ApplyColors(recipe, warn);
+        private AssetCatalog _catalog;
+        private Action<string, string> _warn;
+        public bool Dressed { get; private set; }
+
+        /// <summary>Apply wardrobe, hair, eyebrows, beard and colors (call after the body solve, then Rebuild).</summary>
+        public void Dress()
+        {
+            if (Dressed) return;
+            ApplyWardrobe(_recipe, _catalog, _warn);
+            ApplyColors(_recipe, _warn);
+            Dressed = true;
         }
 
         static UMAGenerator EnsureGenerator()
         {
             var indexer = UMAAssetIndexer.Instance;
             if (indexer == null) throw new RecipeException("uma.indexer", "UMAAssetIndexer is not available (editor compiling or UMA missing).");
-            var generator = indexer.generator ?? UnityEngine.Object.FindFirstObjectByType<UMAGenerator>();
-            if (generator == null)
-            {
-                var go = new GameObject("UMAGenerator");
-                generator = go.AddComponent<UMAGenerator>();
-            }
+            var generator = indexer.Generator;  // creates the scene generator on demand
+            if (generator == null) throw new RecipeException("uma.generator", "UMAAssetIndexer.Instance.Generator is null; UMA could not create its generator in this scene.");
             return generator;
         }
 

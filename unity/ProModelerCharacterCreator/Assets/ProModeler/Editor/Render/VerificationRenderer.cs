@@ -28,6 +28,16 @@ namespace ProModeler.Editor
             var camera = CreateCamera();
             try
             {
+                // HDRP's first frame in a fresh scene comes out with unsettled exposure and sky; render and discard one.
+                try
+                {
+                    Frame(camera, "front", bounds, runtime);
+                    var warmup = Path.Combine(directory, "_warmup.png");
+                    RenderToPng(camera, 64, warmup);
+                    RenderToPng(camera, 64, warmup);
+                    File.Delete(warmup);
+                }
+                catch (Exception exc) { report.Warn("render.warmup", exc.Message); }
                 foreach (var pass in passes)
                 {
                     if (Array.IndexOf(KnownPasses, pass) < 0) { report.Warn("render.pass", $"unknown pass {pass}"); continue; }
@@ -103,7 +113,8 @@ namespace ProModeler.Editor
             light.color = Color.white;
             lightGo.transform.rotation = Quaternion.Euler(40f, 35f, 0f);
             var hdLight = lightGo.AddComponent<HDAdditionalLightData>();
-            hdLight.SetIntensity(20000f, LightUnit.Lux);
+            light.lightUnit = LightUnit.Lux;   // Unity 6 core light units; HDRP 17 dropped SetIntensity
+            light.intensity = 20000f;
             hdLight.EnableShadows(true);
             objects.Add(lightGo);
 
@@ -113,7 +124,8 @@ namespace ProModeler.Editor
             fill.color = new Color(0.8f, 0.85f, 1f);
             fillGo.transform.rotation = Quaternion.Euler(20f, -120f, 0f);
             var hdFill = fillGo.AddComponent<HDAdditionalLightData>();
-            hdFill.SetIntensity(6000f, LightUnit.Lux);
+            fill.lightUnit = LightUnit.Lux;
+            fill.intensity = 6000f;
             hdFill.EnableShadows(false);
             objects.Add(fillGo);
 

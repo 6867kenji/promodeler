@@ -67,6 +67,11 @@ namespace ProModeler.Resolve
                 foreach (var name in new[] { "upperWeight", "lowerWeight", "belly" })
                     if (initial.ContainsKey(name)) initial[name] = Mathf.Lerp(0.3f, 0.8f, fat);
             }
+            if (shape.TryGetValue("muscle", out var muscle))
+            {
+                foreach (var name in new[] { "upperMuscle", "lowerMuscle" })
+                    if (initial.ContainsKey(name)) initial[name] = Mathf.Lerp(0.2f, 0.8f, muscle);
+            }
             return initial;
         }
 
@@ -75,7 +80,7 @@ namespace ProModeler.Resolve
             return _measurer.Measure(_runtime.BodyRenderer, _runtime.Bone("Head"), _runtime.Bone("LeftArm"), _runtime.Bone("RightArm"));
         }
 
-        public Resolved Solve(BuildReport report, int maxIterations = 8)
+        public Resolved Solve(BuildReport report, int maxIterations = 10)
         {
             var solver = new MeasurementSolver { MaxIterations = maxIterations };
             var targets = Targets();
@@ -104,6 +109,10 @@ namespace ProModeler.Resolve
                     return Measure();
                 }, weights);
                 foreach (var line in result.Log) Debug.Log("[ProModeler] solve " + line);
+                // The runtime still holds the last probe (a Jacobian column or a rejected step); restore the solution.
+                _runtime.SetBodyParameters(result.Parameters);
+                if (!_runtime.Rebuild(60f)) throw new RecipeException("uma.rebuild", "character rebuild failed after the body solve");
+                result.Measured = Measure();
             }
 
             // Root scale as the last resort for the strict height tolerance.

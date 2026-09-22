@@ -27,7 +27,8 @@ namespace ProModeler.Resolve
         public float FiniteDifferenceStep = 0.08f;
         public float Damping = 0.3f;
         public float MaxStep = 0.35f;
-        public int MaxIterations = 8;
+        public int MaxIterations = 10;
+        public int MaxDampingRetries = 4;
 
         public Result Solve(
             IReadOnlyDictionary<string, float> initial,
@@ -67,47 +68,45 @@ namespace ProModeler.Resolve
                     var rp = Residuals(probed, targets, measureNames, weights);
                     for (var i = 0; i < m; i++) J[i, j] = (rp[i] - r[i]) / actual;
                 }
-                // (J^T J + damping I) dx = -J^T r
-                var A = new float[n, n];
-                var b = new float[n];
-                for (var j = 0; j < n; j++)
+                // (J^T J + lambda I) dx = -J^T r, with lambda raised while the step does not improve (Levenberg-Marquardt).
+                var lambda = Damping;
+                float[] next = null;
+                Dictionary<string, float> nextMeasured = null;
+                float[] nextR = null;
+                var improved = false;
+                for (var retry = 0; retry <= MaxDampingRetries && !improved; retry++)
                 {
-                    for (var k = 0; k < n; k++)
+                    var A = new float[n, n];
+                    var b = new float[n];
+                    for (var j = 0; j < n; j++)
                     {
-                        var s = 0f;
-                        for (var i = 0; i < m; i++) s += J[i, j] * J[i, k];
-                        A[j, k] = s + (j == k ? Damping : 0f);
+                        for (var k = 0; k < n; k++)
+                        {
+                            var s = 0f;
+                            for (var i = 0; i < m; i++) s += J[i, j] * J[i, k];
+                            A[j, k] = s + (j == k ? lambda : 0f);
+                        }
+                        var t = 0f;
+                        for (var i = 0; i < m; i++) t += J[i, j] * r[i];
+                        b[j] = -t;
                     }
-                    var t = 0f;
-                    for (var i = 0; i < m; i++) t += J[i, j] * r[i];
-                    b[j] = -t;
+                    var dx = SolveLinear(A, b);
+                    var scale = 1f;
+                    var largest = dx.Max(v => Math.Abs(v));
+                    if (largest > MaxStep) scale = MaxStep / largest;
+                    next = new float[n];
+                    for (var j = 0; j < n; j++) next[j] = Clamp01(x[j] + dx[j] * scale);
+                    nextMeasured = Evaluate(evaluate, names, next, result);
+                    nextR = Residuals(nextMeasured, targets, measureNames, weights);
+                    improved = Norm(nextR) < Norm(r);
+                    if (!improved) lambda *= 4f;
                 }
-                var dx = SolveLinear(A, b);
-                var scale = 1f;
-                var largest = dx.Max(v => Math.Abs(v));
-                if (largest > MaxStep) scale = MaxStep / largest;
-                var next = new float[n];
-                for (var j = 0; j < n; j++) next[j] = Clamp01(x[j] + dx[j] * scale);
-                var nextMeasured = Evaluate(evaluate, names, next, result);
-                var nextR = Residuals(nextMeasured, targets, measureNames, weights);
-                if (Norm(nextR) >= Norm(r))
+                if (!improved)
                 {
-                    // Half the step until it improves; give up on this direction after three halvings.
-                    var improved = false;
-                    for (var halving = 0; halving < 3 && !improved; halving++)
-                    {
-                        scale *= 0.5f;
-                        for (var j = 0; j < n; j++) next[j] = Clamp01(x[j] + dx[j] * scale);
-                        nextMeasured = Evaluate(evaluate, names, next, result);
-                        nextR = Residuals(nextMeasured, targets, measureNames, weights);
-                        improved = Norm(nextR) < Norm(r);
-                    }
-                    if (!improved)
-                    {
-                        result.Log.Add($"iteration {iteration + 1}: no improving step; stopping");
-                        break;
-                    }
+                    result.Log.Add($"iteration {iteration + 1}: no improving step after {MaxDampingRetries} damping increases; stopping");
+                    break;
                 }
+                Damping = Math.Max(Damping * 0.5f, lambda * 0.25f);
                 x = next;
                 measured = nextMeasured;
                 r = nextR;

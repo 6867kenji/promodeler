@@ -15,6 +15,7 @@ import json
 import os
 import shutil
 import subprocess
+import tarfile
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -134,6 +135,58 @@ def link_uma(project: Path = UNITY_PROJECT, source: Path = UMA_SOURCE) -> dict:
     if meta_source.is_file() and not (assets / "UMA.meta").is_file():
         shutil.copyfile(meta_source, assets / "UMA.meta")
     return {"target": str(target), "source": str(source), "created": created, "uma": uma_version(project)}
+
+
+def extract_unitypackage(package: Path, assets_parent: Path, overwrite: bool = True) -> dict:
+    """Unpack a .unitypackage (tar.gz of <guid>/{asset, asset.meta, pathname}) under ``assets_parent``.
+
+    Unity's ``AssetDatabase.ImportPackage`` is asynchronous in batch mode, so the editor may exit before the
+    import lands; extracting the archive ourselves is deterministic. ``pathname`` entries start with ``Assets/``
+    and are written relative to ``assets_parent`` (the directory that contains ``Assets``). Returns counts.
+    """
+    written = skipped = unchanged = 0
+    with tarfile.open(package, "r:gz") as archive:
+        members = {m.name: m for m in archive.getmembers()}
+        for name, member in members.items():
+            if not name.endswith("/pathname") or not member.isfile():
+                continue
+            folder = name[: -len("/pathname")]
+            target_rel = archive.extractfile(member).read().decode("utf-8").splitlines()[0].strip()
+            if not target_rel.startswith("Assets/"):
+                skipped += 1
+                continue
+            target = assets_parent / target_rel
+            asset = members.get(folder + "/asset")
+            meta = members.get(folder + "/asset.meta")
+            if asset is None:  # a folder entry: only its .meta exists
+                target.mkdir(parents=True, exist_ok=True)
+            else:
+                data = archive.extractfile(asset).read()
+                if target.is_file() and target.read_bytes() == data:
+                    unchanged += 1
+                elif target.is_file() and not overwrite:
+                    skipped += 1
+                else:
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    target.write_bytes(data)
+                    written += 1
+            if meta is not None:
+                meta_path = Path(str(target) + ".meta")
+                meta_data = archive.extractfile(meta).read()
+                if not (meta_path.is_file() and meta_path.read_bytes() == meta_data):
+                    meta_path.parent.mkdir(parents=True, exist_ok=True)
+                    meta_path.write_bytes(meta_data)
+    return {"package": str(package), "written": written, "unchanged": unchanged, "skipped": skipped}
+
+
+def install_uma_hdrp_content(project: Path = UNITY_PROJECT) -> dict:
+    """Unpack UMA's HDRP content (materials, shader graphs, setup prefab) next to the UMA sources."""
+    package = project / "Assets" / "UMA" / "SRP" / "UMAHDRP.unitypackage"
+    if not package.is_file():
+        raise UnityNotFound(f"UMA HDRP package not found at {package}; is Assets/UMA linked?")
+    result = extract_unitypackage(package, project)
+    result["setup_prefab"] = (project / "Assets" / "UMA" / "SRP" / "HDRPSetup" / "UMAHDRPSetup.prefab").is_file()
+    return result
 
 
 def run_setup(project: Path = UNITY_PROJECT, timeout: float = 1800.0, log=None) -> dict:

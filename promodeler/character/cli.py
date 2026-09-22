@@ -286,6 +286,12 @@ def cmd_character_setup(args) -> int:
         print(f"error:    {exc}", file=sys.stderr)
         return 3
     print(f"uma:      {linked['target']} -> {linked['source']} ({'created' if linked['created'] else 'already linked'}), version {linked['uma']}")
+    try:
+        hdrp = bridge.install_uma_hdrp_content()
+    except bridge.UnityNotFound as exc:
+        print(f"error:    {exc}", file=sys.stderr)
+        return 3
+    print(f"uma hdrp: {hdrp['written']} files written, {hdrp['unchanged']} unchanged, setup prefab {'present' if hdrp['setup_prefab'] else 'MISSING'}")
     if args.no_unity:
         return 0
     try:

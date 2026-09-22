@@ -691,7 +691,7 @@ Unity は GLB を読み（UnityGLTF）、`socket` の Humanoid ボーン相対�
 | 段階 | 内容 | 完了判定 |
 | --- | --- | --- |
 | **M9 Recipe 層（Python のみ）** 完了 2026-09-22 | `promodeler/character/{recipe,schema,from_blueprint,catalog,consistency,check}`、`schemas/*.json`、CLI `character recipe/validate/diff/catalog`、`generate` の振り分け、カタログ雛形（ID とライセンス欄だけ、実体なし）、15 体 + 2 衣装の Recipe 生成、整合性検査結果の一覧、単体テスト（Unity 不要） | `character/recipes/*.json` 17 件がスキーマ検証を通り、`validate --mhr` が設計書間の矛盾を表として出す |
-| **M10 Unity MVP（1 体、原案 §31）** 着手 2026-09-22（18.1 節） | Unity プロジェクト作成、HDRP と UMA 導入、Intel iGPU でのバッチレンダ実測、`RecipeLoader`、`BodyMeasurer`、`DnaCalibrationTool`、`BodyResolver`、UMA 同梱資産だけで `businessman`（男性・スーツに最も近い既定衣装）を組み、`build.json` + front/side/back レンダ + FBX/GLB、`bridge.build`、`character check` | `promodeler character build businessman` が一発で通り、身長 ±2 mm、周長の残差が表に出る。対応パラメータは原案 §31 の 15–20 項目 |
+| **M10 Unity MVP（1 体、原案 §31）** 完了 2026-09-23（18.1・18.2 節） | Unity プロジェクト作成、HDRP と UMA 導入、Intel iGPU でのバッチレンダ実測、`RecipeLoader`、`BodyMeasurer`、`DnaCalibrationTool`、`BodyResolver`、UMA 同梱資産だけで `businessman`（男性・スーツに最も近い既定衣装）を組み、`build.json` + front/side/back レンダ + FBX/GLB、`bridge.build`、`character check` | `promodeler character build businessman` が一発で通り、身長 ±2 mm、周長の残差が表に出る。対応パラメータは原案 §31 の 15–20 項目 |
 | **M11 寸法精度と全員** | 独自 DNA（肩幅・胴長・頭高）の追加と校正、顔 DNA 表、靴による接地補正、`GarmentMeasurer`、15 体すべてのビルドと照合表、コンタクトシート、`.claude/skills` の更新 | 15 体で身長 ±2 mm、周長 ±1 cm 以内（UMA の限界は残差として明記）。全員のコンタクトシートが並ぶ |
 | **M12 カタログと装備・衣装** | `tools/uma_slot_from_glb.py`、MakeHuman CC0 資産の変換と登録（髪 10、上衣 10、下衣 8、靴 6、眉・まつ毛・髭）、肌・眼球テクスチャ、`assets/props/` の装備品 8 点とソケット装着、Outfit 36・37、Addressables、`character edit` GUI（Face/Body/Hair/Skin/Wardrobe、Save は Recipe のみ） | 設計書の衣装語彙の 8 割が `catalog_id` で解決され、`wardrobe.missing` 警告が例外になる。GUI 保存 → `character diff` で差分追跡できる |
 | **M13 生成モード** | `presets`（性別・年齢別の人体計測事前分布）、`character random`、`character prompt`（LLM → Recipe、スキーマ制約、カタログ ID の実在検証）、クリップ動画記録、`physics_settings` 書き出し | 1,000 体を seed 決定的に生成して全件 `validate` を通す。プロンプト 1 文から `build` まで人手なし |
@@ -733,7 +733,48 @@ M10 の最初に **HDRP のヘッドレスレンダが Intel iGPU で動くか**
 | カタログ | 53 項目に UMA 3 サンプル資産を **代替（stand_in）** として `runtime.uma_wardrobe_recipe_by_race` に登録。`status` は placeholder のまま、ビルド時に `catalog.placeholder` 警告 |
 | 制約 | UMA 3 サンプルにはインナー（TopUnderlayer）用の衣装がないため、`inner` と `upper` が同じ Chest スロットを取り合う。後着が勝ち、`wardrobe.slotConflict` で報告 |
 
-次の手順: ライセンス有効化 → `promodeler character setup`（HDRP 取込、必要なら 2 回）→ `promodeler character build businessman` → C# のコンパイルエラーと `build.json` の結果を見て修正。
+### 18.2 M10 の結果（2026-09-23）
+
+ライセンス有効化後、`character setup` → `character build` がエンドツーエンドで通った。コンパイルエラーは 2 件のみ
+（`UMAData.umaGenerator` が読み取り専用、HDRP 17.3 で `SetIntensity` が廃止）。1 体のビルドは約 40 秒（UMA 生成、
+最大 10 反復の寸法解法、HDRP レンダ 10 枚、FBX 58 MB + GLB 17 MB）。HDRP のヘッドレス描画は Intel iGPU で動いた。
+
+ビルド中に直した計測・解法の問題:
+
+| 症状 | 原因 | 対処 |
+| --- | --- | --- |
+| 周長が +2.3 m | UMA は身体と衣服を 1 つの SkinnedMeshRenderer に結合する | 裸のレースで解いてから `Dress()` で着せる |
+| 最終計測がソルバーのログと一致しない | ソルバー終了時に UMA が保持していたのは最後の試行値（ヤコビアン探索や棄却ステップ） | 採用値を再適用して再生成してから計測 |
+| 胸囲の断面幅が肩幅と同じ | T ポーズでは腕根が胸の平面を通る | 計測時のみ上腕を 55° 下げた A ポーズにする（腕の向きから回転符号を決める。UMA の左腕は −X） |
+| 身長のルートスケールが 2 倍に効く | `BakeMesh` の結果に祖先スケールが既に入っている | 位置・回転のみの行列で世界座標へ |
+| 解法が「改善なし」で早期終了 | 減衰固定のガウス・ニュートン | 減衰を 4 倍ずつ上げて再試行する Levenberg–Marquardt 風に |
+| 初回レンダが露出過多 | HDRP の初フレームで露出・空が未収束 | 捨てフレームを 2 枚描く |
+| shaded パスがマゼンタ | `UMAHDRP.unitypackage` の非同期インポートが終了前に打ち切られていた | Python で unitypackage を展開（`install_uma_hdrp_content`） |
+
+残差（`character check <id> --build`、許容は身長 2 mm・その他 5 mm）:
+
+| 項目 | businessman（男 1.76 m） | woman / 春香（女 1.60 m） |
+| --- | --- | --- |
+| barefoot_height | −0 mm | +0 mm |
+| inseam | +2 mm | −7 mm |
+| foot_length | +1 mm | −1 mm |
+| shoulder_width | −12 mm | −19 mm |
+| waist | +6 mm | −7 mm |
+| hip | −17 mm | −3 mm |
+| chest / bust | **+99 mm**（幅 +79、奥行 −78） | **−97 mm**（幅 −7、奥行 −68） |
+| underbust | — | +42 mm |
+
+胸囲だけが大きく外れる。UMA 3 の素体は胴が幅広で浅く、男性は設計書の 0.326×0.284 m に対し 0.405×0.206 m、女性はバストの奥行きが
+68 mm 足りない。MHR で「周長だけ合わせると胸が平らになる」と同じ失敗モードで、DNA（`chestSize`, `breastSize`, `upperWeight`, `upperMuscle`）
+では奥行きを出せない。春香の解は `breastSize` 0.07・`upperMuscle` 1.0 に張り付いており、バストとアンダーバストが同じ DNA を逆方向に
+引いた結果でもある（UMA 3 の女性レースには `shoulderWidth` DNA がなく、肩幅 −19 mm も動かせない）。M11 で断面の幅・奥行きを目標に
+加える（`chest_depth` を重み付け）か、UMA の DNA に胸の奥行き・肩幅用の骨スケールを追加して校正する。
+
+その他の未解決: 髪と髭の共有色 `Hair` は UMA レシピに保存されているのに白く描かれる（UMA 3 の髪シェーダーの色経路が別。M11）。
+`inner` と `upper` は UMA 3 サンプルにアンダーレイヤー衣装がなく同じ Chest スロットを取り合う（後着優先、`wardrobe.slotConflict`）。
+ネクタイは代替がなく空。付属品の装着は M12。
+
+次の手順は M11（寸法精度と全員）: 断面奥行きの目標化、独自 DNA の校正、顔 DNA 表の検証、靴による接地補正、`GarmentMeasurer`、15 体のビルドと照合表。
 
 ## 19. 未決事項（実装フェーズで決める）
 
