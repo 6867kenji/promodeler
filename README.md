@@ -100,6 +100,7 @@ Boolean の後に Bevel を掛けると切り口の細かい面で幅が収ま�
 | `Cavity(distance)`, `AmbientOcclusion(distance)`, `Thickness(distance)` | レイトレースによる凹み・遮蔽・薄さ |
 | `Facing(direction)` | 法線と方向の内積（上向き面の埃など） |
 | `Position(axis, start, end)` | 座標を 0..1 に正規化 |
+| `Bricks(width, height, mortar, offset, axis)` | レンガ・タイル・床板の目地マスク（目地で 1）。`axis` はパターンを置く面の法線 |
 | 演算 | `+ - * /`, `.pow()`, `.clamp()`, `.smoothstep(lo, hi)`, `.ramp(stops)`, `ColorRamp(field, stops)`, `.mix()` |
 
 `layers=(Layer(base_color=..., roughness=..., height=..., mask=field), ...)` で下から順に合成する。
@@ -146,6 +147,8 @@ clips=(Clip(id, duration, keyframes=(Keyframe(time, pose_id_or_None), ...), loop
 | `passes` | `shaded`（ベイク済みマテリアル）, `clay`（無彩色の粘土）, `wireframe`（粘土 + 辺）, `normals`（ワールド法線）, `uv`（チェッカー） |
 | `environment` | `studio`（勾配環境 + エリアライト）, `overcast`, `sunny` / `sunset`（物理空 + 太陽）, または `.hdr` / `.exr` のパス |
 | `pose` | リグのポーズ ID。指定時はクリップを無効にしてそのポーズで描く |
+| `cameras` | `Camera(id, position, target, fov, orthographic, ortho_scale, clip_start, hide_parts)`。任意位置のカメラ。正投影カメラを断面位置に置き `clip_start` を小さくすると断面図になる。`hide_parts` で天井などをそのカメラだけ外す |
+| `lights` | `Light(id, position, energy, size)`。室内検証用の下向きエリアライト（W） |
 | `engine` | `eevee`（反復用）, `cycles`（最終確認。CPU、デノイズあり） |
 
 パス × ビューの全レンダを `renders/contact_sheet.png` に並べる（ホスト側、Pillow がある場合）。

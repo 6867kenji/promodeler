@@ -201,6 +201,40 @@ class Voronoi(Field):
 
 
 @dataclass(frozen=True)
+class Bricks(Field):
+    """Mortar mask of a running-bond brick, tile or plank pattern: 1 in the joints, 0 on the units.
+
+    ``width`` and ``height`` are unit sizes in meters along the pattern's
+    U and V axes, ``mortar`` the joint width. ``axis`` is the surface normal
+    the pattern lies on: ``"y"`` for floors (U along X, V along Z), ``"z"``
+    for walls facing the viewer, ``"x"`` for side walls. ``offset`` shifts
+    every ``offset_frequency``-th row by that fraction; 0 gives a grid.
+    """
+
+    kind: ClassVar[str] = "bricks"
+    width: float = 0.2
+    height: float = 0.06
+    mortar: float = 0.005
+    offset: float = 0.5
+    offset_frequency: int = 2
+    axis: str = "y"
+
+    def check(self, label: str) -> None:
+        for name in ("width", "height", "mortar"):
+            value = getattr(self, name)
+            if not is_finite(value) or value <= 0.0 or value > 100.0:
+                raise ModelingError("bricks.size", f"{label}.{name} must be in (0, 100] meters.")
+        if self.mortar >= min(self.width, self.height):
+            raise ModelingError("bricks.size", f"{label}.mortar must be smaller than the unit size.")
+        if not 0.0 <= self.offset <= 1.0:
+            raise ModelingError("bricks.offset", f"{label}.offset must be in 0...1.")
+        if not isinstance(self.offset_frequency, int) or not 1 <= self.offset_frequency <= 99:
+            raise ModelingError("bricks.offset", f"{label}.offset_frequency must be in 1...99.")
+        if self.axis not in AXES:
+            raise ModelingError("bricks.axis", f"{label}.axis must be one of {AXES}.")
+
+
+@dataclass(frozen=True)
 class Curvature(Field):
     """Convex edge mask: 1 on sharp edges within ``radius`` meters, 0 on flat areas.
 
@@ -423,7 +457,7 @@ def validate_field(value, label: str) -> None:
         raise ModelingError("field.type", f"{label} must be a finite number, Color or field.")
 
 
-GEOMETRY_FIELD_KINDS = ("const", "noise", "voronoi", "position", "facing", "math", "clamp", "smoothstep", "ramp", "mix")
+GEOMETRY_FIELD_KINDS = ("const", "noise", "voronoi", "bricks", "position", "facing", "math", "clamp", "smoothstep", "ramp", "mix")
 
 
 def validate_geometry_field(field, label: str) -> None:

@@ -3,8 +3,8 @@ import unittest
 from dataclasses import dataclass
 
 from promodeler.core import (
-    Asset, AssetGenerator, Bevel, Box, Color, Curvature, Cylinder, Displace, GenerationInput, Material,
-    ModelingError, Noise, Part, QualityProfile, RenderSettings, SimpleDeform, Transform, build_recipe,
+    Asset, AssetGenerator, Bevel, Box, Bricks, Camera, Color, Curvature, Cylinder, Displace, GenerationInput, Light,
+    Material, ModelingError, Noise, Part, QualityProfile, RenderSettings, SimpleDeform, Transform, build_recipe,
     dump_recipe, imperfections, recipe_hash, srgb,
 )
 
@@ -75,6 +75,32 @@ class ValidationTests(unittest.TestCase):
             RenderSettings(environment="night").validate()
         RenderSettings(passes=("shaded", "clay"), environment="sunny").validate()
         RenderSettings(environment="C:/somewhere/sky.hdr").validate()
+
+    def test_cameras_and_lights(self):
+        cam = Camera("interior", position=(0, 1.5, 3), target=(0, 1, -3), fov=1.2)
+        section = Camera("section", position=(1.4, 1.2, 0), target=(0, 1.2, 0), orthographic=True, ortho_scale=9, clip_start=0.001,
+                         hide_parts=("ceiling",))
+        light = Light("living", position=(0, 2.3, 1.5), energy=60, size=1.0)
+        settings = RenderSettings(views=(), cameras=(cam, section), lights=(light,))
+        settings.validate()
+        recipe = settings.to_recipe()
+        self.assertEqual([c["id"] for c in recipe["cameras"]], ["interior", "section"])
+        self.assertEqual(recipe["cameras"][1]["hide_parts"], ["ceiling"])
+        self.assertEqual(recipe["lights"][0]["energy"], 60.0)
+        with self.assertRaises(ModelingError):
+            RenderSettings(views=(), cameras=()).validate()
+        with self.assertRaises(ModelingError):
+            Camera("front", position=(0, 0, 1), target=(0, 0, 0)).validate("c")
+        with self.assertRaises(ModelingError):
+            Camera("c", position=(0, 0, 0), target=(0, 0, 0)).validate("c")
+        with self.assertRaises(ModelingError):
+            RenderSettings(cameras=(cam, cam)).validate()
+        with self.assertRaises(ModelingError):
+            Light("l", position=(0, 0, 0), energy=0).validate("l")
+        Bricks(width=0.09, height=0.9, mortar=0.002, axis="y").validate("b")
+        with self.assertRaises(ModelingError):
+            Bricks(width=0.01, height=0.01, mortar=0.02).validate("b")
+        Displace(height=Bricks() * 0.001).validate("d")
 
     def test_displace_rejects_probe_fields(self):
         Displace(height=imperfections.dents() + imperfections.wobble()).validate("d")

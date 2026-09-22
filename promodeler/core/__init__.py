@@ -11,11 +11,11 @@ compiles. Conventions:
 """
 
 from . import curves, imperfections, presets
-from .asset import LOD, Asset, ExportSettings, GenerationInput, Part, QualityProfile, RenderSettings
+from .asset import LOD, Asset, Camera, ExportSettings, GenerationInput, Light, Part, QualityProfile, RenderSettings
 from .color import Color, srgb
 from .diagnostics import ModelingError
 from .fields import (
-    AmbientOcclusion, Cavity, ColorField, ColorMix, ColorRamp, Curvature, Facing, Field, Mix, Noise, Position,
+    AmbientOcclusion, Bricks, Cavity, ColorField, ColorMix, ColorRamp, Curvature, Facing, Field, Mix, Noise, Position,
     Thickness, Voronoi,
 )
 from .generator import AssetGenerator
@@ -35,6 +35,8 @@ __all__ = [
     "Bevel",
     "Boolean",
     "Box",
+    "Bricks",
+    "Camera",
     "Cavity",
     "Clip",
     "ClothDrape",
@@ -58,6 +60,7 @@ __all__ = [
     "Keyframe",
     "LOD",
     "Layer",
+    "Light",
     "Loft",
     "LoftSection",
     "Material",

@@ -124,6 +124,29 @@ class FieldCompiler:
         sock(node, "Randomness").default_value = spec["randomness"]
         return sock(node, "Distance", output=True)
 
+    def _s_bricks(self, spec):
+        # Blender axes: author y -> z, author z -> -y. The brick pattern reads the vector's X and Y.
+        separate = self._new("ShaderNodeSeparateXYZ")
+        self._link(self.coord_socket, sock(separate, "Vector"))
+        components = {"x": sock(separate, "X", output=True), "y": sock(separate, "Y", output=True), "z": sock(separate, "Z", output=True)}
+        u_axis, v_axis = {"y": ("x", "y"), "z": ("x", "z"), "x": ("y", "z")}[spec["axis"]]
+        combine = self._new("ShaderNodeCombineXYZ")
+        self._link(components[u_axis], sock(combine, "X"))
+        self._link(components[v_axis], sock(combine, "Y"))
+        node = self._new("ShaderNodeTexBrick")
+        node.offset = spec["offset"]
+        node.offset_frequency = spec["offset_frequency"]
+        self._link(combine.outputs[0], sock(node, "Vector"))
+        sock(node, "Scale").default_value = 1.0
+        sock(node, "Mortar Size").default_value = spec["mortar"]
+        sock(node, "Mortar Smooth").default_value = 0.0
+        sock(node, "Brick Width").default_value = spec["width"]
+        sock(node, "Row Height").default_value = spec["height"]
+        sock(node, "Color1").default_value = (0.0, 0.0, 0.0, 1.0)
+        sock(node, "Color2").default_value = (0.0, 0.0, 0.0, 1.0)
+        sock(node, "Mortar").default_value = (1.0, 1.0, 1.0, 1.0)
+        return sock(node, "Fac", output=True)
+
     def _s_curvature(self, spec):
         self._probe_only("curvature")
         bevel = self._new("ShaderNodeBevel")

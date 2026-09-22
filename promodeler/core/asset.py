@@ -4,7 +4,7 @@ import math
 from dataclasses import dataclass, field
 from typing import Any
 
-from .diagnostics import ModelingError, is_finite
+from .diagnostics import ModelingError, finite_vector, is_finite
 from .material import Material
 from .modifiers import Modifier
 from .rig import Clip, Pose, Rig
@@ -49,8 +49,77 @@ class QualityProfile:
 
 
 @dataclass(frozen=True)
+class Camera:
+    """A named verification camera in authoring space.
+
+    Perspective by default; ``orthographic`` with ``ortho_scale`` (the
+    visible width in meters) gives drawing-like views. Placing an
+    orthographic camera on a section plane with a tiny ``clip_start`` cuts
+    the model there, because everything behind the camera is dropped.
+    ``hide_parts`` removes parts for this camera only, for dollhouse views.
+    """
+
+    id: str
+    position: tuple[float, float, float]
+    target: tuple[float, float, float]
+    fov: float = math.radians(60)
+    orthographic: bool = False
+    ortho_scale: float = 5.0
+    clip_start: float = 0.01
+    hide_parts: tuple[str, ...] = ()
+
+    def validate(self, label: str) -> None:
+        if not isinstance(self.id, str) or not self.id or self.id in RENDER_VIEWS:
+            raise ModelingError("camera.id", f"{label}.id must be a nonempty string other than the built-in view names.")
+        position = finite_vector(self.position, 3, "camera.position", f"{label}.position")
+        target = finite_vector(self.target, 3, "camera.target", f"{label}.target")
+        if sum((a - b) ** 2 for a, b in zip(position, target)) < 1e-12:
+            raise ModelingError("camera.target", f"{label} position and target coincide.")
+        if not 0.01 < self.fov < math.pi:
+            raise ModelingError("camera.fov", f"{label}.fov must be within (0, pi) radians.")
+        if self.ortho_scale <= 0.0 or self.clip_start <= 0.0:
+            raise ModelingError("camera.range", f"{label} ortho_scale and clip_start must be positive.")
+
+    def to_recipe(self) -> dict:
+        return {
+            "id": self.id, "position": [float(c) for c in self.position], "target": [float(c) for c in self.target],
+            "fov": float(self.fov), "orthographic": bool(self.orthographic), "ortho_scale": float(self.ortho_scale),
+            "clip_start": float(self.clip_start), "hide_parts": list(self.hide_parts),
+        }
+
+
+@dataclass(frozen=True)
+class Light:
+    """A downward-facing area light for verification renders of interiors. ``energy`` is watts."""
+
+    id: str
+    position: tuple[float, float, float]
+    energy: float = 100.0
+    size: float = 0.5
+    color: tuple[float, float, float] = (1.0, 1.0, 1.0)
+
+    def validate(self, label: str) -> None:
+        if not isinstance(self.id, str) or not self.id:
+            raise ModelingError("light.id", f"{label}.id must be a nonempty string.")
+        finite_vector(self.position, 3, "light.position", f"{label}.position")
+        if not is_finite(self.energy) or self.energy <= 0.0 or self.size <= 0.0:
+            raise ModelingError("light.energy", f"{label} energy and size must be positive.")
+        if len(self.color) != 3 or any(not is_finite(c) or not 0.0 <= c <= 1.0 for c in self.color):
+            raise ModelingError("light.color", f"{label}.color must be three values in 0...1.")
+
+    def to_recipe(self) -> dict:
+        return {"id": self.id, "position": [float(c) for c in self.position], "energy": float(self.energy),
+                "size": float(self.size), "color": [float(c) for c in self.color]}
+
+
+@dataclass(frozen=True)
 class RenderSettings:
-    """Verification render options. They never affect the exported asset."""
+    """Verification render options. They never affect the exported asset.
+
+    ``views`` are the built-in auto-framed views; ``cameras`` are authored
+    cameras rendered in addition to them (pass an empty ``views`` tuple to
+    render only cameras). ``lights`` add area lights for interiors.
+    """
 
     resolution: int = 512
     engine: str = "eevee"
@@ -60,10 +129,22 @@ class RenderSettings:
     samples: int = 16
     background: tuple[float, float, float] = (0.35, 0.35, 0.35)
     pose: str | None = None
+    cameras: tuple[Camera, ...] = ()
+    lights: tuple[Light, ...] = ()
 
     def validate(self) -> None:
         if self.pose is not None and (not isinstance(self.pose, str) or not self.pose):
             raise ModelingError("render.pose", "render.pose must be a pose id or None.")
+        ids: set[str] = set()
+        for index, camera in enumerate(self.cameras):
+            camera.validate(f"render.cameras[{index}]")
+            if camera.id in ids:
+                raise ModelingError("camera.id", f"Camera id {camera.id!r} is defined twice.")
+            ids.add(camera.id)
+        for index, light in enumerate(self.lights):
+            light.validate(f"render.lights[{index}]")
+        if not self.views and not self.cameras:
+            raise ModelingError("render.views", "render needs at least one view or camera.")
         if not self.passes or any(p not in RENDER_PASSES for p in self.passes):
             raise ModelingError("render.passes", f"render.passes must be nonempty and within {RENDER_PASSES}.")
         if self.environment not in RENDER_ENVIRONMENTS and not self.environment.lower().endswith((".hdr", ".exr")):
@@ -72,8 +153,8 @@ class RenderSettings:
             raise ModelingError("render.resolution", "render.resolution must be an integer in 64...4096.")
         if self.engine not in RENDER_ENGINES:
             raise ModelingError("render.engine", f"render.engine must be one of {RENDER_ENGINES}.")
-        if not self.views or any(v not in RENDER_VIEWS for v in self.views):
-            raise ModelingError("render.views", f"render.views must be nonempty and within {RENDER_VIEWS}.")
+        if any(v not in RENDER_VIEWS for v in self.views):
+            raise ModelingError("render.views", f"render.views must be within {RENDER_VIEWS}.")
         if not isinstance(self.samples, int) or not 1 <= self.samples <= 4096:
             raise ModelingError("render.samples", "render.samples must be an integer in 1...4096.")
         if len(self.background) != 3 or any(not is_finite(v) or not 0 <= v <= 1 for v in self.background):
@@ -87,6 +168,8 @@ class RenderSettings:
             "passes": list(self.passes),
             "environment": self.environment,
             "pose": self.pose,
+            "cameras": [c.to_recipe() for c in self.cameras],
+            "lights": [l.to_recipe() for l in self.lights],
             "samples": self.samples,
             "background": [float(v) for v in self.background],
         }

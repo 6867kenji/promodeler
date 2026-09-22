@@ -101,6 +101,14 @@ Rules:
 - `Part(lods=(LOD(distance, ratio), ...))` exports decimated `<id>:lod<n>` nodes. `ExportSettings(formats=("glb", "usdz"))` or `--formats glb,usdz` adds USDZ.
 - `report.stages` lists seconds per pipeline stage; use it before blaming Blender for a slow build.
 
+## Interiors and architecture
+
+- Build rooms from the blueprint's zone rectangles as axis-aligned boxes (a small `box_part(x0, x1, y0, y1, z0, z1)` helper keeps extents readable) and cut openings with `Boolean("difference")` box cutters that overshoot the wall thickness by 2 cm.
+- Movable fittings are joints: a hinge is a joint at the pivot with the tail 1 m up and a world-space Y rotation (`+` moves +X toward -Z); a slide is a world-space translation. Attach leaves with `parent_joint`.
+- Verify with authored cameras: `RenderSettings(views=(), cameras=(Camera("interior", position, target, fov), Camera("section", ..., orthographic=True, ortho_scale=<width m>, clip_start=0.001), Camera("dollhouse", ..., hide_parts=("ceiling_slab",))))` and `lights=(Light(...),)` for interiors, then check the acceptance dimensions from `report.parts.<id>.bounds`.
+- `Bricks(width, height, mortar, axis)` gives plank, tile and brick seams; use it in `height` (negative) and as a darker layer mask.
+- Every part with a procedural material bakes its own texture set. For buildings with dozens of parts, keep small parts on constant materials or the export grows by megabytes per part.
+
 ## Imperfections
 
 `imperfections.wobble(size, amplitude, seed)`, `dents(size, depth, coverage, seed)`, `grain(size, amplitude, seed)`, `ripples(size, amplitude, seed)` return height fields for `Displace`. Use them: a straight, round, flat object reads as computer generated before any texture does.

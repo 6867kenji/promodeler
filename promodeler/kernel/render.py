@@ -19,6 +19,7 @@ from mathutils import Vector
 
 from promodeler.core.diagnostics import ModelingError
 
+from . import space
 from .compile import CompiledScene
 from .fields import sock
 from .materials import ensure_node_tree
@@ -419,15 +420,46 @@ class _PassState:
                 mesh.materials[slot] = material
 
 
+def _place_camera(camera: bpy.types.Object, spec: dict) -> None:
+    position = space.A2B @ Vector(spec["position"])
+    target = space.A2B @ Vector(spec["target"])
+    camera.location = position
+    camera.rotation_euler = (target - position).to_track_quat("-Z", "Y").to_euler()
+    data = camera.data
+    if spec["orthographic"]:
+        data.type = "ORTHO"
+        data.ortho_scale = spec["ortho_scale"]
+    else:
+        data.type = "PERSP"
+        data.angle = spec["fov"]
+    data.clip_start = spec["clip_start"]
+    data.clip_end = max((target - position).length * 20.0, 100.0)
+
+
+def setup_lights(specs: list[dict]) -> None:
+    for spec in specs:
+        light = bpy.data.lights.new(f"light:{spec['id']}", "AREA")
+        light.shape = "SQUARE"
+        light.size = spec["size"]
+        light.energy = spec["energy"]
+        light.color = tuple(spec["color"])
+        obj = bpy.data.objects.new(f"light:{spec['id']}", light)
+        obj.location = space.A2B @ Vector(spec["position"])
+        bpy.context.scene.collection.objects.link(obj)
+
+
 def render_views(scene: CompiledScene, settings: dict, out_dir: str) -> list[dict]:
     bounds = world_bounds(scene)
     if bounds is None:
         return []
     setup_engine(settings)
     setup_environment(scene, settings, bounds)
+    setup_lights(settings.get("lights") or [])
     camera = bpy.data.objects.new("camera", bpy.data.cameras.new("camera"))
     bpy.context.scene.collection.objects.link(camera)
     bpy.context.scene.camera = camera
+    shots = [{"id": view, "builtin": True} for view in settings["views"]]
+    shots += [dict(spec, builtin=False) for spec in settings.get("cameras") or []]
     passes = settings.get("passes") or ["shaded"]
     state = _PassState(scene, settings, bounds)
     results = []
@@ -437,13 +469,27 @@ def render_views(scene: CompiledScene, settings: dict, out_dir: str) -> list[dic
     try:
         for pass_name in passes:
             state.apply(pass_name)
-            for view in settings["views"]:
-                frame_camera(camera, VIEW_DIRECTIONS[view], bounds)
+            for shot in shots:
+                view = shot["id"]
+                hidden = []
+                if shot["builtin"]:
+                    camera.data.type = "PERSP"
+                    camera.data.angle = math.radians(39.6)
+                    frame_camera(camera, VIEW_DIRECTIONS[view], bounds)
+                else:
+                    _place_camera(camera, shot)
+                    for part_id in shot.get("hide_parts", []):
+                        for obj in [scene.parts.get(part_id)] + scene.lods.get(part_id, []):
+                            if obj is not None and not obj.hide_render:
+                                obj.hide_render = True
+                                hidden.append(obj)
                 filename = f"{view}.png" if pass_name == "shaded" else f"{view}_{pass_name}.png"
                 path = os.path.join(out_dir, filename)
                 bpy.context.scene.render.filepath = path
                 started = time.perf_counter()
                 bpy.ops.render.render(write_still=True)
+                for obj in hidden:
+                    obj.hide_render = False
                 elapsed = time.perf_counter() - started
                 written = os.path.isfile(path) and os.path.getsize(path) > 0
                 results.append({
