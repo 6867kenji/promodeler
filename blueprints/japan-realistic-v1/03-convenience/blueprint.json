@@ -1,0 +1,320 @@
+{
+  "schema": "promodeler-blueprint/1.0",
+  "folder": "03-convenience",
+  "id": "convenience",
+  "name": "汐見マート・平屋店舗",
+  "category": "convenience-store",
+  "kind": "architecture",
+  "status": "design_review",
+  "summary": "架空ブランドのコンビニ。売場・バックヤード・トイレを含む。看板は無地の青緑。",
+  "dimensions": {
+    "envelope_xyz_m": [
+      18,
+      4.2,
+      12
+    ],
+    "origin": "地面・床面の平面中心。女性は裸足の両足接地中央。",
+    "axis": "右手系: +X東/画面右、+Y上、+Z南/正面。北=-Z。人物の解剖学的右は-X。",
+    "priority": "数値JSON > 寸法SVG > 仕様書 > 参考画像",
+    "clear_ceiling_m": 2.8,
+    "outer_wall_m": 0.15,
+    "partition_m": 0.1,
+    "roof_slab_m": 0.18
+  },
+  "metadata": {
+    "tags": [
+      "日本",
+      "現代",
+      "写実",
+      "convenience-store"
+    ],
+    "usage": "PC向けリアルタイム探索・映像用のモデル設計",
+    "license": "独自制作物として管理。現段階は私有・配布許諾未設定。販売用ライセンスは公開時に別途設定。",
+    "approval": "モデル未生成・販売未承認"
+  },
+  "target": {
+    "engine": "Unity / HDRP を主想定。バージョンはモデル実装時に固定。",
+    "exports": [
+      "編集可能な制作ソース",
+      "GLB（形状・PBR・ベイクした骨アニメ）",
+      "Unity用物理設定",
+      "検証PNGとMP4"
+    ],
+    "triangles_lod0_max": 350000,
+    "texture_resolution_max": 4096,
+    "texture_policy": "共有材2K、主役・顔4K。BaseColor=sRGB、Normal/Roughness/Metallic=linear。AOをBaseColorへ焼き込まない。",
+    "texel_density_px_per_m": 512,
+    "lod_ratios": [
+      1,
+      0.5,
+      0.2,
+      0.08
+    ]
+  },
+  "materials": [
+    {
+      "id": "paint",
+      "base_color_srgb": "#E5E4DA",
+      "roughness": [
+        0.45,
+        0.65
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        0.0001,
+        0.0005
+      ],
+      "detail": "塗装鋼板は非金属の塗膜として扱う。下地金属露出は角の面積0.3%以下。"
+    },
+    {
+      "id": "glass",
+      "base_color_srgb": "#D7E2E0",
+      "roughness": [
+        0.03,
+        0.12
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        5e-05,
+        0.0001
+      ],
+      "detail": "建築ガラス厚6–12mm。透明・反射を別設定、IOR目標1.5。透過は現行APIとの差分実装対象。汚れ1%以下。"
+    },
+    {
+      "id": "metal",
+      "base_color_srgb": "#45494A",
+      "roughness": [
+        0.25,
+        0.4
+      ],
+      "metallic": 1,
+      "feature_scale_m": [
+        5e-05,
+        0.0002
+      ],
+      "detail": "アルミ・ステンレス。ヘアラインを部材長手方向へ。切断端ベベル0.5–1mm、汚れは継ぎ目に限定。"
+    },
+    {
+      "id": "tile",
+      "base_color_srgb": "#D7D3C8",
+      "roughness": [
+        0.35,
+        0.55
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        0.045,
+        0.095
+      ],
+      "detail": "外壁45×95mm、目地5mm・深さ2mm。色差は明度±3%。床用は300角・目地3mm。"
+    },
+    {
+      "id": "concrete",
+      "base_color_srgb": "#B6B5B0",
+      "roughness": [
+        0.65,
+        0.85
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        0.0002,
+        0.003
+      ],
+      "detail": "型枠目地900×1800mm、Pコン径22mm・深さ3mm。雨筋は上端と排水近傍だけ。大域変形は最大1mm。"
+    }
+  ],
+  "parts": [
+    {
+      "id": "checkout",
+      "name": "固定レジ台",
+      "center_m": [
+        -5.8,
+        0.45,
+        3.7
+      ],
+      "size_m": [
+        3.6,
+        0.9,
+        0.75
+      ],
+      "material": "paint",
+      "note": ""
+    },
+    {
+      "id": "cold-wall",
+      "name": "壁面冷蔵陳列",
+      "center_m": [
+        0,
+        1.05,
+        -2.15
+      ],
+      "size_m": [
+        10.8,
+        2.1,
+        0.8
+      ],
+      "material": "metal",
+      "note": ""
+    },
+    {
+      "id": "shelf-0",
+      "name": "陳列棚",
+      "center_m": [
+        -3,
+        0.75,
+        0.5
+      ],
+      "size_m": [
+        0.9,
+        1.5,
+        3.6
+      ],
+      "material": "paint",
+      "note": "棚板厚25mm、棚間隔300mm。商品は別サブアセット。"
+    },
+    {
+      "id": "shelf-1",
+      "name": "陳列棚",
+      "center_m": [
+        0,
+        0.75,
+        0.5
+      ],
+      "size_m": [
+        0.9,
+        1.5,
+        3.6
+      ],
+      "material": "paint",
+      "note": "棚板厚25mm、棚間隔300mm。商品は別サブアセット。"
+    },
+    {
+      "id": "shelf-2",
+      "name": "陳列棚",
+      "center_m": [
+        3,
+        0.75,
+        0.5
+      ],
+      "size_m": [
+        0.9,
+        1.5,
+        3.6
+      ],
+      "material": "paint",
+      "note": "棚板厚25mm、棚間隔300mm。商品は別サブアセット。"
+    }
+  ],
+  "motions": [
+    {
+      "id": "entry-left",
+      "type": "slide",
+      "pivot_m": [
+        -0.45,
+        0,
+        6
+      ],
+      "axis": [
+        1,
+        0,
+        0
+      ],
+      "range": [
+        -0.9,
+        0
+      ],
+      "unit": "m",
+      "note": "幅0.9×高2.2m。右扉は+0.9m。開閉1.2秒、待機2秒。"
+    },
+    {
+      "id": "delivery",
+      "type": "hinge",
+      "pivot_m": [
+        6.5,
+        0,
+        -6
+      ],
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "range": [
+        0,
+        100
+      ],
+      "unit": "degree",
+      "note": "搬入扉1.2×2.1m、外開き。"
+    },
+    {
+      "id": "cooler",
+      "type": "hinge",
+      "pivot_m": [
+        -5.4,
+        0,
+        -1.75
+      ],
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "range": [
+        0,
+        95
+      ],
+      "unit": "degree",
+      "note": "幅0.6mずつ。各扉に独立ピボット。"
+    }
+  ],
+  "layout": [
+    {
+      "id": "sales",
+      "rect_xz_m": [
+        -8.85,
+        -2.8,
+        8.85,
+        5.85
+      ],
+      "use": "売場"
+    },
+    {
+      "id": "backroom",
+      "rect_xz_m": [
+        -8.85,
+        -5.85,
+        5.8,
+        -2.9
+      ],
+      "use": "在庫・搬入・従業員通路"
+    },
+    {
+      "id": "toilet",
+      "rect_xz_m": [
+        5.9,
+        -5.85,
+        8.85,
+        -2.9
+      ],
+      "use": "客用便所・洗面"
+    }
+  ],
+  "details": [
+    "南正面のガラスは1.5mモジュール。腰壁0.15m、ガラス上端2.8m、看板下端3.05m・高さ0.65m。",
+    "床300mm角タイル。天井600mm角、照明1200×150mm。冷蔵庫下部に通気グリル幅8mm。",
+    "商品は無地パッケージ形状を別ファイルで参照。画像の文字・パッケージは設計対象外。部屋モデルの家具除外指定とは別扱い。",
+    "棚とレジは取外し可能パーツ。固定設備を含む初期レイアウトで、通路有効幅1.2m以上を確保。"
+  ],
+  "qa": [
+    "売場→バックヤードの0.9m扉と売場→便所の0.8m扉を確保。",
+    "冷蔵庫扉を95度まで開いても棚と干渉しない。",
+    "入口から全棚を回れる連続経路を確保。"
+  ],
+  "implementation_gaps": [],
+  "image_generation": {
+    "tool": "built-in image_gen",
+    "prompt_file": "image-prompt.txt",
+    "reference_sheet": "images/reference-sheet.png",
+    "role": "concept_only_not_geometry_evidence"
+  }
+}

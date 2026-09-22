@@ -1,0 +1,459 @@
+{
+  "schema": "promodeler-blueprint/1.0",
+  "metadata": {
+    "tags": [
+      "日本",
+      "現代",
+      "写実",
+      "独立アセット",
+      "refrigerator"
+    ],
+    "usage": "PC向けリアルタイム探索・映像用のモデル設計",
+    "license": "独自制作物として管理。現段階は私有・配布許諾未設定。販売用ライセンスは公開時に別途設定。",
+    "approval": "モデル未生成・販売未承認",
+    "description": "上段冷蔵・下段冷凍の2ドア冷蔵庫。正面から見て右ヒンジ・左側くぼみ取手。内部棚・ポケット・冷凍ケースあり。"
+  },
+  "target": {
+    "engine": "Unity / HDRP を主想定。バージョンはモデル実装時に固定。",
+    "exports": [
+      "編集可能な制作ソース",
+      "GLB（形状・PBR・ベイクした骨アニメ）",
+      "Unity用物理設定",
+      "検証PNGとMP4"
+    ],
+    "triangles_lod0_max": 65000,
+    "texture_resolution_max": 2048,
+    "texture_policy": "共有材2K、主役・顔4K。BaseColor=sRGB、Normal/Roughness/Metallic=linear。AOをBaseColorへ焼き込まない。",
+    "texel_density_px_per_m": 1024,
+    "lod_ratios": [
+      1,
+      0.5,
+      0.2,
+      0.08
+    ],
+    "texture_resident_budget_mib": 48
+  },
+  "folder": "13-refrigerator",
+  "id": "refrigerator",
+  "name": "白い2ドア・コンパクト冷蔵庫",
+  "category": "refrigerator",
+  "kind": "prop",
+  "status": "design_review",
+  "summary": "上段冷蔵・下段冷凍の2ドア冷蔵庫。正面から見て右ヒンジ・左側くぼみ取手。内部棚・ポケット・冷凍ケースあり。",
+  "dimensions": {
+    "envelope_xyz_m": [
+      0.48,
+      1.28,
+      0.595
+    ],
+    "origin": "床/設置面の中心、閉じた基準状態。天井灯のみ天井取付面中心。",
+    "axis": "右手系: +X右、+Y上、+Z正面。sideは+Xから-Xへ、画面右が-Z。",
+    "priority": "数値JSON > 寸法SVG > 仕様文 > 参考画像",
+    "upper_door_y_range_m": [
+      0.47,
+      1.265
+    ],
+    "lower_door_y_range_m": [
+      0.055,
+      0.455
+    ],
+    "door_thickness_m": 0.055,
+    "cabinet_insulation_nominal_m": 0.045,
+    "back_clearance_design_m": 0.05,
+    "side_clearance_design_m": 0.02,
+    "clearance_note": "配置用の仮定値。実製品の据付基準ではない。"
+  },
+  "materials": [
+    {
+      "id": "white-steel",
+      "base_color_srgb": "#E6E7E3",
+      "roughness": [
+        0.3,
+        0.5
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        0.0001,
+        0.0003
+      ],
+      "detail": "白い塗装鋼板、厚0.6–0.8mm。塗膜は非金属。折返し端のRと接合隙間を作る。"
+    },
+    {
+      "id": "polymer",
+      "base_color_srgb": "#E5E5DF",
+      "roughness": [
+        0.3,
+        0.5
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        8e-05,
+        0.0003
+      ],
+      "detail": "射出成形樹脂の梨地。パーティングライン0.1mm、角R0.5–2mm。"
+    },
+    {
+      "id": "glass",
+      "base_color_srgb": "#D7E2E0",
+      "roughness": [
+        0.03,
+        0.12
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        5e-05,
+        0.0001
+      ],
+      "detail": "建築ガラス厚6–12mm。透明・反射を別設定、IOR目標1.5。透過は現行APIとの差分実装対象。汚れ1%以下。"
+    },
+    {
+      "id": "gasket",
+      "base_color_srgb": "#B7B9B4",
+      "roughness": [
+        0.7,
+        0.85
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        0.0001,
+        0.0002
+      ],
+      "detail": "軟質パッキンの蛇腹・角の溶着線。開閉に伴う圧縮は0–2mm。"
+    },
+    {
+      "id": "metal",
+      "base_color_srgb": "#45494A",
+      "roughness": [
+        0.25,
+        0.4
+      ],
+      "metallic": 1,
+      "feature_scale_m": [
+        5e-05,
+        0.0002
+      ],
+      "detail": "アルミ・ステンレス。ヘアラインを部材長手方向へ。切断端ベベル0.5–1mm、汚れは継ぎ目に限定。"
+    },
+    {
+      "id": "black-plastic",
+      "base_color_srgb": "#292D30",
+      "roughness": [
+        0.45,
+        0.65
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        8e-05,
+        0.0002
+      ],
+      "detail": "チャコール樹脂、指触部に粗さ差0.05。黒つぶれを避ける。"
+    }
+  ],
+  "parts": [
+    {
+      "id": "cabinet-shell",
+      "name": "断熱キャビネット",
+      "center_m": [
+        0,
+        0.645,
+        -0.015
+      ],
+      "size_m": [
+        0.48,
+        1.27,
+        0.565
+      ],
+      "material": "white-steel",
+      "note": "中空。内壁を残して庫内を切り抜く。"
+    },
+    {
+      "id": "upper-door",
+      "name": "冷蔵扉",
+      "center_m": [
+        0,
+        0.8675,
+        0.27
+      ],
+      "size_m": [
+        0.47,
+        0.795,
+        0.055
+      ],
+      "material": "white-steel",
+      "note": "右ヒンジ。左縁にくぼみ取手。"
+    },
+    {
+      "id": "lower-door",
+      "name": "冷凍扉",
+      "center_m": [
+        0,
+        0.255,
+        0.27
+      ],
+      "size_m": [
+        0.47,
+        0.4,
+        0.055
+      ],
+      "material": "white-steel",
+      "note": ""
+    },
+    {
+      "id": "crisper",
+      "name": "野菜ケース",
+      "center_m": [
+        0,
+        0.57,
+        -0.045
+      ],
+      "size_m": [
+        0.36,
+        0.16,
+        0.36
+      ],
+      "material": "polymer",
+      "note": "前面透明樹脂、上面開放。"
+    },
+    {
+      "id": "compressor-bay",
+      "name": "背面機械室",
+      "center_m": [
+        0,
+        0.14,
+        -0.24
+      ],
+      "size_m": [
+        0.34,
+        0.22,
+        0.115
+      ],
+      "material": "black-plastic",
+      "note": "下部のみ。"
+    },
+    {
+      "id": "shelf-0",
+      "name": "ガラス棚",
+      "center_m": [
+        0,
+        0.79,
+        -0.035
+      ],
+      "size_m": [
+        0.38,
+        0.004,
+        0.34
+      ],
+      "material": "glass",
+      "note": "前縁樹脂リム8mm。"
+    },
+    {
+      "id": "shelf-1",
+      "name": "ガラス棚",
+      "center_m": [
+        0,
+        1.01,
+        -0.035
+      ],
+      "size_m": [
+        0.38,
+        0.004,
+        0.34
+      ],
+      "material": "glass",
+      "note": "前縁樹脂リム8mm。"
+    },
+    {
+      "id": "freezer-bin-0",
+      "name": "冷凍ケース",
+      "center_m": [
+        0,
+        0.14,
+        0
+      ],
+      "size_m": [
+        0.35,
+        0.16,
+        0.4
+      ],
+      "material": "polymer",
+      "note": "引出し0.22m。"
+    },
+    {
+      "id": "freezer-bin-1",
+      "name": "冷凍ケース",
+      "center_m": [
+        0,
+        0.335,
+        0
+      ],
+      "size_m": [
+        0.35,
+        0.16,
+        0.4
+      ],
+      "material": "polymer",
+      "note": "引出し0.22m。"
+    },
+    {
+      "id": "door-pocket-0",
+      "name": "ドアポケット",
+      "center_m": [
+        0,
+        0.68,
+        0.2
+      ],
+      "size_m": [
+        0.34,
+        0.12,
+        0.08
+      ],
+      "material": "polymer",
+      "note": "冷蔵扉の子。庫内棚前端との隙間10mm以上。"
+    },
+    {
+      "id": "door-pocket-1",
+      "name": "ドアポケット",
+      "center_m": [
+        0,
+        1.04,
+        0.2
+      ],
+      "size_m": [
+        0.34,
+        0.12,
+        0.08
+      ],
+      "material": "polymer",
+      "note": "冷蔵扉の子。庫内棚前端との隙間10mm以上。"
+    }
+  ],
+  "motions": [
+    {
+      "id": "upper-door",
+      "type": "hinge",
+      "pivot_m": [
+        0.235,
+        0.47,
+        0.2675
+      ],
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "range": [
+        0,
+        110
+      ],
+      "unit": "degree",
+      "note": "正面+Zから見て右ヒンジ、左取手。右端支点で手前へ開く。"
+    },
+    {
+      "id": "lower-door",
+      "type": "hinge",
+      "pivot_m": [
+        0.235,
+        0.055,
+        0.2675
+      ],
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "range": [
+        0,
+        110
+      ],
+      "unit": "degree",
+      "note": "同じ右ヒンジ。"
+    },
+    {
+      "id": "crisper",
+      "type": "slide",
+      "pivot_m": [
+        0,
+        0.57,
+        -0.005
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "range": [
+        0,
+        0.22
+      ],
+      "unit": "m",
+      "note": "冷蔵扉100度以上開いてから。"
+    },
+    {
+      "id": "freezer-bin",
+      "type": "slide",
+      "pivot_m": [
+        0,
+        0.14,
+        0
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "range": [
+        0,
+        0.22
+      ],
+      "unit": "m",
+      "note": "冷凍扉100度以上。上下2ケースは独立。"
+    }
+  ],
+  "layout": [],
+  "details": [
+    "扉の縦方向ヒンジ軸・取手位置を開閉図で統一。ドア間15mm、上端15mm、下端55mm。",
+    "パッキン断面は幅12mmの蛇腹3山、圧縮量0–2mm。扉内板と一緒に動かす。",
+    "庫内壁R12mm、棚受け幅8mm、透明部品厚2.5mm。冷蔵室照明は右上、扉開で点灯。",
+    "閉時庫内の棚は扉ポケットと干渉しない奥行へ調整。背面は低部機械室と通風口、裏側にも材質・ねじを用意。"
+  ],
+  "qa": [
+    "閉時包絡0.48×1.28×0.595m。上冷蔵/下冷凍。",
+    "右ヒンジ・左取手が全画像とモデルで一致。",
+    "扉110度・引出し220mmでパッキン/棚/ポケットの相互貫通なし。"
+  ],
+  "implementation_gaps": [],
+  "interfaces": [
+    "床Y0、正面+Z。冷蔵庫上に電子レンジを自動配置しない。天板耐荷重や実製品の据付条件は本設計の対象外。"
+  ],
+  "clips": [
+    {
+      "id": "open-and-pull",
+      "duration_s": 6,
+      "description": "閉→上扉110度→ケース220mm引出し→戻す→閉。下扉も別実行。"
+    }
+  ],
+  "revision": 1,
+  "image_generation": {
+    "tool": "built-in image_gen",
+    "prompt_file": "image-prompt.txt",
+    "reference_sheet": "images/reference-sheet.png",
+    "role": "concept_only_not_geometry_evidence"
+  },
+  "hierarchy": {
+    "upper-door": [
+      "door-pocket-0",
+      "door-pocket-1",
+      "upper-gasket"
+    ],
+    "lower-door": [
+      "lower-gasket"
+    ],
+    "cabinet-root": [
+      "shelf-0",
+      "shelf-1",
+      "crisper",
+      "freezer-bin-0",
+      "freezer-bin-1"
+    ]
+  }
+}

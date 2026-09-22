@@ -1,0 +1,83 @@
+{
+  "schema": "subway-assembly/1.0",
+  "station": "汐見駅 S01",
+  "axis": "X東/Y上/Z南、入口は北側",
+  "levels_y_m": {
+    "street": 0,
+    "concourse": -6,
+    "platform": -12,
+    "rail_top": -13.1
+  },
+  "assets": [
+    {
+      "id": "subway-entrance",
+      "folder": "17-subway-entrance",
+      "translation_m": [
+        0,
+        0,
+        -62
+      ],
+      "rotation_rad": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "subway-concourse",
+      "folder": "18-subway-concourse",
+      "translation_m": [
+        0,
+        -6,
+        0
+      ],
+      "rotation_rad": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "subway-platform",
+      "folder": "19-subway-platform",
+      "translation_m": [
+        0,
+        -12,
+        0
+      ],
+      "rotation_rad": [
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "connections": [
+    [
+      "subway-entrance:to-concourse",
+      "subway-concourse:from-entrance"
+    ],
+    [
+      "subway-concourse:bank-A-exit",
+      "subway-platform:bank-A-arrival"
+    ],
+    [
+      "subway-concourse:bank-B-exit",
+      "subway-platform:bank-B-arrival"
+    ],
+    [
+      "subway-concourse:lift-exit",
+      "subway-platform:lift-arrival"
+    ]
+  ],
+  "walking_routes": {
+    "stairs": "地上A1→入口階段→B1北接続→8改札→bank-A/B→B2島式ホーム",
+    "accessible": "地上東側アプローチ→入口EV→B1東側通路→東端幅広改札→改札内EV→ホーム中央"
+  },
+  "external_connections": [
+    "地上の都市への配置変換は未指定。都市モデルへ自動挿入しない。",
+    "軌道の前後端と非常通路の続きは別空間との接続対象。"
+  ],
+  "ownership_rule": "昇降設備は上階側アセットが下階まで所有。下階は天井開口・到着床を所有。接続面にキャップを付けない。",
+  "scope": "3Dモデルを制作するための設計値。実在駅の施工図・認証済み避難計画ではない。"
+}

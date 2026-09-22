@@ -1,0 +1,30 @@
+{
+  "revision": 3,
+  "scope": "設計データの検証。実モデル未生成。",
+  "checks": [
+    "16アセット、色違い2セットの形状・寸法・パーツIDが一致",
+    "材質参照・三角形予算合計・16:9比率・SVG解析",
+    "全16ページの参照画像・リンクが実在"
+  ],
+  "previous_report": "revisions/r2/validation-report.json",
+  "new_images": [
+    {
+      "folder": "15-gaming-pc-white",
+      "size": [
+        1536,
+        1024
+      ],
+      "sha256": "313126fa07bee1636271d492c91c5dd32712e0acb2786f981c329da195db5901",
+      "visual_review": "本体色・モニター色・周辺機器・ガラス側板・背面と細部を確認。"
+    },
+    {
+      "folder": "16-gaming-pc-pink",
+      "size": [
+        1536,
+        1024
+      ],
+      "sha256": "ddb9620db6c6d08a968f0287fa110681dc2272f7f7569633cc10395a43af25db",
+      "visual_review": "本体色・モニター色・周辺機器・ガラス側板・背面と細部を確認。"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "revision": 5,
+  "scope": "入口の参考画像修正と階段方向の設計データ検証。実モデル未生成。",
+  "checks": [
+    "全36段で地上0mから高さが単調減少し最終段-6m。",
+    "入口接続座標・断面図は維持。",
+    "地上の全体/正面/近接画像を見下ろし構図へ変更し、下り階段を目視確認。",
+    "旧画像・旧仕様保持、現行ページの画像/リンク実在。"
+  ],
+  "previous_report": "revisions/r4/validation-report.json",
+  "image": {
+    "file": "17-subway-entrance/images/reference-sheet-v2.png",
+    "sha256": "b1aa46a3a5ecdfe900139460a2eab968b84cfac08aecae18a94b564950afb2e2"
+  }
+}

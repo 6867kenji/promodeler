@@ -1,0 +1,352 @@
+{
+  "schema": "promodeler-blueprint/1.0",
+  "metadata": {
+    "tags": [
+      "日本",
+      "現代",
+      "写実",
+      "独立アセット",
+      "sofa"
+    ],
+    "usage": "PC向けリアルタイム探索・映像用のモデル設計",
+    "license": "独自制作物として管理。現段階は私有・配布許諾未設定。販売用ライセンスは公開時に別途設定。",
+    "approval": "モデル未生成・販売未承認",
+    "description": "淡いグレーの2人掛けソファー。座クッション2枚、背クッション2枚、オーク脚4本。"
+  },
+  "target": {
+    "engine": "Unity / HDRP を主想定。バージョンはモデル実装時に固定。",
+    "exports": [
+      "編集可能な制作ソース",
+      "GLB（形状・PBR・ベイクした骨アニメ）",
+      "Unity用物理設定",
+      "検証PNGとMP4"
+    ],
+    "triangles_lod0_max": 60000,
+    "texture_resolution_max": 2048,
+    "texture_policy": "共有材2K、主役・顔4K。BaseColor=sRGB、Normal/Roughness/Metallic=linear。AOをBaseColorへ焼き込まない。",
+    "texel_density_px_per_m": 1024,
+    "lod_ratios": [
+      1,
+      0.5,
+      0.2,
+      0.08
+    ],
+    "texture_resident_budget_mib": 48
+  },
+  "folder": "08-sofa",
+  "id": "sofa",
+  "name": "ファブリック・コンパクト2人掛け",
+  "category": "sofa",
+  "kind": "prop",
+  "status": "design_review",
+  "summary": "淡いグレーの2人掛けソファー。座クッション2枚、背クッション2枚、オーク脚4本。",
+  "dimensions": {
+    "envelope_xyz_m": [
+      1.35,
+      0.78,
+      0.75
+    ],
+    "origin": "床/設置面の中心、閉じた基準状態。天井灯のみ天井取付面中心。",
+    "axis": "右手系: +X右、+Y上、+Z正面。sideは+Xから-Xへ、画面右が-Z。",
+    "priority": "数値JSON > 寸法SVG > 仕様文 > 参考画像",
+    "seat_height_m": 0.4,
+    "seat_clear_width_m": 1.11,
+    "seat_depth_m": 0.49,
+    "arm_height_m": 0.57,
+    "back_recline_deg": 8
+  },
+  "materials": [
+    {
+      "id": "fabric",
+      "base_color_srgb": "#CCCBC4",
+      "roughness": [
+        0.7,
+        0.9
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        0.0003,
+        0.0006
+      ],
+      "detail": "綿混/ポリエステルの織り目0.4mm。色差±2%、毛羽は法線。縫い糸径0.25mm・ピッチ3mm。"
+    },
+    {
+      "id": "oak",
+      "base_color_srgb": "#C4A77E",
+      "roughness": [
+        0.35,
+        0.5
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        0.0003,
+        0.002
+      ],
+      "detail": "オークの長手木目。導管0.1–0.3mm、木口は繊維に直交。クリア塗装、擦れは接触縁のみ。"
+    },
+    {
+      "id": "foam",
+      "base_color_srgb": "#E1DDD4",
+      "roughness": [
+        0.8,
+        0.95
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        0.0004,
+        0.001
+      ],
+      "detail": "露出しないクッション芯。圧縮変形の支持形状として管理。"
+    },
+    {
+      "id": "black-plastic",
+      "base_color_srgb": "#292D30",
+      "roughness": [
+        0.45,
+        0.65
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        8e-05,
+        0.0002
+      ],
+      "detail": "チャコール樹脂、指触部に粗さ差0.05。黒つぶれを避ける。"
+    },
+    {
+      "id": "metal",
+      "base_color_srgb": "#45494A",
+      "roughness": [
+        0.25,
+        0.4
+      ],
+      "metallic": 1,
+      "feature_scale_m": [
+        5e-05,
+        0.0002
+      ],
+      "detail": "アルミ・ステンレス。ヘアラインを部材長手方向へ。切断端ベベル0.5–1mm、汚れは継ぎ目に限定。"
+    }
+  ],
+  "parts": [
+    {
+      "id": "base",
+      "name": "座枠",
+      "center_m": [
+        0,
+        0.19,
+        0
+      ],
+      "size_m": [
+        1.27,
+        0.18,
+        0.69
+      ],
+      "material": "fabric",
+      "note": ""
+    },
+    {
+      "id": "arm-L",
+      "name": "左肘",
+      "center_m": [
+        -0.615,
+        0.425,
+        0
+      ],
+      "size_m": [
+        0.12,
+        0.29,
+        0.75
+      ],
+      "material": "fabric",
+      "note": ""
+    },
+    {
+      "id": "arm-R",
+      "name": "右肘",
+      "center_m": [
+        0.615,
+        0.425,
+        0
+      ],
+      "size_m": [
+        0.12,
+        0.29,
+        0.75
+      ],
+      "material": "fabric",
+      "note": ""
+    },
+    {
+      "id": "back-frame",
+      "name": "背枠",
+      "center_m": [
+        0,
+        0.5,
+        -0.3
+      ],
+      "size_m": [
+        1.11,
+        0.5,
+        0.15
+      ],
+      "material": "fabric",
+      "note": ""
+    },
+    {
+      "id": "seat-0",
+      "name": "座クッション",
+      "center_m": [
+        -0.2825,
+        0.345,
+        0.085
+      ],
+      "size_m": [
+        0.545,
+        0.11,
+        0.49
+      ],
+      "material": "fabric",
+      "note": "角R35mm、中央谷10mm。"
+    },
+    {
+      "id": "back-0",
+      "name": "背クッション",
+      "center_m": [
+        -0.2825,
+        0.6,
+        -0.22
+      ],
+      "size_m": [
+        0.545,
+        0.36,
+        0.14
+      ],
+      "material": "fabric",
+      "note": "後傾8度、角R40mm。"
+    },
+    {
+      "id": "seat-1",
+      "name": "座クッション",
+      "center_m": [
+        0.2825,
+        0.345,
+        0.085
+      ],
+      "size_m": [
+        0.545,
+        0.11,
+        0.49
+      ],
+      "material": "fabric",
+      "note": "角R35mm、中央谷10mm。"
+    },
+    {
+      "id": "back-1",
+      "name": "背クッション",
+      "center_m": [
+        0.2825,
+        0.6,
+        -0.22
+      ],
+      "size_m": [
+        0.545,
+        0.36,
+        0.14
+      ],
+      "material": "fabric",
+      "note": "後傾8度、角R40mm。"
+    },
+    {
+      "id": "leg-0-0",
+      "name": "オーク脚",
+      "center_m": [
+        -0.565,
+        0.06,
+        -0.275
+      ],
+      "size_m": [
+        0.05,
+        0.12,
+        0.05
+      ],
+      "material": "oak",
+      "note": "先端へ35mmまでテーパー。"
+    },
+    {
+      "id": "leg-0-1",
+      "name": "オーク脚",
+      "center_m": [
+        -0.565,
+        0.06,
+        0.275
+      ],
+      "size_m": [
+        0.05,
+        0.12,
+        0.05
+      ],
+      "material": "oak",
+      "note": "先端へ35mmまでテーパー。"
+    },
+    {
+      "id": "leg-1-0",
+      "name": "オーク脚",
+      "center_m": [
+        0.565,
+        0.06,
+        -0.275
+      ],
+      "size_m": [
+        0.05,
+        0.12,
+        0.05
+      ],
+      "material": "oak",
+      "note": "先端へ35mmまでテーパー。"
+    },
+    {
+      "id": "leg-1-1",
+      "name": "オーク脚",
+      "center_m": [
+        0.565,
+        0.06,
+        0.275
+      ],
+      "size_m": [
+        0.05,
+        0.12,
+        0.05
+      ],
+      "material": "oak",
+      "note": "先端へ35mmまでテーパー。"
+    }
+  ],
+  "motions": [],
+  "layout": [],
+  "details": [
+    "張地は0.4mm織り。パイピング径3mm、裏面ファスナーはクッション後縁に配置。",
+    "座面の中央に大きなくぼみを作らず、荷重なし状態では沈み2–4mm以内。縁の縫い目にだけ軽いしわ。",
+    "裏面は黒い不織布、脚取付プレート60×60×2mm、ネジ頭径5mm。",
+    "基準状態は静的モデル。構造上の関節や開閉機構はなし。任意の圧縮変形やパーツ移動は別仕様として記載。"
+  ],
+  "qa": [
+    "座面高0.40m・2座/2背・4脚を三面で一致。",
+    "縫い目と木脚の接合を接写、床接触点4点に浮きがない。"
+  ],
+  "implementation_gaps": [],
+  "interfaces": [
+    "床Y0。座る側+Zに450mm以上の空間を別途確保。クッションは着脱可能な別Part。"
+  ],
+  "clips": [],
+  "revision": 1,
+  "image_generation": {
+    "tool": "built-in image_gen",
+    "prompt_file": "image-prompt.txt",
+    "reference_sheet": "images/reference-sheet.png",
+    "role": "concept_only_not_geometry_evidence"
+  },
+  "deformation": {
+    "seat": "optional morph: 上面最大40mm圧縮、クッション側面の膨らみ最大8mm。",
+    "back": "optional morph: 最大20mm押込み。静的基準では未変形。"
+  }
+}

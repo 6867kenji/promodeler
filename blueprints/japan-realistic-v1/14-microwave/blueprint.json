@@ -1,0 +1,492 @@
+{
+  "schema": "promodeler-blueprint/1.0",
+  "metadata": {
+    "tags": [
+      "日本",
+      "現代",
+      "写実",
+      "独立アセット",
+      "microwave"
+    ],
+    "usage": "PC向けリアルタイム探索・映像用のモデル設計",
+    "license": "独自制作物として管理。現段階は私有・配布許諾未設定。販売用ライセンスは公開時に別途設定。",
+    "approval": "モデル未生成・販売未承認",
+    "description": "白い小型電子レンジ。左ヒンジ扉、扉右端の縦取手、右操作パネルにダイヤル2個。"
+  },
+  "target": {
+    "engine": "Unity / HDRP を主想定。バージョンはモデル実装時に固定。",
+    "exports": [
+      "編集可能な制作ソース",
+      "GLB（形状・PBR・ベイクした骨アニメ）",
+      "Unity用物理設定",
+      "検証PNGとMP4"
+    ],
+    "triangles_lod0_max": 42000,
+    "texture_resolution_max": 2048,
+    "texture_policy": "共有材2K、主役・顔4K。BaseColor=sRGB、Normal/Roughness/Metallic=linear。AOをBaseColorへ焼き込まない。",
+    "texel_density_px_per_m": 1024,
+    "lod_ratios": [
+      1,
+      0.5,
+      0.2,
+      0.08
+    ],
+    "texture_resident_budget_mib": 48
+  },
+  "folder": "14-microwave",
+  "id": "microwave",
+  "name": "白いダイヤル式・電子レンジ",
+  "category": "microwave",
+  "kind": "prop",
+  "status": "design_review",
+  "summary": "白い小型電子レンジ。左ヒンジ扉、扉右端の縦取手、右操作パネルにダイヤル2個。",
+  "dimensions": {
+    "envelope_xyz_m": [
+      0.455,
+      0.265,
+      0.34
+    ],
+    "origin": "床/設置面の中心、閉じた基準状態。天井灯のみ天井取付面中心。",
+    "axis": "右手系: +X右、+Y上、+Z正面。sideは+Xから-Xへ、画面右が-Z。",
+    "priority": "数値JSON > 寸法SVG > 仕様文 > 参考画像",
+    "cavity_xyz_m": [
+      0.28,
+      0.18,
+      0.27
+    ],
+    "turntable_diameter_m": 0.245,
+    "door_open_deg": 100,
+    "vent_clearance_design_m": {
+      "rear": 0.1,
+      "top": 0.15,
+      "sides": 0.1
+    },
+    "clearance_note": "室内配置用の仮定値。実家電の取扱説明書ではない。"
+  },
+  "materials": [
+    {
+      "id": "white-steel",
+      "base_color_srgb": "#E6E7E3",
+      "roughness": [
+        0.3,
+        0.5
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        0.0001,
+        0.0003
+      ],
+      "detail": "白い塗装鋼板、厚0.6–0.8mm。塗膜は非金属。折返し端のRと接合隙間を作る。"
+    },
+    {
+      "id": "black-plastic",
+      "base_color_srgb": "#292D30",
+      "roughness": [
+        0.45,
+        0.65
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        8e-05,
+        0.0002
+      ],
+      "detail": "チャコール樹脂、指触部に粗さ差0.05。黒つぶれを避ける。"
+    },
+    {
+      "id": "glass",
+      "base_color_srgb": "#D7E2E0",
+      "roughness": [
+        0.03,
+        0.12
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        5e-05,
+        0.0001
+      ],
+      "detail": "建築ガラス厚6–12mm。透明・反射を別設定、IOR目標1.5。透過は現行APIとの差分実装対象。汚れ1%以下。"
+    },
+    {
+      "id": "enamel",
+      "base_color_srgb": "#D9DAD5",
+      "roughness": [
+        0.25,
+        0.4
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        8e-05,
+        0.0002
+      ],
+      "detail": "白グレーの庫内塗膜。コーナーR8mm以上。微細オレンジピール0.05mm。"
+    },
+    {
+      "id": "metal",
+      "base_color_srgb": "#45494A",
+      "roughness": [
+        0.25,
+        0.4
+      ],
+      "metallic": 1,
+      "feature_scale_m": [
+        5e-05,
+        0.0002
+      ],
+      "detail": "アルミ・ステンレス。ヘアラインを部材長手方向へ。切断端ベベル0.5–1mm、汚れは継ぎ目に限定。"
+    },
+    {
+      "id": "rubber",
+      "base_color_srgb": "#E5E3DC",
+      "roughness": [
+        0.65,
+        0.85
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        0.0003,
+        0.001
+      ],
+      "detail": "白スニーカー底厚25mm、側面細溝0.7mm、底溝深2mm。接地縁に薄い灰色摩耗。"
+    },
+    {
+      "id": "polymer",
+      "base_color_srgb": "#E5E5DF",
+      "roughness": [
+        0.3,
+        0.5
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        8e-05,
+        0.0003
+      ],
+      "detail": "射出成形樹脂の梨地。パーティングライン0.1mm、角R0.5–2mm。"
+    }
+  ],
+  "parts": [
+    {
+      "id": "shell",
+      "name": "外装",
+      "center_m": [
+        0,
+        0.14,
+        -0.005
+      ],
+      "size_m": [
+        0.455,
+        0.25,
+        0.33
+      ],
+      "material": "white-steel",
+      "note": "中空、板厚0.7mm、脚を含む総高265mm。"
+    },
+    {
+      "id": "door",
+      "name": "前扉",
+      "center_m": [
+        -0.0475,
+        0.14,
+        0.139
+      ],
+      "size_m": [
+        0.34,
+        0.22,
+        0.024
+      ],
+      "material": "black-plastic",
+      "note": "左ヒンジ、金属網入り窓。"
+    },
+    {
+      "id": "control-panel",
+      "name": "操作パネル",
+      "center_m": [
+        0.1725,
+        0.14,
+        0.1425
+      ],
+      "size_m": [
+        0.09,
+        0.22,
+        0.025
+      ],
+      "material": "white-steel",
+      "note": ""
+    },
+    {
+      "id": "handle",
+      "name": "縦取手",
+      "center_m": [
+        0.0875,
+        0.14,
+        0.1575
+      ],
+      "size_m": [
+        0.016,
+        0.14,
+        0.025
+      ],
+      "material": "polymer",
+      "note": "前方へ出る。最大包絡Zを超える場合は外装後面を基準に深さへ算入。"
+    },
+    {
+      "id": "cavity",
+      "name": "庫内",
+      "center_m": [
+        -0.0475,
+        0.14,
+        -0.01
+      ],
+      "size_m": [
+        0.28,
+        0.18,
+        0.27
+      ],
+      "material": "enamel",
+      "note": "体積は空洞。"
+    },
+    {
+      "id": "turntable",
+      "name": "ガラス皿",
+      "center_m": [
+        -0.0475,
+        0.061,
+        -0.005
+      ],
+      "size_m": [
+        0.245,
+        0.006,
+        0.245
+      ],
+      "material": "glass",
+      "note": "円形、厚6mm、中央ハブ。"
+    },
+    {
+      "id": "dial-0",
+      "name": "操作ダイヤル",
+      "center_m": [
+        0.1725,
+        0.19,
+        0.159
+      ],
+      "size_m": [
+        0.036,
+        0.036,
+        0.022
+      ],
+      "material": "polymer",
+      "note": "円柱軸+Z。"
+    },
+    {
+      "id": "dial-1",
+      "name": "操作ダイヤル",
+      "center_m": [
+        0.1725,
+        0.105,
+        0.159
+      ],
+      "size_m": [
+        0.036,
+        0.036,
+        0.022
+      ],
+      "material": "polymer",
+      "note": "円柱軸+Z。"
+    },
+    {
+      "id": "foot-0-0",
+      "name": "ゴム脚",
+      "center_m": [
+        -0.1775,
+        0.0075,
+        -0.12
+      ],
+      "size_m": [
+        0.025,
+        0.015,
+        0.025
+      ],
+      "material": "rubber",
+      "note": "円形。"
+    },
+    {
+      "id": "foot-0-1",
+      "name": "ゴム脚",
+      "center_m": [
+        -0.1775,
+        0.0075,
+        0.12
+      ],
+      "size_m": [
+        0.025,
+        0.015,
+        0.025
+      ],
+      "material": "rubber",
+      "note": "円形。"
+    },
+    {
+      "id": "foot-1-0",
+      "name": "ゴム脚",
+      "center_m": [
+        0.1775,
+        0.0075,
+        -0.12
+      ],
+      "size_m": [
+        0.025,
+        0.015,
+        0.025
+      ],
+      "material": "rubber",
+      "note": "円形。"
+    },
+    {
+      "id": "foot-1-1",
+      "name": "ゴム脚",
+      "center_m": [
+        0.1775,
+        0.0075,
+        0.12
+      ],
+      "size_m": [
+        0.025,
+        0.015,
+        0.025
+      ],
+      "material": "rubber",
+      "note": "円形。"
+    }
+  ],
+  "motions": [
+    {
+      "id": "door",
+      "type": "hinge",
+      "pivot_m": [
+        -0.2175,
+        0.03,
+        0.139
+      ],
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "range": [
+        0,
+        -100
+      ],
+      "unit": "degree",
+      "note": "左ヒンジ、右取手、左手前へ開く。"
+    },
+    {
+      "id": "dial-upper",
+      "type": "hinge",
+      "pivot_m": [
+        0.1725,
+        0.19,
+        0.159
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "range": [
+        -120,
+        120
+      ],
+      "unit": "degree",
+      "note": "出力設定の表示用回転。"
+    },
+    {
+      "id": "dial-lower",
+      "type": "hinge",
+      "pivot_m": [
+        0.1725,
+        0.105,
+        0.159
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "range": [
+        0,
+        300
+      ],
+      "unit": "degree",
+      "note": "時間設定の表示用回転。"
+    },
+    {
+      "id": "turntable",
+      "type": "hinge",
+      "pivot_m": [
+        -0.0475,
+        0.061,
+        -0.005
+      ],
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "range": [
+        0,
+        360
+      ],
+      "unit": "degree",
+      "note": "6秒/回転、扉閉かつ運転状態のみ。"
+    }
+  ],
+  "layout": [],
+  "details": [
+    "扉窓は幅230×高さ130mm、金属網の穴径0.8mm・ピッチ1.2mm。近景は形状、遠景は法線/不透明パターンで再現。",
+    "ラッチ爪2点は扉右側、高さ差100mm。取手とダイヤルが重ならない。",
+    "庫内底からガラス皿上面まで14mm。奥隅R8mm、後面の小穴と通風口を形状で表現。",
+    "電源コードは背面左下から独立カーブで出す。ケーブルは設置時に配線するため閉状態の包絡寸法に含めない。"
+  ],
+  "qa": [
+    "左ヒンジ、取手は扉右端、ダイヤルは前面右側。",
+    "扉100度で外装に干渉しない。取手を含めた総奥行0.34m以内。",
+    "庫内は開扉時に実際の空洞として見え、皿は壁を貫通しない。"
+  ],
+  "implementation_gaps": [],
+  "interfaces": [
+    "設置面Y0、扉正面+Z。机/ラック/冷蔵庫への配置は別工程。"
+  ],
+  "clips": [
+    {
+      "id": "door-cycle",
+      "duration_s": 4,
+      "description": "閉→100度開→閉。"
+    },
+    {
+      "id": "running",
+      "duration_s": 6,
+      "description": "扉閉、庫内灯ON、皿1回転。開扉で灯・皿停止。"
+    }
+  ],
+  "revision": 1,
+  "image_generation": {
+    "tool": "built-in image_gen",
+    "prompt_file": "image-prompt.txt",
+    "reference_sheet": "images/reference-sheet.png",
+    "role": "concept_only_not_geometry_evidence"
+  },
+  "hierarchy": {
+    "door": [
+      "handle",
+      "window-mesh",
+      "latch-upper",
+      "latch-lower"
+    ],
+    "shell-root": [
+      "control-panel",
+      "dial-0",
+      "dial-1",
+      "cavity",
+      "turntable"
+    ]
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "revision": 4,
+  "scope": "設計ファイルと接続座標の検証。実モデル・動作は未検証。",
+  "checks": [
+    "4接続ペアの共通座標・幅・高さ・逆向き法線が一致",
+    "階段3組の36段/6m落差とエスカレーター6基の30度/6m落差を検算",
+    "改札8通路/9筐体、ホームドア48開口/96戸、6両×4扉の位置が一致",
+    "19単一カテゴリページのJSON/SVG・画像・相対リンクが有効"
+  ],
+  "previous_report": "revisions/r3/validation-report.json",
+  "new_images": [
+    {
+      "folder": "17-subway-entrance",
+      "size": [
+        1536,
+        1024
+      ],
+      "sha256": "854742c57276f380d2257c5616511cfcd5abe15afc62896fbda8ef94bbeee9dd"
+    },
+    {
+      "folder": "18-subway-concourse",
+      "size": [
+        1536,
+        1024
+      ],
+      "sha256": "b728cc07d7030f05388cfc6aa0e2a752aeddba78e9913186c97109d36b5372d8"
+    },
+    {
+      "folder": "19-subway-platform",
+      "size": [
+        1536,
+        1024
+      ],
+      "sha256": "95a859b059135ce1a04c7e228ede308b6d560e7551b564bd77b2b368727c1ef4"
+    }
+  ]
+}

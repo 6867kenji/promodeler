@@ -1,0 +1,266 @@
+{
+  "version": 7,
+  "status": "design_review",
+  "assets": [
+    {
+      "id": "city",
+      "name": "汐見町・500m街区",
+      "category": "city",
+      "folder": "01-city",
+      "spec": "01-city/blueprint.json"
+    },
+    {
+      "id": "apartment",
+      "name": "汐見レジデンス・6階建て",
+      "category": "apartment-building",
+      "folder": "02-apartment",
+      "spec": "02-apartment/blueprint.json"
+    },
+    {
+      "id": "convenience",
+      "name": "汐見マート・平屋店舗",
+      "category": "convenience-store",
+      "folder": "03-convenience",
+      "spec": "03-convenience/blueprint.json"
+    },
+    {
+      "id": "office",
+      "name": "汐見スクエア・8階オフィス",
+      "category": "office-building",
+      "folder": "04-office",
+      "spec": "04-office/blueprint.json"
+    },
+    {
+      "id": "woman",
+      "name": "春香・23歳の女性",
+      "category": "female-character",
+      "folder": "05-woman",
+      "spec": "05-woman/blueprint.json"
+    },
+    {
+      "id": "room",
+      "name": "独立1K・オーク床の空室",
+      "category": "apartment-room",
+      "folder": "06-room",
+      "spec": "06-room/blueprint.json"
+    },
+    {
+      "id": "bed",
+      "name": "オークフレーム・シングルベッド",
+      "category": "bed",
+      "folder": "07-bed",
+      "spec": "07-bed/blueprint.json"
+    },
+    {
+      "id": "sofa",
+      "name": "ファブリック・コンパクト2人掛け",
+      "category": "sofa",
+      "folder": "08-sofa",
+      "spec": "08-sofa/blueprint.json"
+    },
+    {
+      "id": "ceiling-light",
+      "name": "乳白カバー・LEDシーリングライト",
+      "category": "ceiling-light",
+      "folder": "09-ceiling-light",
+      "spec": "09-ceiling-light/blueprint.json"
+    },
+    {
+      "id": "table-chair",
+      "name": "オーク机と椅子・コンパクトセット",
+      "category": "table-chair-set",
+      "folder": "10-table-chair",
+      "spec": "10-table-chair/blueprint.json"
+    },
+    {
+      "id": "pc-desk",
+      "name": "オーク天板・スチールPCデスク",
+      "category": "pc-desk",
+      "folder": "11-pc-desk",
+      "spec": "11-pc-desk/blueprint.json"
+    },
+    {
+      "id": "pc-set",
+      "name": "コンパクトPC・周辺機器セット",
+      "category": "pc-set",
+      "folder": "12-pc-set",
+      "spec": "12-pc-set/blueprint.json"
+    },
+    {
+      "id": "refrigerator",
+      "name": "白い2ドア・コンパクト冷蔵庫",
+      "category": "refrigerator",
+      "folder": "13-refrigerator",
+      "spec": "13-refrigerator/blueprint.json"
+    },
+    {
+      "id": "microwave",
+      "name": "白いダイヤル式・電子レンジ",
+      "category": "microwave",
+      "folder": "14-microwave",
+      "spec": "14-microwave/blueprint.json"
+    },
+    {
+      "id": "gaming-pc-white",
+      "name": "ホワイト・ゲーミングPCとディスプレイ",
+      "category": "pc-set",
+      "folder": "15-gaming-pc-white",
+      "spec": "15-gaming-pc-white/blueprint.json"
+    },
+    {
+      "id": "gaming-pc-pink",
+      "name": "ピンク・ゲーミングPCとディスプレイ",
+      "category": "pc-set",
+      "folder": "16-gaming-pc-pink",
+      "spec": "16-gaming-pc-pink/blueprint.json"
+    },
+    {
+      "id": "subway-entrance",
+      "name": "汐見駅S01・地上入口A1",
+      "category": "subway-entrance",
+      "folder": "17-subway-entrance",
+      "spec": "17-subway-entrance/blueprint.json",
+      "revision": 2
+    },
+    {
+      "id": "subway-concourse",
+      "name": "汐見駅S01・地下1階改札通路",
+      "category": "subway-concourse",
+      "folder": "18-subway-concourse",
+      "spec": "18-subway-concourse/blueprint.json"
+    },
+    {
+      "id": "subway-platform",
+      "name": "汐見駅S01・地下2階島式ホーム",
+      "category": "subway-platform",
+      "folder": "19-subway-platform",
+      "spec": "19-subway-platform/blueprint.json"
+    },
+    {
+      "id": "cafe",
+      "name": "凪カフェ・24席の路面店",
+      "category": "cafe",
+      "folder": "20-cafe",
+      "spec": "20-cafe/blueprint.json"
+    },
+    {
+      "id": "karate-dojo",
+      "name": "汐見空手道場・マット床のテナント",
+      "category": "karate-dojo",
+      "folder": "21-karate-dojo",
+      "spec": "21-karate-dojo/blueprint.json"
+    },
+    {
+      "id": "businessman",
+      "name": "高橋直人・ビジネスマン",
+      "category": "male-character",
+      "folder": "22-businessman",
+      "spec": "22-businessman/blueprint.json"
+    },
+    {
+      "id": "businesswoman",
+      "name": "佐藤美咲・ビジネスウーマン",
+      "category": "female-character",
+      "folder": "23-businesswoman",
+      "spec": "23-businesswoman/blueprint.json"
+    },
+    {
+      "id": "convenience-clerk",
+      "name": "小林蓮・コンビニ店員",
+      "category": "male-character",
+      "folder": "24-convenience-clerk",
+      "spec": "24-convenience-clerk/blueprint.json"
+    },
+    {
+      "id": "convenience-customer",
+      "name": "中村葵・コンビニ客",
+      "category": "female-character",
+      "folder": "25-convenience-customer",
+      "spec": "25-convenience-customer/blueprint.json"
+    },
+    {
+      "id": "cafe-clerk",
+      "name": "森結衣・カフェ店員",
+      "category": "female-character",
+      "folder": "26-cafe-clerk",
+      "spec": "26-cafe-clerk/blueprint.json"
+    },
+    {
+      "id": "karate-master",
+      "name": "石田誠・道場の師範",
+      "category": "male-character",
+      "folder": "27-karate-master",
+      "spec": "27-karate-master/blueprint.json"
+    },
+    {
+      "id": "karate-student",
+      "name": "吉田彩・道場の門下生",
+      "category": "female-character",
+      "folder": "28-karate-student",
+      "spec": "28-karate-student/blueprint.json"
+    },
+    {
+      "id": "passerby-a",
+      "name": "通行人A・大学生風の男性",
+      "category": "male-character",
+      "folder": "29-passerby-a",
+      "spec": "29-passerby-a/blueprint.json"
+    },
+    {
+      "id": "passerby-b",
+      "name": "通行人B・ロングスカートの女性",
+      "category": "female-character",
+      "folder": "30-passerby-b",
+      "spec": "30-passerby-b/blueprint.json"
+    },
+    {
+      "id": "passerby-c",
+      "name": "通行人C・がっしりした男性",
+      "category": "male-character",
+      "folder": "31-passerby-c",
+      "spec": "31-passerby-c/blueprint.json"
+    },
+    {
+      "id": "passerby-d",
+      "name": "通行人D・ショートヘアの女性",
+      "category": "female-character",
+      "folder": "32-passerby-d",
+      "spec": "32-passerby-d/blueprint.json"
+    },
+    {
+      "id": "passerby-e",
+      "name": "通行人E・白髪の男性",
+      "category": "male-character",
+      "folder": "33-passerby-e",
+      "spec": "33-passerby-e/blueprint.json"
+    },
+    {
+      "id": "passerby-f",
+      "name": "通行人F・スポーティーな女性",
+      "category": "female-character",
+      "folder": "34-passerby-f",
+      "spec": "34-passerby-f/blueprint.json"
+    },
+    {
+      "id": "passerby-g",
+      "name": "通行人G・眼鏡の長身男性",
+      "category": "male-character",
+      "folder": "35-passerby-g",
+      "spec": "35-passerby-g/blueprint.json"
+    },
+    {
+      "id": "haruka-karate-uniform",
+      "name": "春香用・黒帯の空手着",
+      "category": "character-outfit",
+      "folder": "36-haruka-karate-uniform",
+      "spec": "36-haruka-karate-uniform/blueprint.json"
+    },
+    {
+      "id": "haruka-riding-suit",
+      "name": "春香用・胸元開閉のセパレートライダース",
+      "category": "character-outfit",
+      "folder": "37-haruka-riding-suit",
+      "spec": "37-haruka-riding-suit/blueprint.json"
+    }
+  ]
+}

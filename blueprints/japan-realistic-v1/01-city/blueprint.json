@@ -1,0 +1,967 @@
+{
+  "schema": "promodeler-blueprint/1.0",
+  "folder": "01-city",
+  "id": "city",
+  "name": "汐見町・500m街区",
+  "category": "city",
+  "kind": "environment",
+  "status": "design_review",
+  "summary": "日本の現代的な住宅・商業混在街区。500mは一辺として採用。平坦地で構成し、街路・敷地・全建物の内部を設計する。",
+  "dimensions": {
+    "envelope_xyz_m": [
+      500,
+      40,
+      500
+    ],
+    "origin": "地面・床面の平面中心。女性は裸足の両足接地中央。",
+    "axis": "右手系: +X東/画面右、+Y上、+Z南/正面。北=-Z。人物の解剖学的右は-X。",
+    "priority": "数値JSON > 寸法SVG > 仕様書 > 参考画像"
+  },
+  "metadata": {
+    "tags": [
+      "日本",
+      "現代",
+      "写実",
+      "city"
+    ],
+    "usage": "PC向けリアルタイム探索・映像用のモデル設計",
+    "license": "独自制作物として管理。現段階は私有・配布許諾未設定。販売用ライセンスは公開時に別途設定。",
+    "approval": "モデル未生成・販売未承認"
+  },
+  "target": {
+    "engine": "Unity / HDRP を主想定。バージョンはモデル実装時に固定。",
+    "exports": [
+      "編集可能な制作ソース",
+      "GLB（形状・PBR・ベイクした骨アニメ）",
+      "Unity用物理設定",
+      "検証PNGとMP4"
+    ],
+    "triangles_lod0_max": 8000000,
+    "texture_resolution_max": 4096,
+    "texture_policy": "共有材2K、主役・顔4K。BaseColor=sRGB、Normal/Roughness/Metallic=linear。AOをBaseColorへ焼き込まない。",
+    "texel_density_px_per_m": 512,
+    "lod_ratios": [
+      1,
+      0.5,
+      0.2,
+      0.08
+    ],
+    "triangles_visible_target": 2000000,
+    "streaming_cell_m": 50,
+    "texture_resident_budget_mib": 768
+  },
+  "materials": [
+    {
+      "id": "asphalt",
+      "base_color_srgb": "#434647",
+      "roughness": [
+        0.8,
+        0.95
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        0.002,
+        0.012
+      ],
+      "detail": "骨材2–12mm、路面法線振幅0.8mm、補修パッチは別マスク。白線厚1.5mm、摩耗15%。"
+    },
+    {
+      "id": "concrete",
+      "base_color_srgb": "#B6B5B0",
+      "roughness": [
+        0.65,
+        0.85
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        0.0002,
+        0.003
+      ],
+      "detail": "型枠目地900×1800mm、Pコン径22mm・深さ3mm。雨筋は上端と排水近傍だけ。大域変形は最大1mm。"
+    },
+    {
+      "id": "tile",
+      "base_color_srgb": "#D7D3C8",
+      "roughness": [
+        0.35,
+        0.55
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        0.045,
+        0.095
+      ],
+      "detail": "外壁45×95mm、目地5mm・深さ2mm。色差は明度±3%。床用は300角・目地3mm。"
+    },
+    {
+      "id": "metal",
+      "base_color_srgb": "#45494A",
+      "roughness": [
+        0.25,
+        0.4
+      ],
+      "metallic": 1,
+      "feature_scale_m": [
+        5e-05,
+        0.0002
+      ],
+      "detail": "アルミ・ステンレス。ヘアラインを部材長手方向へ。切断端ベベル0.5–1mm、汚れは継ぎ目に限定。"
+    },
+    {
+      "id": "glass",
+      "base_color_srgb": "#D7E2E0",
+      "roughness": [
+        0.03,
+        0.12
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        5e-05,
+        0.0001
+      ],
+      "detail": "建築ガラス厚6–12mm。透明・反射を別設定、IOR目標1.5。透過は現行APIとの差分実装対象。汚れ1%以下。"
+    },
+    {
+      "id": "paint",
+      "base_color_srgb": "#E5E4DA",
+      "roughness": [
+        0.45,
+        0.65
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        0.0001,
+        0.0005
+      ],
+      "detail": "塗装鋼板は非金属の塗膜として扱う。下地金属露出は角の面積0.3%以下。"
+    }
+  ],
+  "parts": [
+    {
+      "id": "ground",
+      "name": "地盤",
+      "center_m": [
+        0,
+        -0.15,
+        0
+      ],
+      "size_m": [
+        500,
+        0.3,
+        500
+      ],
+      "material": "asphalt",
+      "note": ""
+    },
+    {
+      "id": "curb",
+      "name": "縁石標準",
+      "center_m": [
+        0,
+        0.075,
+        0
+      ],
+      "size_m": [
+        1,
+        0.15,
+        0.18
+      ],
+      "material": "concrete",
+      "note": "曲線部は別部品。歩道上面150mm。"
+    }
+  ],
+  "motions": [],
+  "layout": [
+    {
+      "id": "main-ew",
+      "rect_xz_m": [
+        -250,
+        -10,
+        250,
+        10
+      ],
+      "use": "東西幹線: 車道12m+歩道各4m"
+    },
+    {
+      "id": "main-ns",
+      "rect_xz_m": [
+        -10,
+        -250,
+        10,
+        250
+      ],
+      "use": "南北幹線: 車道12m+歩道各4m"
+    },
+    {
+      "id": "local-x--125",
+      "rect_xz_m": [
+        -130,
+        -250,
+        -120,
+        250
+      ],
+      "use": "生活道路: 車道6m+歩道各2m"
+    },
+    {
+      "id": "local-x-125",
+      "rect_xz_m": [
+        120,
+        -250,
+        130,
+        250
+      ],
+      "use": "生活道路: 車道6m+歩道各2m"
+    },
+    {
+      "id": "local-z--125",
+      "rect_xz_m": [
+        -250,
+        -130,
+        250,
+        -120
+      ],
+      "use": "生活道路: 車道6m+歩道各2m"
+    },
+    {
+      "id": "local-z-125",
+      "rect_xz_m": [
+        -250,
+        120,
+        250,
+        130
+      ],
+      "use": "生活道路: 車道6m+歩道各2m"
+    }
+  ],
+  "details": [
+    "合計64棟。マンション・コンビニ・オフィスの3設計を再利用し、位置をplacementsで確定。500m四方の外にはモデルを作らない。",
+    "歩道を除く街区の空地は植栽・駐車場・搬入路に使用。街灯は生活道路沿い25mピッチ、電柱35mピッチ。交差点周囲8mは配置禁止。",
+    "道路区画線幅150mm、車線3m、横断歩道縞450mm/間450mm。形状はゲーム用設計値で交通規制・施工図ではない。",
+    "街区LODは外観共有メッシュと屋内別チャンク。全建物に床・壁・階段・入口・固定設備を用意し、家具の反復配置は別レイヤー。"
+  ],
+  "qa": [
+    "全64棟の配置矩形が道路・他建物と交差しない。",
+    "250m四方の4象限を歩行し、全入口から内部へ移動できる。",
+    "500m境界で切断面や浮いた道路端がない。"
+  ],
+  "implementation_gaps": [
+    "チャンクストリーミング、インスタンス共有、屋内カリングはランタイム側実装。",
+    "参考画像中の河川・橋・背景の街は本設計の生成対象外。正確な配置はlayout.svgを優先。"
+  ],
+  "placements": [
+    {
+      "id": "b-0-0-0",
+      "blueprint": "02-apartment",
+      "position_m": [
+        -215,
+        0,
+        -215
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-0-0-1",
+      "blueprint": "03-convenience",
+      "position_m": [
+        -165,
+        0,
+        -215
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-0-0-2",
+      "blueprint": "04-office",
+      "position_m": [
+        -215,
+        0,
+        -165
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-0-0-3",
+      "blueprint": "02-apartment",
+      "position_m": [
+        -165,
+        0,
+        -165
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-1-0-0",
+      "blueprint": "03-convenience",
+      "position_m": [
+        -90,
+        0,
+        -215
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-1-0-1",
+      "blueprint": "04-office",
+      "position_m": [
+        -40,
+        0,
+        -215
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-1-0-2",
+      "blueprint": "02-apartment",
+      "position_m": [
+        -90,
+        0,
+        -165
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-1-0-3",
+      "blueprint": "03-convenience",
+      "position_m": [
+        -40,
+        0,
+        -165
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-2-0-0",
+      "blueprint": "04-office",
+      "position_m": [
+        40,
+        0,
+        -215
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-2-0-1",
+      "blueprint": "02-apartment",
+      "position_m": [
+        90,
+        0,
+        -215
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-2-0-2",
+      "blueprint": "03-convenience",
+      "position_m": [
+        40,
+        0,
+        -165
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-2-0-3",
+      "blueprint": "04-office",
+      "position_m": [
+        90,
+        0,
+        -165
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-3-0-0",
+      "blueprint": "02-apartment",
+      "position_m": [
+        165,
+        0,
+        -215
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-3-0-1",
+      "blueprint": "03-convenience",
+      "position_m": [
+        215,
+        0,
+        -215
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-3-0-2",
+      "blueprint": "04-office",
+      "position_m": [
+        165,
+        0,
+        -165
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-3-0-3",
+      "blueprint": "02-apartment",
+      "position_m": [
+        215,
+        0,
+        -165
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-0-1-0",
+      "blueprint": "03-convenience",
+      "position_m": [
+        -215,
+        0,
+        -90
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-0-1-1",
+      "blueprint": "04-office",
+      "position_m": [
+        -165,
+        0,
+        -90
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-0-1-2",
+      "blueprint": "02-apartment",
+      "position_m": [
+        -215,
+        0,
+        -40
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-0-1-3",
+      "blueprint": "03-convenience",
+      "position_m": [
+        -165,
+        0,
+        -40
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-1-1-0",
+      "blueprint": "04-office",
+      "position_m": [
+        -90,
+        0,
+        -90
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-1-1-1",
+      "blueprint": "02-apartment",
+      "position_m": [
+        -40,
+        0,
+        -90
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-1-1-2",
+      "blueprint": "03-convenience",
+      "position_m": [
+        -90,
+        0,
+        -40
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-1-1-3",
+      "blueprint": "04-office",
+      "position_m": [
+        -40,
+        0,
+        -40
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-2-1-0",
+      "blueprint": "02-apartment",
+      "position_m": [
+        40,
+        0,
+        -90
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-2-1-1",
+      "blueprint": "03-convenience",
+      "position_m": [
+        90,
+        0,
+        -90
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-2-1-2",
+      "blueprint": "04-office",
+      "position_m": [
+        40,
+        0,
+        -40
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-2-1-3",
+      "blueprint": "02-apartment",
+      "position_m": [
+        90,
+        0,
+        -40
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-3-1-0",
+      "blueprint": "03-convenience",
+      "position_m": [
+        165,
+        0,
+        -90
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-3-1-1",
+      "blueprint": "04-office",
+      "position_m": [
+        215,
+        0,
+        -90
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-3-1-2",
+      "blueprint": "02-apartment",
+      "position_m": [
+        165,
+        0,
+        -40
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-3-1-3",
+      "blueprint": "03-convenience",
+      "position_m": [
+        215,
+        0,
+        -40
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-0-2-0",
+      "blueprint": "04-office",
+      "position_m": [
+        -215,
+        0,
+        40
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-0-2-1",
+      "blueprint": "02-apartment",
+      "position_m": [
+        -165,
+        0,
+        40
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-0-2-2",
+      "blueprint": "03-convenience",
+      "position_m": [
+        -215,
+        0,
+        90
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-0-2-3",
+      "blueprint": "04-office",
+      "position_m": [
+        -165,
+        0,
+        90
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-1-2-0",
+      "blueprint": "02-apartment",
+      "position_m": [
+        -90,
+        0,
+        40
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-1-2-1",
+      "blueprint": "03-convenience",
+      "position_m": [
+        -40,
+        0,
+        40
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-1-2-2",
+      "blueprint": "04-office",
+      "position_m": [
+        -90,
+        0,
+        90
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-1-2-3",
+      "blueprint": "02-apartment",
+      "position_m": [
+        -40,
+        0,
+        90
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-2-2-0",
+      "blueprint": "03-convenience",
+      "position_m": [
+        40,
+        0,
+        40
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-2-2-1",
+      "blueprint": "04-office",
+      "position_m": [
+        90,
+        0,
+        40
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-2-2-2",
+      "blueprint": "02-apartment",
+      "position_m": [
+        40,
+        0,
+        90
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-2-2-3",
+      "blueprint": "03-convenience",
+      "position_m": [
+        90,
+        0,
+        90
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-3-2-0",
+      "blueprint": "04-office",
+      "position_m": [
+        165,
+        0,
+        40
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-3-2-1",
+      "blueprint": "02-apartment",
+      "position_m": [
+        215,
+        0,
+        40
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-3-2-2",
+      "blueprint": "03-convenience",
+      "position_m": [
+        165,
+        0,
+        90
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-3-2-3",
+      "blueprint": "04-office",
+      "position_m": [
+        215,
+        0,
+        90
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-0-3-0",
+      "blueprint": "02-apartment",
+      "position_m": [
+        -215,
+        0,
+        165
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-0-3-1",
+      "blueprint": "03-convenience",
+      "position_m": [
+        -165,
+        0,
+        165
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-0-3-2",
+      "blueprint": "04-office",
+      "position_m": [
+        -215,
+        0,
+        215
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-0-3-3",
+      "blueprint": "02-apartment",
+      "position_m": [
+        -165,
+        0,
+        215
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-1-3-0",
+      "blueprint": "03-convenience",
+      "position_m": [
+        -90,
+        0,
+        165
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-1-3-1",
+      "blueprint": "04-office",
+      "position_m": [
+        -40,
+        0,
+        165
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-1-3-2",
+      "blueprint": "02-apartment",
+      "position_m": [
+        -90,
+        0,
+        215
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-1-3-3",
+      "blueprint": "03-convenience",
+      "position_m": [
+        -40,
+        0,
+        215
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-2-3-0",
+      "blueprint": "04-office",
+      "position_m": [
+        40,
+        0,
+        165
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-2-3-1",
+      "blueprint": "02-apartment",
+      "position_m": [
+        90,
+        0,
+        165
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-2-3-2",
+      "blueprint": "03-convenience",
+      "position_m": [
+        40,
+        0,
+        215
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-2-3-3",
+      "blueprint": "04-office",
+      "position_m": [
+        90,
+        0,
+        215
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-3-3-0",
+      "blueprint": "02-apartment",
+      "position_m": [
+        165,
+        0,
+        165
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-3-3-1",
+      "blueprint": "03-convenience",
+      "position_m": [
+        215,
+        0,
+        165
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-3-3-2",
+      "blueprint": "04-office",
+      "position_m": [
+        165,
+        0,
+        215
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    },
+    {
+      "id": "b-3-3-3",
+      "blueprint": "02-apartment",
+      "position_m": [
+        215,
+        0,
+        215
+      ],
+      "yaw_rad": 0,
+      "interior": "全階内装あり。建物単位でロードし、閉じた扉越しは非表示。"
+    }
+  ],
+  "motion_references": [
+    "各建物のmotionsをインスタンス変換で配置する。",
+    "信号は青/黄/赤の状態制御。回転ジョイントは使用しない。"
+  ],
+  "image_generation": {
+    "tool": "built-in image_gen",
+    "prompt_file": "image-prompt.txt",
+    "reference_sheet": "images/reference-sheet.png",
+    "role": "concept_only_not_geometry_evidence"
+  }
+}

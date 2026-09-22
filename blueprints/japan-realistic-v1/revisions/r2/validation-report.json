@@ -1,0 +1,150 @@
+{
+  "revision": 2,
+  "scope": "設計ファイル・参照画像の整合性。実モデル生成・物理動作は未検証。",
+  "checks": [
+    "14個の独立フォルダ・単一カテゴリ",
+    "全アクティブJSON/SVG解析成功、HTMLの画像とリンク実在",
+    "新規8アセットのパーツID重複なし・材質参照あり・サイズ正・回転軸単位長",
+    "14アセットの画像PNGとハッシュ記録",
+    "部屋の旧画像・旧仕様保持、部屋のパーツを増やしていない",
+    "部屋の断面位置x=1.40m、玄関取手右側1個を仕様化",
+    "冷蔵庫・電子レンジの扉開方向は右手系で手前+Zへ回転"
+  ],
+  "images": [
+    {
+      "folder": "01-city",
+      "file": "01-city/images/reference-sheet.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "sha256": "121388bd714fc37c8f930814497e3188179fa59ec375e931d7a7b1288e445958"
+    },
+    {
+      "folder": "02-apartment",
+      "file": "02-apartment/images/reference-sheet.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "sha256": "85cddfb7f2b10683dc6a0f5da0a2d876898b273b27dd906786f6b03ddae4d629"
+    },
+    {
+      "folder": "03-convenience",
+      "file": "03-convenience/images/reference-sheet.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "sha256": "ef9f7a3e50700d501a40996d2320841ce275137e5f03a6f1c56dcd17bd1f9886"
+    },
+    {
+      "folder": "04-office",
+      "file": "04-office/images/reference-sheet.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "sha256": "881539ee3ef88a45bc68e03cb4450c643df90e089876584439128666597994b0"
+    },
+    {
+      "folder": "05-woman",
+      "file": "05-woman/images/reference-sheet.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "sha256": "c10af4be3c5279d3ee0c2c571cb0a56c772dd220e816999a146f6881cb366d57"
+    },
+    {
+      "folder": "06-room",
+      "file": "06-room/images/reference-sheet-v2.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "sha256": "643f9ce558cf4976845d37856aa597d693d6c7c49c824ef23287a70e4a175035"
+    },
+    {
+      "folder": "07-bed",
+      "file": "07-bed/images/reference-sheet.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "sha256": "7ee75a08b78ba1d4c3e882b0938791750f42535d313375f51ebebdbe1026e8a0"
+    },
+    {
+      "folder": "08-sofa",
+      "file": "08-sofa/images/reference-sheet.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "sha256": "8c042e0d13d64b609218ed51a58cb41c401d6d3e7b96134715e7d93055d4d80a"
+    },
+    {
+      "folder": "09-ceiling-light",
+      "file": "09-ceiling-light/images/reference-sheet.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "sha256": "bc04d818403cf766bb8253182ab6141bee7af0aa663797a2040abf1838d64a7d"
+    },
+    {
+      "folder": "10-table-chair",
+      "file": "10-table-chair/images/reference-sheet.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "sha256": "99fd0db3054604473454eb3431ab9adbf5192caa4185582f70391271df179beb"
+    },
+    {
+      "folder": "11-pc-desk",
+      "file": "11-pc-desk/images/reference-sheet.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "sha256": "426c2b005a4bc87d9d406ee0010124c0d292f496a746fd4771ca88b38478038e"
+    },
+    {
+      "folder": "12-pc-set",
+      "file": "12-pc-set/images/reference-sheet.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "sha256": "ca91c083399aeb5eb962d02a7fa01ed30ae8ce98c60668a11b7c8d6c1971064a"
+    },
+    {
+      "folder": "13-refrigerator",
+      "file": "13-refrigerator/images/reference-sheet.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "sha256": "1220b77fe634b99142ac5d98976a9733e0893091c961138170bebc00439777bd"
+    },
+    {
+      "folder": "14-microwave",
+      "file": "14-microwave/images/reference-sheet.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "sha256": "d23bfde8ce67d2945f3aa2d9bcc7b324835b834e308ade8f602a12c62a633de0"
+    }
+  ],
+  "visual_review": [
+    "部屋のEAST SIDEから俯瞰の水回りを除去し、平らな側断面に置換。",
+    "INTERIOR玄関扉の取手は右のみ。",
+    "追加8画像で全体・正面・側面・背面/取付面・細部を確認。"
+  ],
+  "limitations": [
+    "参考画像の細部数や比率は厳密な寸法図ではない。数値仕様を優先。",
+    "新規アセットの実メッシュ・開閉干渉・物理動作はモデル実装後に受入検証。"
+  ]
+}

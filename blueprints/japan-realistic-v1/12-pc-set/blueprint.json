@@ -1,0 +1,396 @@
+{
+  "schema": "promodeler-blueprint/1.0",
+  "metadata": {
+    "tags": [
+      "日本",
+      "現代",
+      "写実",
+      "独立アセット",
+      "pc-set"
+    ],
+    "usage": "PC向けリアルタイム探索・映像用のモデル設計",
+    "license": "独自制作物として管理。現段階は私有・配布許諾未設定。販売用ライセンスは公開時に別途設定。",
+    "approval": "モデル未生成・販売未承認",
+    "description": "小型デスクトップ本体・24型モニター・フルサイズキーボード・マウスの4点セット。"
+  },
+  "target": {
+    "engine": "Unity / HDRP を主想定。バージョンはモデル実装時に固定。",
+    "exports": [
+      "編集可能な制作ソース",
+      "GLB（形状・PBR・ベイクした骨アニメ）",
+      "Unity用物理設定",
+      "検証PNGとMP4"
+    ],
+    "triangles_lod0_max": 90000,
+    "texture_resolution_max": 2048,
+    "texture_policy": "共有材2K、主役・顔4K。BaseColor=sRGB、Normal/Roughness/Metallic=linear。AOをBaseColorへ焼き込まない。",
+    "texel_density_px_per_m": 1024,
+    "lod_ratios": [
+      1,
+      0.5,
+      0.2,
+      0.08
+    ],
+    "texture_resident_budget_mib": 48
+  },
+  "folder": "12-pc-set",
+  "id": "pc-set",
+  "name": "コンパクトPC・周辺機器セット",
+  "category": "pc-set",
+  "kind": "prop",
+  "status": "design_review",
+  "summary": "小型デスクトップ本体・24型モニター・フルサイズキーボード・マウスの4点セット。",
+  "dimensions": {
+    "envelope_xyz_m": [
+      1,
+      0.4,
+      0.6
+    ],
+    "origin": "床/設置面の中心、閉じた基準状態。天井灯のみ天井取付面中心。",
+    "axis": "右手系: +X右、+Y上、+Z正面。sideは+Xから-Xへ、画面右が-Z。",
+    "priority": "数値JSON > 寸法SVG > 仕様文 > 参考画像",
+    "tower_xyz_m": [
+      0.18,
+      0.35,
+      0.34
+    ],
+    "monitor_xyz_m": [
+      0.54,
+      0.4,
+      0.18
+    ],
+    "keyboard_xyz_m": [
+      0.44,
+      0.032,
+      0.14
+    ],
+    "mouse_xyz_m": [
+      0.065,
+      0.04,
+      0.115
+    ],
+    "screen_diagonal_inch": 24
+  },
+  "materials": [
+    {
+      "id": "black-plastic",
+      "base_color_srgb": "#292D30",
+      "roughness": [
+        0.45,
+        0.65
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        8e-05,
+        0.0002
+      ],
+      "detail": "チャコール樹脂、指触部に粗さ差0.05。黒つぶれを避ける。"
+    },
+    {
+      "id": "charcoal-steel",
+      "base_color_srgb": "#343B3E",
+      "roughness": [
+        0.5,
+        0.7
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        0.0001,
+        0.0003
+      ],
+      "detail": "粉体塗装鋼管。表面梨地、下地金属は組付穴だけ。溶接ビードは接合部のみ高さ0.6mm。"
+    },
+    {
+      "id": "glass",
+      "base_color_srgb": "#D7E2E0",
+      "roughness": [
+        0.03,
+        0.12
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        5e-05,
+        0.0001
+      ],
+      "detail": "建築ガラス厚6–12mm。透明・反射を別設定、IOR目標1.5。透過は現行APIとの差分実装対象。汚れ1%以下。"
+    },
+    {
+      "id": "metal",
+      "base_color_srgb": "#45494A",
+      "roughness": [
+        0.25,
+        0.4
+      ],
+      "metallic": 1,
+      "feature_scale_m": [
+        5e-05,
+        0.0002
+      ],
+      "detail": "アルミ・ステンレス。ヘアラインを部材長手方向へ。切断端ベベル0.5–1mm、汚れは継ぎ目に限定。"
+    },
+    {
+      "id": "rubber",
+      "base_color_srgb": "#E5E3DC",
+      "roughness": [
+        0.65,
+        0.85
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        0.0003,
+        0.001
+      ],
+      "detail": "白スニーカー底厚25mm、側面細溝0.7mm、底溝深2mm。接地縁に薄い灰色摩耗。"
+    }
+  ],
+  "parts": [
+    {
+      "id": "tower",
+      "name": "PC本体",
+      "center_m": [
+        0.36,
+        0.175,
+        -0.04
+      ],
+      "size_m": [
+        0.18,
+        0.35,
+        0.34
+      ],
+      "material": "charcoal-steel",
+      "note": "右パネルは着脱、内部はファンと取付板だけの簡易構造。"
+    },
+    {
+      "id": "monitor-panel",
+      "name": "モニターパネル",
+      "center_m": [
+        -0.17,
+        0.238,
+        -0.15
+      ],
+      "size_m": [
+        0.54,
+        0.324,
+        0.038
+      ],
+      "material": "black-plastic",
+      "note": "画面有効531×299mm、ベゼルは左右4.5mm/上下12.5mm。"
+    },
+    {
+      "id": "monitor-stand",
+      "name": "モニター支柱",
+      "center_m": [
+        -0.17,
+        0.115,
+        -0.15
+      ],
+      "size_m": [
+        0.045,
+        0.23,
+        0.045
+      ],
+      "material": "metal",
+      "note": ""
+    },
+    {
+      "id": "monitor-base",
+      "name": "モニター台座",
+      "center_m": [
+        -0.17,
+        0.012,
+        -0.12
+      ],
+      "size_m": [
+        0.23,
+        0.024,
+        0.18
+      ],
+      "material": "black-plastic",
+      "note": ""
+    },
+    {
+      "id": "keyboard",
+      "name": "キーボード",
+      "center_m": [
+        -0.14,
+        0.016,
+        0.22
+      ],
+      "size_m": [
+        0.44,
+        0.032,
+        0.14
+      ],
+      "material": "black-plastic",
+      "note": "テンキー付きフルサイズ、汎用104キー配列。キーは別Part/インスタンス。"
+    },
+    {
+      "id": "mouse",
+      "name": "マウス",
+      "center_m": [
+        0.12,
+        0.02,
+        0.22
+      ],
+      "size_m": [
+        0.065,
+        0.04,
+        0.115
+      ],
+      "material": "black-plastic",
+      "note": ""
+    }
+  ],
+  "motions": [
+    {
+      "id": "monitor-tilt",
+      "type": "hinge",
+      "pivot_m": [
+        -0.17,
+        0.238,
+        -0.169
+      ],
+      "axis": [
+        1,
+        0,
+        0
+      ],
+      "range": [
+        -5,
+        20
+      ],
+      "unit": "degree",
+      "note": "モニターのみ。スタンドは固定。"
+    },
+    {
+      "id": "monitor-height",
+      "type": "slide",
+      "pivot_m": [
+        -0.17,
+        0.13,
+        -0.15
+      ],
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "range": [
+        0,
+        0.08
+      ],
+      "unit": "m",
+      "note": "初期高さ0.40m、最大0.48m。"
+    },
+    {
+      "id": "power-button",
+      "type": "slide",
+      "pivot_m": [
+        0.36,
+        0.29,
+        0.131
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "range": [
+        -0.001,
+        0
+      ],
+      "unit": "m",
+      "note": "PC前面ボタン。"
+    },
+    {
+      "id": "key-press",
+      "type": "slide",
+      "pivot_m": [
+        -0.14,
+        0.032,
+        0.22
+      ],
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "range": [
+        -0.002,
+        0
+      ],
+      "unit": "m",
+      "note": "各キーの位置へ複製。"
+    },
+    {
+      "id": "mouse-wheel",
+      "type": "hinge",
+      "pivot_m": [
+        0.12,
+        0.038,
+        0.2
+      ],
+      "axis": [
+        1,
+        0,
+        0
+      ],
+      "range": [
+        -180,
+        180
+      ],
+      "unit": "degree",
+      "note": "連続回転、実装時は無限循環。"
+    }
+  ],
+  "layout": [],
+  "details": [
+    "本体の前面吸気孔は径2mm・ピッチ3mm、背面ファン径92mm。端子はHDMI/DisplayPort/USB/電源の外形を独立部品にする。",
+    "モニター表示面は暗いニュートラル色。UIや商標は描かない。背面VESA穴100mmピッチ、ねじ穴径4mm。",
+    "キー間隙2mm、キートップR0.6mm。キー刻印はオリジナルの汎用記号。マウス左右ボタンの隙間0.6mm。",
+    "PC内部基板の全再現は対象外。側面を開いた際の簡易シャーシとファンまでを対象にする。",
+    "電源ケーブル2本と映像ケーブル1本は任意の独立カーブ資産、端子間経路を配置先で決める。無線マウス。"
+  ],
+  "qa": [
+    "モニター有効画面比率16:9、対角約0.61m。",
+    "4点すべての正面・背面・接続端子を確認。",
+    "スタンド最高位と最大チルトで本体が台座から離脱せず、キーボードキーは底を貫通しない。"
+  ],
+  "implementation_gaps": [],
+  "interfaces": [
+    "セットの展示配置はJSONのparts参照。机に置く際は4点を個別配置。モニター台座は天板へ密着。"
+  ],
+  "clips": [
+    {
+      "id": "display-on",
+      "duration_s": 2,
+      "description": "黒画面から無地ニュートラル画面へ。発光は控えめ。"
+    },
+    {
+      "id": "input-demo",
+      "duration_s": 3,
+      "description": "キー押下・マウスホイール・電源ボタン。"
+    }
+  ],
+  "revision": 1,
+  "image_generation": {
+    "tool": "built-in image_gen",
+    "prompt_file": "image-prompt.txt",
+    "reference_sheet": "images/reference-sheet.png",
+    "role": "concept_only_not_geometry_evidence"
+  },
+  "roots": [
+    {
+      "id": "tower-root"
+    },
+    {
+      "id": "monitor-root"
+    },
+    {
+      "id": "keyboard-root"
+    },
+    {
+      "id": "mouse-root"
+    }
+  ]
+}

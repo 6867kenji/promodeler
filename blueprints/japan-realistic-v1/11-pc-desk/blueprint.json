@@ -1,0 +1,353 @@
+{
+  "schema": "promodeler-blueprint/1.0",
+  "metadata": {
+    "tags": [
+      "日本",
+      "現代",
+      "写実",
+      "独立アセット",
+      "pc-desk"
+    ],
+    "usage": "PC向けリアルタイム探索・映像用のモデル設計",
+    "license": "独自制作物として管理。現段階は私有・配布許諾未設定。販売用ライセンスは公開時に別途設定。",
+    "approval": "モデル未生成・販売未承認",
+    "description": "幅100cmのPC専用デスク。オーク天板、チャコール脚、配線トレー。PC・椅子は含まない。"
+  },
+  "target": {
+    "engine": "Unity / HDRP を主想定。バージョンはモデル実装時に固定。",
+    "exports": [
+      "編集可能な制作ソース",
+      "GLB（形状・PBR・ベイクした骨アニメ）",
+      "Unity用物理設定",
+      "検証PNGとMP4"
+    ],
+    "triangles_lod0_max": 32000,
+    "texture_resolution_max": 2048,
+    "texture_policy": "共有材2K、主役・顔4K。BaseColor=sRGB、Normal/Roughness/Metallic=linear。AOをBaseColorへ焼き込まない。",
+    "texel_density_px_per_m": 1024,
+    "lod_ratios": [
+      1,
+      0.5,
+      0.2,
+      0.08
+    ],
+    "texture_resident_budget_mib": 48
+  },
+  "folder": "11-pc-desk",
+  "id": "pc-desk",
+  "name": "オーク天板・スチールPCデスク",
+  "category": "pc-desk",
+  "kind": "prop",
+  "status": "design_review",
+  "summary": "幅100cmのPC専用デスク。オーク天板、チャコール脚、配線トレー。PC・椅子は含まない。",
+  "dimensions": {
+    "envelope_xyz_m": [
+      1,
+      0.73,
+      0.55
+    ],
+    "origin": "床/設置面の中心、閉じた基準状態。天井灯のみ天井取付面中心。",
+    "axis": "右手系: +X右、+Y上、+Z正面。sideは+Xから-Xへ、画面右が-Z。",
+    "priority": "数値JSON > 寸法SVG > 仕様文 > 参考画像",
+    "top_thickness_m": 0.025,
+    "tube_section_m": 0.03,
+    "knee_clear_height_m": 0.675,
+    "grommet_diameter_m": 0.06
+  },
+  "materials": [
+    {
+      "id": "oak",
+      "base_color_srgb": "#C4A77E",
+      "roughness": [
+        0.35,
+        0.5
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        0.0003,
+        0.002
+      ],
+      "detail": "オークの長手木目。導管0.1–0.3mm、木口は繊維に直交。クリア塗装、擦れは接触縁のみ。"
+    },
+    {
+      "id": "charcoal-steel",
+      "base_color_srgb": "#343B3E",
+      "roughness": [
+        0.5,
+        0.7
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        0.0001,
+        0.0003
+      ],
+      "detail": "粉体塗装鋼管。表面梨地、下地金属は組付穴だけ。溶接ビードは接合部のみ高さ0.6mm。"
+    },
+    {
+      "id": "black-plastic",
+      "base_color_srgb": "#292D30",
+      "roughness": [
+        0.45,
+        0.65
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        8e-05,
+        0.0002
+      ],
+      "detail": "チャコール樹脂、指触部に粗さ差0.05。黒つぶれを避ける。"
+    },
+    {
+      "id": "metal",
+      "base_color_srgb": "#45494A",
+      "roughness": [
+        0.25,
+        0.4
+      ],
+      "metallic": 1,
+      "feature_scale_m": [
+        5e-05,
+        0.0002
+      ],
+      "detail": "アルミ・ステンレス。ヘアラインを部材長手方向へ。切断端ベベル0.5–1mm、汚れは継ぎ目に限定。"
+    }
+  ],
+  "parts": [
+    {
+      "id": "top",
+      "name": "天板",
+      "center_m": [
+        0,
+        0.7175,
+        0
+      ],
+      "size_m": [
+        1,
+        0.025,
+        0.55
+      ],
+      "material": "oak",
+      "note": "四辺R3mm。"
+    },
+    {
+      "id": "rear-bar",
+      "name": "後部横桟",
+      "center_m": [
+        0,
+        0.59,
+        -0.225
+      ],
+      "size_m": [
+        0.88,
+        0.03,
+        0.03
+      ],
+      "material": "charcoal-steel",
+      "note": ""
+    },
+    {
+      "id": "cable-tray",
+      "name": "配線トレー",
+      "center_m": [
+        0,
+        0.64,
+        -0.195
+      ],
+      "size_m": [
+        0.65,
+        0.06,
+        0.1
+      ],
+      "material": "charcoal-steel",
+      "note": "上面開放、板厚1mm、通線穴20mm。"
+    },
+    {
+      "id": "grommet",
+      "name": "配線孔キャップ",
+      "center_m": [
+        0.38,
+        0.728,
+        -0.18
+      ],
+      "size_m": [
+        0.06,
+        0.004,
+        0.06
+      ],
+      "material": "black-plastic",
+      "note": "円形穴・切欠き12mm。"
+    },
+    {
+      "id": "leg-0-0",
+      "name": "支柱",
+      "center_m": [
+        -0.455,
+        0.345,
+        -0.225
+      ],
+      "size_m": [
+        0.03,
+        0.69,
+        0.03
+      ],
+      "material": "charcoal-steel",
+      "note": ""
+    },
+    {
+      "id": "leg-0-1",
+      "name": "支柱",
+      "center_m": [
+        -0.455,
+        0.345,
+        0.225
+      ],
+      "size_m": [
+        0.03,
+        0.69,
+        0.03
+      ],
+      "material": "charcoal-steel",
+      "note": ""
+    },
+    {
+      "id": "foot-bar-0",
+      "name": "U脚底桟",
+      "center_m": [
+        -0.455,
+        0.0225,
+        0
+      ],
+      "size_m": [
+        0.03,
+        0.03,
+        0.48
+      ],
+      "material": "charcoal-steel",
+      "note": ""
+    },
+    {
+      "id": "top-bar-0",
+      "name": "天板受け桟",
+      "center_m": [
+        -0.455,
+        0.69,
+        0
+      ],
+      "size_m": [
+        0.03,
+        0.03,
+        0.48
+      ],
+      "material": "charcoal-steel",
+      "note": ""
+    },
+    {
+      "id": "leg-1-0",
+      "name": "支柱",
+      "center_m": [
+        0.455,
+        0.345,
+        -0.225
+      ],
+      "size_m": [
+        0.03,
+        0.69,
+        0.03
+      ],
+      "material": "charcoal-steel",
+      "note": ""
+    },
+    {
+      "id": "leg-1-1",
+      "name": "支柱",
+      "center_m": [
+        0.455,
+        0.345,
+        0.225
+      ],
+      "size_m": [
+        0.03,
+        0.69,
+        0.03
+      ],
+      "material": "charcoal-steel",
+      "note": ""
+    },
+    {
+      "id": "foot-bar-1",
+      "name": "U脚底桟",
+      "center_m": [
+        0.455,
+        0.0225,
+        0
+      ],
+      "size_m": [
+        0.03,
+        0.03,
+        0.48
+      ],
+      "material": "charcoal-steel",
+      "note": ""
+    },
+    {
+      "id": "top-bar-1",
+      "name": "天板受け桟",
+      "center_m": [
+        0.455,
+        0.69,
+        0
+      ],
+      "size_m": [
+        0.03,
+        0.03,
+        0.48
+      ],
+      "material": "charcoal-steel",
+      "note": ""
+    }
+  ],
+  "motions": [
+    {
+      "id": "grommet-cap",
+      "type": "hinge",
+      "pivot_m": [
+        0.38,
+        0.728,
+        -0.18
+      ],
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "range": [
+        0,
+        180
+      ],
+      "unit": "degree",
+      "note": "通線切欠きの向きを変更する回転。"
+    }
+  ],
+  "layout": [],
+  "details": [
+    "脚は左右2組のU字下枠と天板受け。4本の支柱位置を全ビューで一致させる。",
+    "木目X方向、薄い粉体塗装の鋼管、六角ボルト頭径10mm。脚底アジャスター径22mm・高さ7.5mm。",
+    "天板は孔位置を除いて中実。配線孔が底まで貫通すること。トレーは天板下35mmの配線空間を残す。"
+  ],
+  "qa": [
+    "天板1×0.55m、4接地点、配線孔径60mm。",
+    "モニター台座と配線トレーが干渉せず、下から孔が見える。"
+  ],
+  "implementation_gaps": [],
+  "interfaces": [
+    "天板Y0.73。PCセットは各ルートを天板高へ平行移動して配置する。PCタワーは別置きも可能。"
+  ],
+  "clips": [],
+  "revision": 1,
+  "image_generation": {
+    "tool": "built-in image_gen",
+    "prompt_file": "image-prompt.txt",
+    "reference_sheet": "images/reference-sheet.png",
+    "role": "concept_only_not_geometry_evidence"
+  }
+}

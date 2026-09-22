@@ -1,0 +1,509 @@
+{
+  "schema": "promodeler-blueprint/1.0",
+  "folder": "06-room",
+  "id": "room",
+  "name": "独立1K・オーク床の空室",
+  "category": "apartment-room",
+  "kind": "interior",
+  "status": "design_review",
+  "summary": "都市のマンションとは別の1K住戸。内法5×7m、南側に奥行1.2mバルコニー。家具・可動家電は含めない。",
+  "dimensions": {
+    "envelope_xyz_m": [
+      5.3,
+      2.7,
+      8.5
+    ],
+    "origin": "地面・床面の平面中心。女性は裸足の両足接地中央。",
+    "axis": "右手系: +X東/画面右、+Y上、+Z南/正面。北=-Z。人物の解剖学的右は-X。",
+    "priority": "数値JSON > 寸法SVG > 仕様書 > 参考画像",
+    "clear_internal_xz_m": [
+      5,
+      7
+    ],
+    "clear_ceiling_m": 2.4,
+    "outer_wall_m": 0.15,
+    "partition_m": 0.1,
+    "floor_slab_m": 0.15,
+    "ceiling_slab_m": 0.15,
+    "balcony_depth_m": 1.2,
+    "inside_envelope_area_m2": 35,
+    "area_note": "35㎡は内法外周矩形。内部間仕切りの面積を除いた有効面積はこれより小さい。"
+  },
+  "metadata": {
+    "tags": [
+      "日本",
+      "現代",
+      "写実",
+      "apartment-room"
+    ],
+    "usage": "PC向けリアルタイム探索・映像用のモデル設計",
+    "license": "独自制作物として管理。現段階は私有・配布許諾未設定。販売用ライセンスは公開時に別途設定。",
+    "approval": "モデル未生成・販売未承認"
+  },
+  "target": {
+    "engine": "Unity / HDRP を主想定。バージョンはモデル実装時に固定。",
+    "exports": [
+      "編集可能な制作ソース",
+      "GLB（形状・PBR・ベイクした骨アニメ）",
+      "Unity用物理設定",
+      "検証PNGとMP4"
+    ],
+    "triangles_lod0_max": 220000,
+    "texture_resolution_max": 4096,
+    "texture_policy": "共有材2K、主役・顔4K。BaseColor=sRGB、Normal/Roughness/Metallic=linear。AOをBaseColorへ焼き込まない。",
+    "texel_density_px_per_m": 512,
+    "lod_ratios": [
+      1,
+      0.5,
+      0.2,
+      0.08
+    ]
+  },
+  "materials": [
+    {
+      "id": "wood",
+      "base_color_srgb": "#C8AB80",
+      "roughness": [
+        0.35,
+        0.5
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        0.0003,
+        0.003
+      ],
+      "detail": "オーク床幅90mm、長さ900mm、継ぎ目0.8mm。木目は長手方向、表面起伏0.1mm以下。"
+    },
+    {
+      "id": "wallpaper",
+      "base_color_srgb": "#EEECE5",
+      "roughness": [
+        0.8,
+        0.9
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        0.0003,
+        0.001
+      ],
+      "detail": "ビニルクロスの梨地。高さ0.15mm、継ぎ目は幅900mmごと、遠景は法線に統合。"
+    },
+    {
+      "id": "metal",
+      "base_color_srgb": "#45494A",
+      "roughness": [
+        0.25,
+        0.4
+      ],
+      "metallic": 1,
+      "feature_scale_m": [
+        5e-05,
+        0.0002
+      ],
+      "detail": "アルミ・ステンレス。ヘアラインを部材長手方向へ。切断端ベベル0.5–1mm、汚れは継ぎ目に限定。"
+    },
+    {
+      "id": "glass",
+      "base_color_srgb": "#D7E2E0",
+      "roughness": [
+        0.03,
+        0.12
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        5e-05,
+        0.0001
+      ],
+      "detail": "建築ガラス厚6–12mm。透明・反射を別設定、IOR目標1.5。透過は現行APIとの差分実装対象。汚れ1%以下。"
+    },
+    {
+      "id": "tile",
+      "base_color_srgb": "#D7D3C8",
+      "roughness": [
+        0.35,
+        0.55
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        0.045,
+        0.095
+      ],
+      "detail": "外壁45×95mm、目地5mm・深さ2mm。色差は明度±3%。床用は300角・目地3mm。"
+    },
+    {
+      "id": "paint",
+      "base_color_srgb": "#E5E4DA",
+      "roughness": [
+        0.45,
+        0.65
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        0.0001,
+        0.0005
+      ],
+      "detail": "塗装鋼板は非金属の塗膜として扱う。下地金属露出は角の面積0.3%以下。"
+    }
+  ],
+  "parts": [
+    {
+      "id": "kitchen",
+      "name": "固定キッチン",
+      "center_m": [
+        2.175,
+        0.425,
+        -1.65
+      ],
+      "size_m": [
+        0.65,
+        0.85,
+        2.1
+      ],
+      "material": "paint",
+      "note": "シンク・天板・収納を含む。冷蔵庫・電子レンジ・可動調理家電は含めない。"
+    },
+    {
+      "id": "tub",
+      "name": "固定浴槽",
+      "center_m": [
+        -1.65,
+        0.28,
+        -2.9
+      ],
+      "size_m": [
+        1.5,
+        0.56,
+        0.8
+      ],
+      "material": "paint",
+      "note": ""
+    },
+    {
+      "id": "vanity",
+      "name": "洗面台",
+      "center_m": [
+        -0.1,
+        0.4,
+        -3.2
+      ],
+      "size_m": [
+        0.6,
+        0.8,
+        0.5
+      ],
+      "material": "paint",
+      "note": ""
+    },
+    {
+      "id": "toilet-bowl",
+      "name": "便器",
+      "center_m": [
+        -2,
+        0.38,
+        -0.95
+      ],
+      "size_m": [
+        0.38,
+        0.76,
+        0.65
+      ],
+      "material": "paint",
+      "note": ""
+    },
+    {
+      "id": "outlet",
+      "name": "コンセント",
+      "center_m": [
+        2.49,
+        0.3,
+        1.5
+      ],
+      "size_m": [
+        0.012,
+        0.12,
+        0.07
+      ],
+      "material": "paint",
+      "note": "接地高300mm、スイッチ1200mm。"
+    }
+  ],
+  "motions": [
+    {
+      "id": "entrance",
+      "type": "hinge",
+      "pivot_m": [
+        0.975,
+        0,
+        -3.575
+      ],
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "range": [
+        0,
+        100
+      ],
+      "unit": "degree",
+      "note": "外開き。玄関土間は室内床より50mm下げる。"
+    },
+    {
+      "id": "living",
+      "type": "slide",
+      "pivot_m": [
+        0.7,
+        0,
+        -0.35
+      ],
+      "axis": [
+        1,
+        0,
+        0
+      ],
+      "range": [
+        0,
+        0.8
+      ],
+      "unit": "m",
+      "note": "引戸、戸袋を東側へ。"
+    },
+    {
+      "id": "balcony-left",
+      "type": "slide",
+      "pivot_m": [
+        -0.6,
+        0,
+        3.575
+      ],
+      "axis": [
+        1,
+        0,
+        0
+      ],
+      "range": [
+        0,
+        1.1
+      ],
+      "unit": "m",
+      "note": "左右二枚引違い、レール段差20mm。"
+    },
+    {
+      "id": "storage",
+      "type": "slide",
+      "pivot_m": [
+        -1.1,
+        0,
+        -0.35
+      ],
+      "axis": [
+        1,
+        0,
+        0
+      ],
+      "range": [
+        0,
+        0.55
+      ],
+      "unit": "m",
+      "note": "収納引違い戸、レール二列。"
+    },
+    {
+      "id": "toilet-door",
+      "type": "hinge",
+      "pivot_m": [
+        -2.325,
+        0,
+        -0.35
+      ],
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "range": [
+        0,
+        90
+      ],
+      "unit": "degree",
+      "note": "居室側へ開く。便器との干渉を回避。"
+    }
+  ],
+  "layout": [
+    {
+      "id": "living",
+      "rect_xz_m": [
+        -2.5,
+        -0.3,
+        2.5,
+        3.5
+      ],
+      "use": "居室:5×3.8m、南側"
+    },
+    {
+      "id": "bath",
+      "rect_xz_m": [
+        -2.5,
+        -3.5,
+        -0.8,
+        -1.5
+      ],
+      "use": "浴室:1.7×2m、固定浴槽含む"
+    },
+    {
+      "id": "wash",
+      "rect_xz_m": [
+        -0.7,
+        -3.5,
+        0.5,
+        -1.5
+      ],
+      "use": "洗面脱衣:1.2×2m"
+    },
+    {
+      "id": "toilet",
+      "rect_xz_m": [
+        -2.5,
+        -1.4,
+        -1.5,
+        -0.4
+      ],
+      "use": "トイレ:1×1m"
+    },
+    {
+      "id": "storage",
+      "rect_xz_m": [
+        -1.4,
+        -1.4,
+        -0.2,
+        -0.4
+      ],
+      "use": "造付収納:1.2×1m"
+    },
+    {
+      "id": "kitchen-hall",
+      "rect_xz_m": [
+        0.6,
+        -3.5,
+        2.5,
+        -0.4
+      ],
+      "use": "玄関・キッチン・廊下、幅1.9m"
+    },
+    {
+      "id": "connector",
+      "rect_xz_m": [
+        -0.1,
+        -1.4,
+        0.6,
+        -0.4
+      ],
+      "use": "洗面と居室への接続、幅0.7m"
+    },
+    {
+      "id": "balcony",
+      "rect_xz_m": [
+        -2.5,
+        3.65,
+        2.5,
+        4.85
+      ],
+      "use": "屋外バルコニー"
+    }
+  ],
+  "details": [
+    "北側水回り・東側キッチン、南側空室を採用。参考商品の正確な間取りは取得できていないため、これは独自に寸法を与えた配置案。",
+    "フローリングは南北長手、幅90mm。巾木高さ60mm・厚7mm、見切り幅25mm。壁クロス継ぎ目900mm。",
+    "固定設備はキッチン・浴槽・便器・洗面台・造付収納・換気口・配線器具を含める。家具、可動家電、カーテン、寝具、生活小物は別モデル。",
+    "浴室防水立上り100mm、床勾配1/100。バルコニーは1/100勾配と径50mm排水口、手すり高1.1m。",
+    "窓サッシ溝幅8mm・深さ6mm、ゴムパッキン幅4mm。蝶番は径8mmピンと厚2mmプレート。",
+    "平面図の赤線は開口位置。図は区画の数値管理用であり、画像のカメラ角度や浴槽・収納の見え方より優先する。"
+  ],
+  "qa": [
+    "家具・家電メッシュが含まれていない。",
+    "キッチン前有効幅1.25m。玄関から居室・洗面・浴室へ連続した経路がある。",
+    "居室の寸法5×3.8mと天井高2.4mを計測。",
+    "南窓の開閉、収納・便所扉全開を録画。"
+  ],
+  "implementation_gaps": [],
+  "openings": [
+    {
+      "id": "entry",
+      "wall": "north",
+      "center_m": [
+        1.4,
+        1.05,
+        -3.575
+      ],
+      "width_m": 0.85,
+      "height_m": 2.1,
+      "sill_m": 0
+    },
+    {
+      "id": "living-door",
+      "wall": "z=-0.35",
+      "center_m": [
+        1.1,
+        1,
+        -0.35
+      ],
+      "width_m": 0.8,
+      "height_m": 2,
+      "sill_m": 0
+    },
+    {
+      "id": "south-sash",
+      "wall": "south",
+      "center_m": [
+        0,
+        1.05,
+        3.575
+      ],
+      "width_m": 2.4,
+      "height_m": 2.1,
+      "sill_m": 0
+    },
+    {
+      "id": "bath-door",
+      "wall": "x=-0.75",
+      "center_m": [
+        -0.75,
+        1,
+        -2
+      ],
+      "width_m": 0.65,
+      "height_m": 2,
+      "sill_m": 0
+    },
+    {
+      "id": "wash-door",
+      "wall": "x=0.55",
+      "center_m": [
+        0.55,
+        1,
+        -2.4
+      ],
+      "width_m": 0.65,
+      "height_m": 2,
+      "sill_m": 0
+    },
+    {
+      "id": "toilet-door",
+      "wall": "south z=-0.35",
+      "center_m": [
+        -2,
+        1,
+        -0.35
+      ],
+      "width_m": 0.65,
+      "height_m": 2,
+      "sill_m": 0
+    }
+  ],
+  "image_generation": {
+    "tool": "built-in image_gen",
+    "prompt_file": "image-prompt.txt",
+    "reference_sheet": "images/reference-sheet.png",
+    "role": "concept_only_not_geometry_evidence"
+  }
+}

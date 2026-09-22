@@ -1,0 +1,28 @@
+{
+  "revision": 6,
+  "scope": "設計図と配置の静的検証。実モデル未生成。",
+  "checks": [
+    "カフェ6卓/24脚、道場マット56枚/外周26/中央30と上面高を検算",
+    "カフェの基準配置でテーブル/椅子の平面占有領域が重ならない",
+    "21フォルダのJSON/SVG・画像/リンク、追加モデルの材質参照を確認"
+  ],
+  "previous_report": "revisions/r5/validation-report.json",
+  "images": [
+    {
+      "folder": "20-cafe",
+      "size": [
+        1536,
+        1024
+      ],
+      "sha256": "64a5a164c59f64463573d1238a6e4418cfc9c8c38591ec9a6ca43f4878d8052e"
+    },
+    {
+      "folder": "21-karate-dojo",
+      "size": [
+        1536,
+        1024
+      ],
+      "sha256": "d3e7538b8f01f49840aaa40280b99fff70bd0ccacbeec73c6c3c8caf882989c6"
+    }
+  ]
+}

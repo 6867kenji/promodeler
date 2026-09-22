@@ -1,0 +1,104 @@
+{
+  "version": 2,
+  "status": "design_review",
+  "assets": [
+    {
+      "id": "city",
+      "name": "汐見町・500m街区",
+      "category": "city",
+      "folder": "01-city",
+      "spec": "01-city/blueprint.json"
+    },
+    {
+      "id": "apartment",
+      "name": "汐見レジデンス・6階建て",
+      "category": "apartment-building",
+      "folder": "02-apartment",
+      "spec": "02-apartment/blueprint.json"
+    },
+    {
+      "id": "convenience",
+      "name": "汐見マート・平屋店舗",
+      "category": "convenience-store",
+      "folder": "03-convenience",
+      "spec": "03-convenience/blueprint.json"
+    },
+    {
+      "id": "office",
+      "name": "汐見スクエア・8階オフィス",
+      "category": "office-building",
+      "folder": "04-office",
+      "spec": "04-office/blueprint.json"
+    },
+    {
+      "id": "woman",
+      "name": "春香・23歳の女性",
+      "category": "female-character",
+      "folder": "05-woman",
+      "spec": "05-woman/blueprint.json"
+    },
+    {
+      "id": "room",
+      "name": "独立1K・オーク床の空室",
+      "category": "apartment-room",
+      "folder": "06-room",
+      "spec": "06-room/blueprint.json"
+    },
+    {
+      "id": "bed",
+      "name": "オークフレーム・シングルベッド",
+      "category": "bed",
+      "folder": "07-bed",
+      "spec": "07-bed/blueprint.json"
+    },
+    {
+      "id": "sofa",
+      "name": "ファブリック・コンパクト2人掛け",
+      "category": "sofa",
+      "folder": "08-sofa",
+      "spec": "08-sofa/blueprint.json"
+    },
+    {
+      "id": "ceiling-light",
+      "name": "乳白カバー・LEDシーリングライト",
+      "category": "ceiling-light",
+      "folder": "09-ceiling-light",
+      "spec": "09-ceiling-light/blueprint.json"
+    },
+    {
+      "id": "table-chair",
+      "name": "オーク机と椅子・コンパクトセット",
+      "category": "table-chair-set",
+      "folder": "10-table-chair",
+      "spec": "10-table-chair/blueprint.json"
+    },
+    {
+      "id": "pc-desk",
+      "name": "オーク天板・スチールPCデスク",
+      "category": "pc-desk",
+      "folder": "11-pc-desk",
+      "spec": "11-pc-desk/blueprint.json"
+    },
+    {
+      "id": "pc-set",
+      "name": "コンパクトPC・周辺機器セット",
+      "category": "pc-set",
+      "folder": "12-pc-set",
+      "spec": "12-pc-set/blueprint.json"
+    },
+    {
+      "id": "refrigerator",
+      "name": "白い2ドア・コンパクト冷蔵庫",
+      "category": "refrigerator",
+      "folder": "13-refrigerator",
+      "spec": "13-refrigerator/blueprint.json"
+    },
+    {
+      "id": "microwave",
+      "name": "白いダイヤル式・電子レンジ",
+      "category": "microwave",
+      "folder": "14-microwave",
+      "spec": "14-microwave/blueprint.json"
+    }
+  ]
+}

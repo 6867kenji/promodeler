@@ -1,0 +1,271 @@
+{
+  "schema": "promodeler-blueprint/1.0",
+  "metadata": {
+    "tags": [
+      "日本",
+      "現代",
+      "写実",
+      "独立アセット",
+      "ceiling-light"
+    ],
+    "usage": "PC向けリアルタイム探索・映像用のモデル設計",
+    "license": "独自制作物として管理。現段階は私有・配布許諾未設定。販売用ライセンスは公開時に別途設定。",
+    "approval": "モデル未生成・販売未承認",
+    "description": "円形薄型の天井直付けLED照明。取付アダプター、本体、乳白カバーを分離。"
+  },
+  "target": {
+    "engine": "Unity / HDRP を主想定。バージョンはモデル実装時に固定。",
+    "exports": [
+      "編集可能な制作ソース",
+      "GLB（形状・PBR・ベイクした骨アニメ）",
+      "Unity用物理設定",
+      "検証PNGとMP4"
+    ],
+    "triangles_lod0_max": 24000,
+    "texture_resolution_max": 2048,
+    "texture_policy": "共有材2K、主役・顔4K。BaseColor=sRGB、Normal/Roughness/Metallic=linear。AOをBaseColorへ焼き込まない。",
+    "texel_density_px_per_m": 1024,
+    "lod_ratios": [
+      1,
+      0.5,
+      0.2,
+      0.08
+    ],
+    "texture_resident_budget_mib": 48
+  },
+  "folder": "09-ceiling-light",
+  "id": "ceiling-light",
+  "name": "乳白カバー・LEDシーリングライト",
+  "category": "ceiling-light",
+  "kind": "prop",
+  "status": "design_review",
+  "summary": "円形薄型の天井直付けLED照明。取付アダプター、本体、乳白カバーを分離。",
+  "dimensions": {
+    "envelope_xyz_m": [
+      0.5,
+      0.105,
+      0.5
+    ],
+    "origin": "天井取付面中心Y=0。本体は下方向-Yに0.105m。",
+    "axis": "右手系: +X右、+Y上、+Z正面。sideは+Xから-Xへ、画面右が-Z。",
+    "priority": "数値JSON > 寸法SVG > 仕様文 > 参考画像",
+    "diameter_m": 0.5,
+    "lower_surface_y_m": -0.105,
+    "cover_thickness_m": 0.0015
+  },
+  "materials": [
+    {
+      "id": "opal",
+      "base_color_srgb": "#F1F0E8",
+      "roughness": [
+        0.35,
+        0.55
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        5e-05,
+        0.0001
+      ],
+      "detail": "乳白PC拡散板、厚1.5mm。均一な光、縁は透過が弱い。発光と材質透過を別設定。"
+    },
+    {
+      "id": "polymer",
+      "base_color_srgb": "#E5E5DF",
+      "roughness": [
+        0.3,
+        0.5
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        8e-05,
+        0.0003
+      ],
+      "detail": "射出成形樹脂の梨地。パーティングライン0.1mm、角R0.5–2mm。"
+    },
+    {
+      "id": "white-steel",
+      "base_color_srgb": "#E6E7E3",
+      "roughness": [
+        0.3,
+        0.5
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        0.0001,
+        0.0003
+      ],
+      "detail": "白い塗装鋼板、厚0.6–0.8mm。塗膜は非金属。折返し端のRと接合隙間を作る。"
+    },
+    {
+      "id": "metal",
+      "base_color_srgb": "#45494A",
+      "roughness": [
+        0.25,
+        0.4
+      ],
+      "metallic": 1,
+      "feature_scale_m": [
+        5e-05,
+        0.0002
+      ],
+      "detail": "アルミ・ステンレス。ヘアラインを部材長手方向へ。切断端ベベル0.5–1mm、汚れは継ぎ目に限定。"
+    }
+  ],
+  "parts": [
+    {
+      "id": "mount",
+      "name": "取付アダプター",
+      "center_m": [
+        0,
+        -0.012,
+        0
+      ],
+      "size_m": [
+        0.1,
+        0.024,
+        0.1
+      ],
+      "material": "polymer",
+      "note": "円形径100mm。"
+    },
+    {
+      "id": "chassis",
+      "name": "金属本体",
+      "center_m": [
+        0,
+        -0.04,
+        0
+      ],
+      "size_m": [
+        0.46,
+        0.04,
+        0.46
+      ],
+      "material": "white-steel",
+      "note": "回転体、板厚0.7mm。"
+    },
+    {
+      "id": "rim",
+      "name": "外周リム",
+      "center_m": [
+        0,
+        -0.073,
+        0
+      ],
+      "size_m": [
+        0.5,
+        0.04,
+        0.5
+      ],
+      "material": "polymer",
+      "note": "環状、外径500mm/内径480mm。"
+    },
+    {
+      "id": "diffuser",
+      "name": "乳白カバー",
+      "center_m": [
+        0,
+        -0.0875,
+        0
+      ],
+      "size_m": [
+        0.48,
+        0.035,
+        0.48
+      ],
+      "material": "opal",
+      "note": "浅い回転楕円殻、最下面-0.105m。"
+    }
+  ],
+  "motions": [
+    {
+      "id": "cover-release",
+      "type": "hinge",
+      "pivot_m": [
+        0,
+        -0.07,
+        0
+      ],
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "range": [
+        0,
+        20
+      ],
+      "unit": "degree",
+      "note": "固定解除20度回転→カバーを下に60mm。別の移動段階とする。"
+    },
+    {
+      "id": "cover-drop",
+      "type": "slide",
+      "pivot_m": [
+        0,
+        -0.07,
+        0
+      ],
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "range": [
+        -0.06,
+        0
+      ],
+      "unit": "m",
+      "note": "回転解除後のみ。分解デモ用。"
+    }
+  ],
+  "layout": [],
+  "details": [
+    "正面/側面は厚み105mmの浅い円盤。背面は天井側取付部、BOTTOMは室内から見上げた発光面として区別。",
+    "カバーの係合爪3か所120度ピッチ、爪厚2.5mm、通気隙間2mm。取付部は使用者向け電気施工図ではなく外観形状。",
+    "消灯時は乳白、点灯時に中央だけ白飛びしない。縁の減光を緩やかに表現。"
+  ],
+  "qa": [
+    "直径0.5m・下がり0.105m、カバーと本体が閉状態で接触貫通しない。",
+    "消灯/調光/点灯を同じ露出で記録。裏面取付部と下面を取り違えない。"
+  ],
+  "implementation_gaps": [
+    "発光材だけで室内を照らした扱いにしない。Unity側の光源・調光制御が必要。"
+  ],
+  "interfaces": [
+    "取付面Y0を天井下面に合わせる。シーン側の光源IDとカバーPart IDを関連付ける。"
+  ],
+  "clips": [
+    {
+      "id": "light-states",
+      "duration_s": 6,
+      "description": "消灯→3000K→4000Kを各2秒。カバー脱着は別クリップ。"
+    }
+  ],
+  "revision": 1,
+  "image_generation": {
+    "tool": "built-in image_gen",
+    "prompt_file": "image-prompt.txt",
+    "reference_sheet": "images/reference-sheet.png",
+    "role": "concept_only_not_geometry_evidence"
+  },
+  "light": {
+    "states": [
+      "off",
+      "warm",
+      "neutral"
+    ],
+    "cct_kelvin": [
+      3000,
+      4000
+    ],
+    "nominal_flux_lm": 3000,
+    "dimming_range": [
+      0.1,
+      1
+    ],
+    "geometry_emission": "カバーの発光見た目",
+    "scene_light": "別の面光源。実装時に対象エンジンで照度を調整。",
+    "note": "3000lmは設計上の目標値。測光データではない。"
+  }
+}

@@ -1,0 +1,899 @@
+{
+  "schema": "promodeler-blueprint/1.0",
+  "folder": "30-passerby-b",
+  "id": "passerby-b",
+  "name": "通行人B・ロングスカートの女性",
+  "category": "female-character",
+  "kind": "humanoid",
+  "status": "design_review",
+  "revision": 1,
+  "summary": "架空の日本人成人、34歳、裸足168cm。サンドベージュの半袖ブラウス、テラコッタの足首丈スカート、茶色フラットシューズ、茶色ショルダーバッグ。",
+  "appearance": "ダークブラウンのゆるい肩下ウェーブ、長めの卵型顔",
+  "dimensions": {
+    "barefoot_height_m": 1.68,
+    "standing_shod_height_m": 1.695,
+    "shoe_sole_m": 0.015,
+    "age": 34,
+    "shoulder_width_m": 0.39,
+    "inseam_m": 0.77,
+    "foot_length_m": 0.245,
+    "body_circumferences_m": {
+      "bust": 0.89,
+      "waist": 0.71,
+      "hip": 0.95
+    },
+    "origin": "裸足両足底の中央。+Y上/+Z正面。解剖学的右=-X。",
+    "priority": "数値JSON > 寸法SVG > 仕様文 > 参考画像",
+    "cross_sections": [
+      {
+        "landmark": "chest",
+        "height_m": 1.312,
+        "width_m": 0.3026,
+        "depth_m": 0.2633,
+        "circumference_m": 0.89
+      },
+      {
+        "landmark": "waist",
+        "height_m": 1.113,
+        "width_m": 0.2414,
+        "depth_m": 0.2101,
+        "circumference_m": 0.71
+      },
+      {
+        "landmark": "hip",
+        "height_m": 0.997,
+        "width_m": 0.323,
+        "depth_m": 0.2811,
+        "circumference_m": 0.95
+      }
+    ]
+  },
+  "metadata": {
+    "tags": [
+      "日本",
+      "現代",
+      "写実",
+      "pedestrian",
+      "female"
+    ],
+    "usage": "PC向けリアルタイム探索・映像用のモデル設計",
+    "license": "独自制作物として管理。現段階は私有・配布許諾未設定。販売用ライセンスは公開時に別途設定。",
+    "approval": "モデル未生成・販売未承認",
+    "description": "架空の日本人成人、34歳、裸足168cm。サンドベージュの半袖ブラウス、テラコッタの足首丈スカート、茶色フラットシューズ、茶色ショルダーバッグ。"
+  },
+  "target": {
+    "engine": "Unity / HDRP を主想定。バージョンはモデル実装時に固定。",
+    "exports": [
+      "BLEND（編集可能な形状・リグ・物理設定、実装時に制作）",
+      "GLB（形状・PBR・ベイクした骨アニメ）",
+      "Unity用物理設定",
+      "検証PNGとMP4"
+    ],
+    "triangles_lod0_max": 80000,
+    "texture_resolution_max": 4096,
+    "texture_policy": "共有材2K、主役・顔4K。BaseColor=sRGB、Normal/Roughness/Metallic=linear。AOをBaseColorへ焼き込まない。",
+    "texel_density_px_per_m": 1024,
+    "lod_ratios": [
+      1,
+      0.5,
+      0.2,
+      0.08
+    ],
+    "triangles_by_part": {
+      "body": 30000,
+      "hair": 14000,
+      "clothing": 23000,
+      "shoes_accessories_eyes": 13000
+    },
+    "texture_resident_budget_mib": 112
+  },
+  "materials": [
+    {
+      "id": "skin",
+      "base_color_srgb": "#E8CABA",
+      "roughness": [
+        0.35,
+        0.58
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        0.0001,
+        0.0004
+      ],
+      "detail": "肌色はデザイン基準。顔・耳・手で弱い色差。毛穴0.1–0.4mm、年齢に応じた目尻/額/手のしわ。SSSはエンジン側で調整。"
+    },
+    {
+      "id": "hair",
+      "base_color_srgb": "#28201D",
+      "roughness": [
+        0.25,
+        0.48
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        6e-05,
+        0.0001
+      ],
+      "detail": "ダークブラウンのゆるい肩下ウェーブ、長めの卵型顔。束幅2–12mm、異方性、頭皮との境界を自然に。"
+    },
+    {
+      "id": "top",
+      "base_color_srgb": "#D6C4A6",
+      "roughness": [
+        0.65,
+        0.85
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        0.0002,
+        0.0008
+      ],
+      "detail": "ブラウスの細い織り、スカートの縦ドレープ、革のしぼ。厚さと縫合はgarments表。"
+    },
+    {
+      "id": "bottom",
+      "base_color_srgb": "#A95F48",
+      "roughness": [
+        0.65,
+        0.85
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        0.0003,
+        0.001
+      ],
+      "detail": "織目は脚の長手方向。股下の縫い合わせ、ポケット口、裾折返しを別形状で作る。"
+    },
+    {
+      "id": "accent",
+      "base_color_srgb": "#604737",
+      "roughness": [
+        0.6,
+        0.85
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        0.0003,
+        0.001
+      ],
+      "detail": "帯/エプロン/インナー/配色。異なる生地は必要に応じてスロット分離。"
+    },
+    {
+      "id": "leather",
+      "base_color_srgb": "#302C29",
+      "roughness": [
+        0.28,
+        0.52
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        0.0002,
+        0.0008
+      ],
+      "detail": "革靴/バッグのしぼ、折れしわ。塗膜がある革も金属度0。縁塗り厚0.3mm。"
+    },
+    {
+      "id": "rubber",
+      "base_color_srgb": "#3D4142",
+      "roughness": [
+        0.65,
+        0.85
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        0.0005,
+        0.003
+      ],
+      "detail": "靴底の溝深2mm、接地部の軽い擦れ。白い靴は個別配色を適用。"
+    },
+    {
+      "id": "metal",
+      "base_color_srgb": "#92989C",
+      "roughness": [
+        0.25,
+        0.4
+      ],
+      "metallic": 1,
+      "feature_scale_m": [
+        5e-05,
+        0.0002
+      ],
+      "detail": "ファスナー、バックル、眼鏡ヒンジ、時計の金属部。布に金属度を伝播しない。"
+    },
+    {
+      "id": "eye",
+      "base_color_srgb": "#574335",
+      "roughness": [
+        0.1,
+        0.2
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        5e-05,
+        0.0002
+      ],
+      "detail": "茶の虹彩、白目は薄い灰白色、角膜は別層・IOR1.376を初期目標。"
+    },
+    {
+      "id": "teeth",
+      "base_color_srgb": "#DCD4C3",
+      "roughness": [
+        0.3,
+        0.5
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        0.0001,
+        0.0003
+      ],
+      "detail": "歯と口腔を分離。歯間を黒線で塗り潰さない。"
+    },
+    {
+      "id": "inner",
+      "base_color_srgb": "#ECE9E0",
+      "roughness": [
+        0.65,
+        0.85
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        0.0002,
+        0.0006
+      ],
+      "detail": "不透明な白/生成りインナー。外衣の配色とは独立。"
+    }
+  ],
+  "garments": [
+    {
+      "id": "inner",
+      "name": "サンド色ブラウス",
+      "material": "top",
+      "finished_measurements_m": {
+        "chest_circumference": 0.99,
+        "back_length": 0.611,
+        "thickness": 0.0006
+      },
+      "construction": "不透明な身頃。襟・肩・脇の縫合。裾は下衣との重なりを保持。",
+      "deformation": "cloth"
+    },
+    {
+      "id": "skirt",
+      "name": "テラコッタスカート",
+      "material": "bottom",
+      "finished_measurements_m": {
+        "waist_circumference": 0.735,
+        "length": 0.88,
+        "hem_circumference": 1.65,
+        "thickness": 0.0007
+      },
+      "construction": "6枚接ぎ、左脇コンシールファスナー。腰から縦ドレープ。",
+      "deformation": "cloth"
+    }
+  ],
+  "accessories": [
+    {
+      "id": "shoulder-bag",
+      "size_xyz_m": [
+        0.23,
+        0.18,
+        0.07
+      ],
+      "detail": "茶、ストラップ幅18mm",
+      "attachment": "手/肩/手首/頭の対応ソケット。ターンアラウンドではバッグを別置き、着用例も用意。"
+    }
+  ],
+  "rig": {
+    "basis": "Aポーズ、腕は体幹から約35度。裸足座標、+Y上、+Z正面。解剖学的右は-X。骨位置は形状に合わせる初期設計。",
+    "joints": [
+      {
+        "id": "root",
+        "parent": null,
+        "head_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "tail_m": [
+          0.0,
+          0.0105,
+          0.0
+        ]
+      },
+      {
+        "id": "pelvis",
+        "parent": "root",
+        "head_m": [
+          0.0,
+          0.905,
+          0.0
+        ],
+        "tail_m": [
+          0.0,
+          1.0185,
+          0.0
+        ]
+      },
+      {
+        "id": "spine01",
+        "parent": "pelvis",
+        "head_m": [
+          0.0,
+          1.0185,
+          0.0
+        ],
+        "tail_m": [
+          0.0,
+          1.155,
+          0.0
+        ]
+      },
+      {
+        "id": "spine02",
+        "parent": "spine01",
+        "head_m": [
+          0.0,
+          1.155,
+          0.0
+        ],
+        "tail_m": [
+          0.0,
+          1.281,
+          0.0
+        ]
+      },
+      {
+        "id": "chest",
+        "parent": "spine02",
+        "head_m": [
+          0.0,
+          1.281,
+          0.0
+        ],
+        "tail_m": [
+          0.0,
+          1.407,
+          0.0
+        ]
+      },
+      {
+        "id": "neck",
+        "parent": "chest",
+        "head_m": [
+          0.0,
+          1.407,
+          0.0
+        ],
+        "tail_m": [
+          0.0,
+          1.47525,
+          0.0
+        ]
+      },
+      {
+        "id": "head",
+        "parent": "neck",
+        "head_m": [
+          0.0,
+          1.47525,
+          0.0
+        ],
+        "tail_m": [
+          0.0,
+          1.68,
+          0.0
+        ]
+      },
+      {
+        "id": "clavicle.R",
+        "parent": "chest",
+        "head_m": [
+          -0.041999999999999996,
+          1.3964999999999999,
+          0
+        ],
+        "tail_m": [
+          -0.195,
+          1.386,
+          0
+        ]
+      },
+      {
+        "id": "upperarm.R",
+        "parent": "clavicle.R",
+        "head_m": [
+          -0.195,
+          1.386,
+          0
+        ],
+        "tail_m": [
+          -0.3525,
+          1.1549999999999998,
+          0
+        ]
+      },
+      {
+        "id": "forearm.R",
+        "parent": "upperarm.R",
+        "head_m": [
+          -0.3525,
+          1.1549999999999998,
+          0
+        ],
+        "tail_m": [
+          -0.489,
+          0.9554999999999999,
+          0.015749999999999997
+        ]
+      },
+      {
+        "id": "hand.R",
+        "parent": "forearm.R",
+        "head_m": [
+          -0.489,
+          0.9554999999999999,
+          0.015749999999999997
+        ],
+        "tail_m": [
+          -0.5625,
+          0.8504999999999999,
+          0.020999999999999998
+        ]
+      },
+      {
+        "id": "thigh.R",
+        "parent": "pelvis",
+        "head_m": [
+          -0.09025,
+          0.905,
+          0
+        ],
+        "tail_m": [
+          -0.09025,
+          0.491875,
+          0.015749999999999997
+        ]
+      },
+      {
+        "id": "shin.R",
+        "parent": "thigh.R",
+        "head_m": [
+          -0.09025,
+          0.491875,
+          0.015749999999999997
+        ],
+        "tail_m": [
+          -0.09025,
+          0.07874999999999999,
+          0
+        ]
+      },
+      {
+        "id": "foot.R",
+        "parent": "shin.R",
+        "head_m": [
+          -0.09025,
+          0.07874999999999999,
+          0
+        ],
+        "tail_m": [
+          -0.09025,
+          0.03675,
+          0.1666
+        ]
+      },
+      {
+        "id": "clavicle.L",
+        "parent": "chest",
+        "head_m": [
+          0.041999999999999996,
+          1.3964999999999999,
+          0
+        ],
+        "tail_m": [
+          0.195,
+          1.386,
+          0
+        ]
+      },
+      {
+        "id": "upperarm.L",
+        "parent": "clavicle.L",
+        "head_m": [
+          0.195,
+          1.386,
+          0
+        ],
+        "tail_m": [
+          0.3525,
+          1.1549999999999998,
+          0
+        ]
+      },
+      {
+        "id": "forearm.L",
+        "parent": "upperarm.L",
+        "head_m": [
+          0.3525,
+          1.1549999999999998,
+          0
+        ],
+        "tail_m": [
+          0.489,
+          0.9554999999999999,
+          0.015749999999999997
+        ]
+      },
+      {
+        "id": "hand.L",
+        "parent": "forearm.L",
+        "head_m": [
+          0.489,
+          0.9554999999999999,
+          0.015749999999999997
+        ],
+        "tail_m": [
+          0.5625,
+          0.8504999999999999,
+          0.020999999999999998
+        ]
+      },
+      {
+        "id": "thigh.L",
+        "parent": "pelvis",
+        "head_m": [
+          0.09025,
+          0.905,
+          0
+        ],
+        "tail_m": [
+          0.09025,
+          0.491875,
+          0.015749999999999997
+        ]
+      },
+      {
+        "id": "shin.L",
+        "parent": "thigh.L",
+        "head_m": [
+          0.09025,
+          0.491875,
+          0.015749999999999997
+        ],
+        "tail_m": [
+          0.09025,
+          0.07874999999999999,
+          0
+        ]
+      },
+      {
+        "id": "foot.L",
+        "parent": "shin.L",
+        "head_m": [
+          0.09025,
+          0.07874999999999999,
+          0
+        ],
+        "tail_m": [
+          0.09025,
+          0.03675,
+          0.1666
+        ]
+      },
+      {
+        "id": "toes.R",
+        "parent": "foot.R",
+        "head_m": [
+          -0.09025,
+          0.03675,
+          0.1666
+        ],
+        "tail_m": [
+          -0.09025,
+          0.026249999999999996,
+          0.21559999999999999
+        ]
+      },
+      {
+        "id": "upperarm_twist.R",
+        "parent": "upperarm.R",
+        "head_m": [
+          -0.27375,
+          1.2704999999999997,
+          0.0
+        ],
+        "tail_m": [
+          -0.3525,
+          1.1549999999999998,
+          0
+        ],
+        "constraint": "親ボーン軸ねじれの50%を追従。別のIKチェーンには含めない。"
+      },
+      {
+        "id": "forearm_twist.R",
+        "parent": "forearm.R",
+        "head_m": [
+          -0.42074999999999996,
+          1.0552499999999998,
+          0.007874999999999998
+        ],
+        "tail_m": [
+          -0.489,
+          0.9554999999999999,
+          0.015749999999999997
+        ],
+        "constraint": "親ボーン軸ねじれの50%を追従。別のIKチェーンには含めない。"
+      },
+      {
+        "id": "thigh_twist.R",
+        "parent": "thigh.R",
+        "head_m": [
+          -0.09025,
+          0.6984375,
+          0.007874999999999998
+        ],
+        "tail_m": [
+          -0.09025,
+          0.491875,
+          0.015749999999999997
+        ],
+        "constraint": "親ボーン軸ねじれの50%を追従。別のIKチェーンには含めない。"
+      },
+      {
+        "id": "toes.L",
+        "parent": "foot.L",
+        "head_m": [
+          0.09025,
+          0.03675,
+          0.1666
+        ],
+        "tail_m": [
+          0.09025,
+          0.026249999999999996,
+          0.21559999999999999
+        ]
+      },
+      {
+        "id": "upperarm_twist.L",
+        "parent": "upperarm.L",
+        "head_m": [
+          0.27375,
+          1.2704999999999997,
+          0.0
+        ],
+        "tail_m": [
+          0.3525,
+          1.1549999999999998,
+          0
+        ],
+        "constraint": "親ボーン軸ねじれの50%を追従。別のIKチェーンには含めない。"
+      },
+      {
+        "id": "forearm_twist.L",
+        "parent": "forearm.L",
+        "head_m": [
+          0.42074999999999996,
+          1.0552499999999998,
+          0.007874999999999998
+        ],
+        "tail_m": [
+          0.489,
+          0.9554999999999999,
+          0.015749999999999997
+        ],
+        "constraint": "親ボーン軸ねじれの50%を追従。別のIKチェーンには含めない。"
+      },
+      {
+        "id": "thigh_twist.L",
+        "parent": "thigh.L",
+        "head_m": [
+          0.09025,
+          0.6984375,
+          0.007874999999999998
+        ],
+        "tail_m": [
+          0.09025,
+          0.491875,
+          0.015749999999999997
+        ],
+        "constraint": "親ボーン軸ねじれの50%を追従。別のIKチェーンには含めない。"
+      }
+    ],
+    "fingers": "左右各5指×3節。掌長は身長×0.055、掌幅は身長×0.045を初期目標。中指全長は身長×0.047、示指/環指は中指の95%、小指は75%、親指は70%。個別根元と関節ループを設け、実メッシュの指節位置に合わせる。",
+    "ik_fk": "腕・脚IK/FK切替、足接地IK、膝肘ポール、手首補正、鎖骨追従。",
+    "weights": "最大4影響を初期目標。肩・脇・股関節・肘・膝は手動相当の補正工程と姿勢別変形検証必須。距離ウェイトだけで完了にしない。",
+    "face": "瞬き、視線、笑顔、口開閉、母音5種。shape key/morphと眼球・顎ボーンを併用。",
+    "limits_deg": {
+      "elbow_flexion": [
+        0,
+        135
+      ],
+      "knee_flexion": [
+        0,
+        130
+      ],
+      "hip_flexion": [
+        0,
+        115
+      ],
+      "shoulder_raise": [
+        0,
+        160
+      ],
+      "neck_yaw": [
+        -65,
+        65
+      ],
+      "finger_curl": [
+        0,
+        90
+      ]
+    }
+  },
+  "physics": {
+    "common": {
+      "execution": "ランタイムで継続する物理演算。GLB単体では再現不可。",
+      "fixed_step_s": 0.016666666666666666,
+      "substeps": 4,
+      "gravity_m_s2": [
+        0,
+        -9.81,
+        0
+      ],
+      "initial_settle_s": 2,
+      "collision_margin_m": 0.004,
+      "penetration_tolerance": "通常動作の可視貫通0。計測最大2mm未満かつ2フレーム以内。基準超過時は設定または形状を修正。"
+    },
+    "clothing": {
+      "method": "低解像度クロスを部品別に300–1800頂点、合計6000頂点以内。スキニングの基準形状へ追従し表示メッシュへ転送。",
+      "areal_density_kg_m2": 0.2,
+      "stretch_ratio_max": 1.03,
+      "bend_radius_min_m": 0.005,
+      "pin": "肩・襟・ウエスト100%。ジャケット身頃上部80%、袖口/裾20%。帯結びとエプロン紐は固定、遊び端のみ可動。",
+      "collision": "身体の胸・腹・骨盤・大腿・腕の追従コライダー。自己衝突ON。靴と裾の接近時も検証。",
+      "range": "スカート裾は静止形状から180mm以内。着座では布を座面・大腿で支持し、静止裾位置からの距離だけで拘束しない。"
+    },
+    "breast": {
+      "method": "左右独立のばね質点/補助ボーン動力学。胸郭ローカルで求解し布側コライダーへ反映。",
+      "effective_mass_kg": 0.22,
+      "stiffness_n_m": 220,
+      "damping_n_s_m": 14,
+      "max_translation_m": [
+        0.004,
+        0.006,
+        0.004
+      ],
+      "max_rotation_deg": 3,
+      "collision": "胸郭へのめり込み制限、左右相互衝突、衣服は追従コライダーに衝突。基準姿勢を拘束中心とする。",
+      "note": "実人体の推定物性ではない演出初期値。女性はインナー支持、男性は胸部軟部のごく小さな追従として設定。服へコライダーを反映。"
+    },
+    "hair": {
+      "method": "結び目/頭皮を固定し6–10ガイド束、1束4–6節。シニヨンは3節の短い毛先のみ。",
+      "root_pin": 1,
+      "max_segment_angle_deg": 22,
+      "max_tip_displacement_m": 0.1,
+      "collision": "頭・肩・胸・背中のカプセル。髪は服の外側4mmの代理面と衝突。",
+      "damping_ratio": 0.8
+    },
+    "solve_order": [
+      "身体アニメーションとIK",
+      "胸の動力学",
+      "胸コライダー更新",
+      "服クロス",
+      "髪動力学",
+      "表示メッシュ更新"
+    ],
+    "accessories": {
+      "method": "バッグ本体は補助ボーン+ばね、持ち手は手または肩に固定。内容物は空にせず形状保持。",
+      "max_swing_deg": 15,
+      "collision": "骨盤・大腿・腕の代理面と衝突。着座時はバッグを外す/膝に置くアニメを別にする。"
+    }
+  },
+  "clips": [
+    {
+      "id": "idle",
+      "duration_s": 4,
+      "loop": true,
+      "description": "呼吸、瞬き、視線"
+    },
+    {
+      "id": "walk",
+      "duration_s": 1.2,
+      "loop": true,
+      "description": "左右足接地、1周期の移動1.1m、腕振り"
+    },
+    {
+      "id": "turn",
+      "duration_s": 2,
+      "loop": false,
+      "description": "180度方向転換"
+    },
+    {
+      "id": "sit",
+      "duration_s": 3,
+      "loop": false,
+      "description": "座面高0.43mへ着座。靴底の高さを接地IKに含める。"
+    },
+    {
+      "id": "physics-settle",
+      "duration_s": 6,
+      "loop": false,
+      "description": "静止2秒、歩行2秒、停止2秒。服/胸部/髪のON/OFF比較"
+    },
+    {
+      "id": "look-around",
+      "duration_s": 8,
+      "loop": false,
+      "description": "歩行から停止し左右を見回す。"
+    }
+  ],
+  "checks": {
+    "rig": {
+      "status": "not_verified",
+      "evidence": []
+    },
+    "clothing": {
+      "status": "not_verified",
+      "evidence": []
+    },
+    "breast": {
+      "status": "not_verified",
+      "evidence": []
+    },
+    "hair": {
+      "status": "not_verified",
+      "evidence": []
+    }
+  },
+  "footwear": {
+    "barefoot": false,
+    "internal_length_m": 0.257,
+    "sole_height_m": 0.015,
+    "construction": "左右別。靴甲1.5mm、内張り1mm、紐径4mm。靴底の屈曲を足趾に追従。パンプスは踵高と足裏傾斜を別に調整。",
+    "color_and_type": "サンドベージュの半袖ブラウス、テラコッタの足首丈スカート、茶色フラットシューズ、茶色ショルダーバッグ",
+    "forefoot_sole_m": 0.015,
+    "heel_height_m": 0.015
+  },
+  "details": [
+    "ブラウスの細い織り、スカートの縦ドレープ、革のしぼ",
+    "顔は眼球径24mm、虹彩径11.5mmを起点に個体へ調整。顔高・頬幅・顎・鼻を人物別に造形し、髪と色の変更だけで同じ顔を使い回さない。",
+    "肌の左右差は弱く、全身に同じノイズを一様に貼らない。髪・眉・まつ毛は独立。",
+    "衣服は完成寸法。身体円周と混同しない。外衣の裏地とインナーは別層、一般部に4–8mmの衝突余裕。",
+    "バッグは本体・持ち手・ストラップ・留具を分け、収納空洞を作る。時計と眼鏡は身体へ一体化しない。",
+    "履物の色と形はoutfit/footwearを優先。共通rubber/leatherの色を全員の靴へ無条件に適用しない。"
+  ],
+  "qa": [
+    "裸足身長±2mm、指定円周±5mmを実メッシュで計測。",
+    "正面/側面/背面で髪型・顔・服・アクセサリーが同一。",
+    "指5本×左右、関節の体積、肩・脇・股・肘・膝のウェイトを確認。",
+    "各clipを正面/側面で60fps記録。服・胸部・髪は物理ON/OFF比較を保存。",
+    "通常動作で可視貫通0。計測上2mm未満かつ2フレーム以内、超える場合は修正。",
+    "停止後2秒で胸部1mm未満・髪と裾5mm未満へ収束するよう調整。",
+    "checksは未検証のまま。実モデル証拠を確認してから更新。"
+  ],
+  "implementation_gaps": [
+    "リアルタイムクロス・胸・髪物理、IK/FK制御、顔morph、SSS・異方性を追加実装する。",
+    "ClothDrapeは静止形状を凍結するだけ。物理実装済みの根拠として扱わない。",
+    "GLBの骨アニメに物理結果をベイクする場合も、編集可能な物理設定と検証動画を別納品。",
+    "設計JSONは独自形式でありpromodelerのrecipeへ直接投入不可。適合変換・モデル制作・動作検証は別工程。"
+  ],
+  "identity": {
+    "fictional": true,
+    "sex": "female",
+    "age": 34,
+    "face_shape_hair": "ダークブラウンのゆるい肩下ウェーブ、長めの卵型顔",
+    "outfit_palette": "サンドベージュの半袖ブラウス、テラコッタの足首丈スカート、茶色フラットシューズ、茶色ショルダーバッグ"
+  },
+  "views": {
+    "front": "+Zから-Z。正投影、頭頂と足底の高さを揃える。",
+    "side": "+Xから-X。画面左が身体正面+Z。人物の解剖学的左側が見える。画像のSIDE/RIGHT SIDEは画面上の右側面ビューを表す。",
+    "back": "-Zから+Z。同じ立位。",
+    "three_quarter": "正面斜めの立位、全身。",
+    "details": "顔、縫合、留具、手、靴/裸足。服単独では型紙と支持構造も。"
+  },
+  "image_generation": {
+    "tool": "built-in image_gen",
+    "reference_sheet": "images/reference-sheet.png",
+    "prompt_file": "image-prompt.txt",
+    "role": "concept_only_not_model_evidence"
+  }
+}

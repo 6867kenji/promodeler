@@ -1,0 +1,417 @@
+{
+  "schema": "promodeler-blueprint/1.0",
+  "folder": "02-apartment",
+  "id": "apartment",
+  "name": "汐見レジデンス・6階建て",
+  "category": "apartment-building",
+  "kind": "architecture",
+  "status": "design_review",
+  "summary": "本体24×14m、南バルコニー1.5m・北廊下1.8m、東西階段各3mを付加。北入り共用動線と南向き住戸。",
+  "dimensions": {
+    "envelope_xyz_m": [
+      30,
+      19.1,
+      17.3
+    ],
+    "origin": "地面・床面の平面中心。女性は裸足の両足接地中央。",
+    "axis": "右手系: +X東/画面右、+Y上、+Z南/正面。北=-Z。人物の解剖学的右は-X。",
+    "priority": "数値JSON > 寸法SVG > 仕様書 > 参考画像",
+    "body_xyz_m": [
+      24,
+      18,
+      14
+    ],
+    "floor_to_floor_m": 3,
+    "clear_ceiling_m": 2.55,
+    "slab_m": 0.2,
+    "outer_wall_m": 0.2,
+    "partition_m": 0.12,
+    "parapet_m": 1.1
+  },
+  "metadata": {
+    "tags": [
+      "日本",
+      "現代",
+      "写実",
+      "apartment-building"
+    ],
+    "usage": "PC向けリアルタイム探索・映像用のモデル設計",
+    "license": "独自制作物として管理。現段階は私有・配布許諾未設定。販売用ライセンスは公開時に別途設定。",
+    "approval": "モデル未生成・販売未承認"
+  },
+  "target": {
+    "engine": "Unity / HDRP を主想定。バージョンはモデル実装時に固定。",
+    "exports": [
+      "編集可能な制作ソース",
+      "GLB（形状・PBR・ベイクした骨アニメ）",
+      "Unity用物理設定",
+      "検証PNGとMP4"
+    ],
+    "triangles_lod0_max": 650000,
+    "texture_resolution_max": 4096,
+    "texture_policy": "共有材2K、主役・顔4K。BaseColor=sRGB、Normal/Roughness/Metallic=linear。AOをBaseColorへ焼き込まない。",
+    "texel_density_px_per_m": 512,
+    "lod_ratios": [
+      1,
+      0.5,
+      0.2,
+      0.08
+    ]
+  },
+  "materials": [
+    {
+      "id": "concrete",
+      "base_color_srgb": "#B6B5B0",
+      "roughness": [
+        0.65,
+        0.85
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        0.0002,
+        0.003
+      ],
+      "detail": "型枠目地900×1800mm、Pコン径22mm・深さ3mm。雨筋は上端と排水近傍だけ。大域変形は最大1mm。"
+    },
+    {
+      "id": "tile",
+      "base_color_srgb": "#D7D3C8",
+      "roughness": [
+        0.35,
+        0.55
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        0.045,
+        0.095
+      ],
+      "detail": "外壁45×95mm、目地5mm・深さ2mm。色差は明度±3%。床用は300角・目地3mm。"
+    },
+    {
+      "id": "metal",
+      "base_color_srgb": "#45494A",
+      "roughness": [
+        0.25,
+        0.4
+      ],
+      "metallic": 1,
+      "feature_scale_m": [
+        5e-05,
+        0.0002
+      ],
+      "detail": "アルミ・ステンレス。ヘアラインを部材長手方向へ。切断端ベベル0.5–1mm、汚れは継ぎ目に限定。"
+    },
+    {
+      "id": "glass",
+      "base_color_srgb": "#D7E2E0",
+      "roughness": [
+        0.03,
+        0.12
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        5e-05,
+        0.0001
+      ],
+      "detail": "建築ガラス厚6–12mm。透明・反射を別設定、IOR目標1.5。透過は現行APIとの差分実装対象。汚れ1%以下。"
+    },
+    {
+      "id": "wood",
+      "base_color_srgb": "#C8AB80",
+      "roughness": [
+        0.35,
+        0.5
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        0.0003,
+        0.003
+      ],
+      "detail": "オーク床幅90mm、長さ900mm、継ぎ目0.8mm。木目は長手方向、表面起伏0.1mm以下。"
+    },
+    {
+      "id": "wallpaper",
+      "base_color_srgb": "#EEECE5",
+      "roughness": [
+        0.8,
+        0.9
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        0.0003,
+        0.001
+      ],
+      "detail": "ビニルクロスの梨地。高さ0.15mm、継ぎ目は幅900mmごと、遠景は法線に統合。"
+    }
+  ],
+  "parts": [
+    {
+      "id": "body",
+      "name": "本体包絡",
+      "center_m": [
+        0,
+        9,
+        0
+      ],
+      "size_m": [
+        24,
+        18,
+        14
+      ],
+      "material": "tile",
+      "note": "中実Boxではない。各階床・外壁・開口へ分解。"
+    },
+    {
+      "id": "balcony",
+      "name": "南バルコニー範囲",
+      "center_m": [
+        0,
+        9,
+        7.75
+      ],
+      "size_m": [
+        24,
+        18,
+        1.5
+      ],
+      "material": "concrete",
+      "note": ""
+    },
+    {
+      "id": "corridor",
+      "name": "北廊下範囲",
+      "center_m": [
+        0,
+        9,
+        -7.9
+      ],
+      "size_m": [
+        24,
+        18,
+        1.8
+      ],
+      "material": "concrete",
+      "note": ""
+    },
+    {
+      "id": "stair-west",
+      "name": "西折返し階段コア",
+      "center_m": [
+        -13.5,
+        9,
+        -3
+      ],
+      "size_m": [
+        3,
+        18,
+        8
+      ],
+      "material": "concrete",
+      "note": ""
+    },
+    {
+      "id": "stair-east",
+      "name": "東折返し階段コア",
+      "center_m": [
+        13.5,
+        9,
+        -3
+      ],
+      "size_m": [
+        3,
+        18,
+        8
+      ],
+      "material": "concrete",
+      "note": ""
+    }
+  ],
+  "motions": [
+    {
+      "id": "entry-door",
+      "type": "hinge",
+      "pivot_m": [
+        -0.9,
+        0,
+        -7.02
+      ],
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "range": [
+        0,
+        100
+      ],
+      "unit": "degree",
+      "note": "幅1.8m両開き、右扉は符号反転。"
+    },
+    {
+      "id": "unit-south-sash",
+      "type": "slide",
+      "pivot_m": [
+        -9,
+        1.1,
+        7
+      ],
+      "axis": [
+        1,
+        0,
+        0
+      ],
+      "range": [
+        0,
+        1.1
+      ],
+      "unit": "m",
+      "note": "2.4×2.1m掃出窓、各住戸ローカルへ複製。"
+    },
+    {
+      "id": "elevator",
+      "type": "slide",
+      "pivot_m": [
+        0,
+        0,
+        -5.8
+      ],
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "range": [
+        0,
+        15
+      ],
+      "unit": "m",
+      "note": "籠の上下。扉は別Xスライド±0.5m、扉閉鎖後のみ移動。"
+    }
+  ],
+  "layout": [
+    {
+      "id": "unit-1",
+      "rect_xz_m": [
+        -12,
+        -7,
+        -6,
+        7
+      ],
+      "use": "2–6階: 住戸6×14mグロス。北玄関、水回り、中央廊下、南LDK。"
+    },
+    {
+      "id": "unit-2",
+      "rect_xz_m": [
+        -6,
+        -7,
+        0,
+        7
+      ],
+      "use": "2–6階: 住戸6×14mグロス。北玄関、水回り、中央廊下、南LDK。"
+    },
+    {
+      "id": "unit-3",
+      "rect_xz_m": [
+        0,
+        -7,
+        6,
+        7
+      ],
+      "use": "2–6階: 住戸6×14mグロス。北玄関、水回り、中央廊下、南LDK。"
+    },
+    {
+      "id": "unit-4",
+      "rect_xz_m": [
+        6,
+        -7,
+        12,
+        7
+      ],
+      "use": "2–6階: 住戸6×14mグロス。北玄関、水回り、中央廊下、南LDK。"
+    },
+    {
+      "id": "lobby-ground",
+      "rect_xz_m": [
+        -3,
+        -7,
+        3,
+        -1
+      ],
+      "use": "1階中央共用玄関・EV前室。1階は両端2住戸、中央は共用部。"
+    },
+    {
+      "id": "lift",
+      "rect_xz_m": [
+        -1.2,
+        -7,
+        1.2,
+        -4.6
+      ],
+      "use": "EVシャフト2.4×2.4m、全階連続"
+    }
+  ],
+  "details": [
+    "22住戸: 上階4戸×5階+1階2戸。1階中央2ベイはロビー・管理・設備。6階・4ベイの反復が正。",
+    "外壁は小口タイル。手すり高さ1.1m、ガラス8mm、笠木幅60mm。防水床に排水勾配1/100。",
+    "階段は各階18段、蹴上0.166667m、踏面0.28m、2ラン各9段、踊場奥行1.2m、有効幅1.1m。",
+    "EVは北廊下側の共用設備として住戸から切り欠く。該当住戸の北側収納を縮小して整合させる。"
+  ],
+  "qa": [
+    "6階の床高さ0/3/6/9/12/15m、屋根18m。",
+    "全22住戸の浴室・便所・キッチン・建具を実装し、独立した06-roomを流用しない。",
+    "扉・窓全開時に手すり・壁・隣扉と干渉しない。"
+  ],
+  "implementation_gaps": [],
+  "unit_template": {
+    "gross_xz_m": [
+      6,
+      14
+    ],
+    "zones_local_xz_m": {
+      "entry": [
+        0,
+        0,
+        6,
+        2
+      ],
+      "bath_laundry": [
+        0,
+        2,
+        2.4,
+        5
+      ],
+      "bedroom": [
+        0,
+        5,
+        2.4,
+        8
+      ],
+      "hall": [
+        2.4,
+        2,
+        3.6,
+        8
+      ],
+      "kitchen_storage": [
+        3.6,
+        2,
+        6,
+        8
+      ],
+      "living": [
+        0,
+        8,
+        6,
+        14
+      ]
+    },
+    "coordinates": "住戸北西角起点、+u東/+v南。壁厚を各ゾーンから差し引く。",
+    "doors": "玄関幅0.9m、居室0.8m、水回り0.7m。中央廊下から各室へ接続。"
+  },
+  "image_generation": {
+    "tool": "built-in image_gen",
+    "prompt_file": "image-prompt.txt",
+    "reference_sheet": "images/reference-sheet.png",
+    "role": "concept_only_not_geometry_evidence"
+  }
+}

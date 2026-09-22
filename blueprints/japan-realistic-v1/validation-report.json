@@ -1,0 +1,143 @@
+{
+  "revision": 7,
+  "scope": "設計の静的検証。3Dモデル未生成。",
+  "previous_report": "revisions/r6/validation-report.json",
+  "checks": [
+    "人物14・衣装2、すべて成人",
+    "骨親参照・骨名一意・非ゼロ骨長",
+    "材質参照とポリゴン予算合計",
+    "春香の身体寸法維持・空手着黒帯",
+    "全37設計のJSON/SVG/画像/HTMLリンク",
+    "旧21モデル内の全ファイルSHA256不変"
+  ],
+  "images": [
+    {
+      "folder": "22-businessman",
+      "size": [
+        1024,
+        1536
+      ],
+      "sha256": "90f8d86d4f535f5ea8588d05050c95796877eea44fde90cdb230009775010da8"
+    },
+    {
+      "folder": "23-businesswoman",
+      "size": [
+        1024,
+        1536
+      ],
+      "sha256": "cb15eae95ef7e8bee43a0e6f6638c03f05a5164215a21a70547c9515b34658a0"
+    },
+    {
+      "folder": "24-convenience-clerk",
+      "size": [
+        1024,
+        1536
+      ],
+      "sha256": "b9067ba14765a6eeb65a8f1872d4c1556118cec22e2ed25b51d7db883f1e86a4"
+    },
+    {
+      "folder": "25-convenience-customer",
+      "size": [
+        1024,
+        1536
+      ],
+      "sha256": "9798b80c0b311481f2ffb0a6b22ea263617e7360bf997e3594ee75aa16f93106"
+    },
+    {
+      "folder": "26-cafe-clerk",
+      "size": [
+        1024,
+        1536
+      ],
+      "sha256": "bfdd04bfa75c2e58fea7a95707b3b452ebcfa8880128818d0f43a9c04f84e3ea"
+    },
+    {
+      "folder": "27-karate-master",
+      "size": [
+        1024,
+        1536
+      ],
+      "sha256": "9ab42c18d6f084e6ee77a4d8f280e41f70eb7ad845cc47efc2560e877a244781"
+    },
+    {
+      "folder": "28-karate-student",
+      "size": [
+        1024,
+        1536
+      ],
+      "sha256": "ae3cc1e3cda7da6fbe09bc32a91d77adda6aa89aa3f3d857af3933c4e2ac4c82"
+    },
+    {
+      "folder": "29-passerby-a",
+      "size": [
+        1024,
+        1536
+      ],
+      "sha256": "a4f04d2b267996868de025a03f5360669bbe32280e5fecc19467cc781971298d"
+    },
+    {
+      "folder": "30-passerby-b",
+      "size": [
+        1024,
+        1536
+      ],
+      "sha256": "57ff49ca99fdd09ebe3ecc7f9d4e51077ad08b1cfb2a1438ff2d56380351e73e"
+    },
+    {
+      "folder": "31-passerby-c",
+      "size": [
+        1024,
+        1536
+      ],
+      "sha256": "d4e79c92b488021a7f2b1ec72706e44e09c71b278aa05a50c2024c8500be32cd"
+    },
+    {
+      "folder": "32-passerby-d",
+      "size": [
+        1024,
+        1536
+      ],
+      "sha256": "c12a84bd31f841d55a802e62876bded1aabe9343a7b13c9a6bbf41a3c036429e"
+    },
+    {
+      "folder": "33-passerby-e",
+      "size": [
+        1024,
+        1536
+      ],
+      "sha256": "4a45925c34da42a8d9f058e52e3107e1147cfe537c6d441b084d42140e910ea4"
+    },
+    {
+      "folder": "34-passerby-f",
+      "size": [
+        1024,
+        1536
+      ],
+      "sha256": "9dd23f7a2e949e1a9dd5feb14ad2e0ba53af397174897f67b1b848b6e2ff55c0"
+    },
+    {
+      "folder": "35-passerby-g",
+      "size": [
+        1024,
+        1536
+      ],
+      "sha256": "99f9604502da08cf757788f50ec9e7b10c1f8789b8d29a5a790549647931c89d"
+    },
+    {
+      "folder": "36-haruka-karate-uniform",
+      "size": [
+        1536,
+        1024
+      ],
+      "sha256": "880fcb6aae4e89ed41ee02f5fb9b82983d3866c2a693779579494197efc0497d"
+    },
+    {
+      "folder": "37-haruka-riding-suit",
+      "size": [
+        1223,
+        1286
+      ],
+      "sha256": "cc28c39025a6161291e50be6990336a599bc3110562f7715801d13e68768ef94"
+    }
+  ]
+}

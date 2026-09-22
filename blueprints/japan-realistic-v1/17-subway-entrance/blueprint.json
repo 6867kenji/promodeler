@@ -1,0 +1,1173 @@
+{
+  "schema": "promodeler-blueprint/1.0",
+  "folder": "17-subway-entrance",
+  "id": "subway-entrance",
+  "name": "汐見駅S01・地上入口A1",
+  "category": "subway-entrance",
+  "kind": "environment",
+  "status": "design_review",
+  "revision": 2,
+  "station_id": "shiomi-s01",
+  "summary": "地上の階段・エスカレーター入口と隣接エレベーター。地下1階の共通接続口までを含む。",
+  "metadata": {
+    "tags": [
+      "日本",
+      "現代",
+      "写実",
+      "地下鉄",
+      "subway-entrance"
+    ],
+    "usage": "PC向けリアルタイム探索・映像用の架空地下鉄駅。数値は視覚アセットの設計値。",
+    "license": "独自制作物として管理。現段階は私有・配布許諾未設定。販売用ライセンスは公開時に別途設定。",
+    "approval": "モデル未生成・販売未承認",
+    "description": "地上の階段・エスカレーター入口と隣接エレベーター。地下1階の共通接続口までを含む。"
+  },
+  "dimensions": {
+    "local_bounds_xyz_m": [
+      [
+        -4,
+        -6.3,
+        -14
+      ],
+      [
+        8,
+        3.4,
+        14
+      ]
+    ],
+    "envelope_xyz_m": [
+      12,
+      9.7,
+      28
+    ],
+    "assembly_translation_m": [
+      0,
+      0,
+      -62
+    ],
+    "assembly_rotation_rad": [
+      0,
+      0,
+      0
+    ],
+    "axis": "右手系: +X東、+Y上、+Z南。正面は駅北側-Z。",
+    "origin": "アセットごとのローカル原点をassembly_translation_mで駅共通座標へ平行移動する。",
+    "priority": "数値JSON・接続座標 > 寸法図 > 仕様文 > 参考画像",
+    "ground_y_m": 0,
+    "b1_y_m": -6,
+    "main_entrance_width_m": 7,
+    "canopy_height_m": 3.4,
+    "lower_corridor_clear_height_m": 3
+  },
+  "materials": [
+    {
+      "id": "wall-tile",
+      "base_color_srgb": "#E4E6E2",
+      "roughness": [
+        0.4,
+        0.6
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        0.15,
+        0.3
+      ],
+      "detail": "壁150×300mm、目地3mm/深1.5mm。壁下部に少量の擦れ。割れを一様に散布しない。"
+    },
+    {
+      "id": "floor-tile",
+      "base_color_srgb": "#9C9F9C",
+      "roughness": [
+        0.6,
+        0.8
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        0.3,
+        0.3
+      ],
+      "detail": "床300角、目地4mm、凹凸0.3mm。動線沿いに粗さ差±0.05。"
+    },
+    {
+      "id": "tactile",
+      "base_color_srgb": "#D7B741",
+      "roughness": [
+        0.6,
+        0.8
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        0.005,
+        0.06
+      ],
+      "detail": "線状/点状ブロックを別部品。300角、凸高さ5mm。配置は本アセットの設計値。"
+    },
+    {
+      "id": "stainless",
+      "base_color_srgb": "#B2B9BC",
+      "roughness": [
+        0.22,
+        0.4
+      ],
+      "metallic": 1,
+      "feature_scale_m": [
+        5e-05,
+        0.0002
+      ],
+      "detail": "手すり・建具、長手ヘアライン。角R1mm、指触部に薄い粗さ差。"
+    },
+    {
+      "id": "paint",
+      "base_color_srgb": "#E1E3E0",
+      "roughness": [
+        0.45,
+        0.65
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        0.0001,
+        0.0004
+      ],
+      "detail": "天井・設備の塗装鋼板、継目2mm、露出金属と塗膜を分離。"
+    },
+    {
+      "id": "teal",
+      "base_color_srgb": "#287F87",
+      "roughness": [
+        0.35,
+        0.5
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        0.0001,
+        0.0003
+      ],
+      "detail": "架空駅共通の案内帯。実在鉄道のロゴ・路線色を転用しない。"
+    },
+    {
+      "id": "glass",
+      "base_color_srgb": "#DBE4E5",
+      "roughness": [
+        0.03,
+        0.12
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        1e-05,
+        2e-05
+      ],
+      "detail": "厚8mmの設備ガラス、欄干12mm。透明/反射は別チャンネル、透過実装が必要。"
+    },
+    {
+      "id": "rubber",
+      "base_color_srgb": "#363B3D",
+      "roughness": [
+        0.65,
+        0.85
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        0.0002,
+        0.001
+      ],
+      "detail": "エスカレーターの手すり、扉パッキン。手すりの滑り方向に微細筋。"
+    },
+    {
+      "id": "concrete",
+      "base_color_srgb": "#A6AAA8",
+      "roughness": [
+        0.7,
+        0.9
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        0.0002,
+        0.003
+      ],
+      "detail": "RC構造・床下・トンネル壁。目地と施工区画に沿う汚れ。"
+    },
+    {
+      "id": "rail-steel",
+      "base_color_srgb": "#656F73",
+      "roughness": [
+        0.22,
+        0.65
+      ],
+      "metallic": 1,
+      "feature_scale_m": [
+        0.0001,
+        0.002
+      ],
+      "detail": "レール頭は研磨、側面は低彩度の酸化色。締結金物を独立パーツに。"
+    },
+    {
+      "id": "light",
+      "base_color_srgb": "#EDF1EC",
+      "roughness": [
+        0.3,
+        0.4
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        1e-05,
+        2e-05
+      ],
+      "detail": "拡散カバー。発光と照明用ライトを別設定。"
+    },
+    {
+      "id": "dark-display",
+      "base_color_srgb": "#18272D",
+      "roughness": [
+        0.1,
+        0.25
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        1e-05,
+        2e-05
+      ],
+      "detail": "券売機/改札/案内の表示面。汎用UIで実在運賃・時刻表は使わない。"
+    }
+  ],
+  "layout": [
+    {
+      "id": "main",
+      "rect_xz_m": [
+        -3.5,
+        -12,
+        3.5,
+        4.08
+      ],
+      "use": "主動線:階段・上り下りエスカレーター"
+    },
+    {
+      "id": "lift",
+      "rect_xz_m": [
+        4.7,
+        -10.3,
+        7.3,
+        -7.7
+      ],
+      "use": "地上-B1エレベーター"
+    },
+    {
+      "id": "accessible",
+      "rect_xz_m": [
+        4.5,
+        -7.7,
+        7.5,
+        14
+      ],
+      "use": "B1バリアフリー通路"
+    },
+    {
+      "id": "bottom-hall",
+      "rect_xz_m": [
+        -3.5,
+        4.08,
+        7.5,
+        14
+      ],
+      "use": "B1下部ホール・改札階への接続"
+    },
+    {
+      "id": "approach",
+      "rect_xz_m": [
+        -4,
+        -14,
+        8,
+        -12
+      ],
+      "use": "地上前面アプローチ。エレベーターへ東側で回り込む。"
+    }
+  ],
+  "parts": [
+    {
+      "id": "canopy-frame",
+      "name": "地上庇の包絡",
+      "center_m": [
+        0,
+        3.25,
+        -8.48
+      ],
+      "size_m": [
+        7,
+        0.3,
+        7.04
+      ],
+      "material": "stainless",
+      "note": "柱・梁・ガラスに分解。"
+    },
+    {
+      "id": "lift-shaft",
+      "name": "昇降路",
+      "center_m": [
+        6,
+        -1.4,
+        -9
+      ],
+      "size_m": [
+        2.6,
+        9.6,
+        2.6
+      ],
+      "material": "glass",
+      "note": "下端-6.2、上端3.4。"
+    },
+    {
+      "id": "lower-floor",
+      "name": "B1床",
+      "center_m": [
+        2,
+        -6.15,
+        9.04
+      ],
+      "size_m": [
+        11,
+        0.3,
+        9.92
+      ],
+      "material": "floor-tile",
+      "note": ""
+    },
+    {
+      "id": "station-sign",
+      "name": "入口サイン",
+      "center_m": [
+        0,
+        2.75,
+        -12.05
+      ],
+      "size_m": [
+        5.8,
+        0.45,
+        0.12
+      ],
+      "material": "teal",
+      "note": "表示は汐見駅/S01/A1。"
+    }
+  ],
+  "motions": [
+    {
+      "id": "lift-cabin",
+      "type": "slide",
+      "pivot_m": [
+        6,
+        0,
+        -9
+      ],
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "range": [
+        -6,
+        0
+      ],
+      "unit": "m",
+      "note": "地上/B1。停止・扉閉確認後に移動。"
+    },
+    {
+      "id": "lift-door-left",
+      "type": "slide",
+      "pivot_m": [
+        5.775,
+        0,
+        -7.7
+      ],
+      "axis": [
+        1,
+        0,
+        0
+      ],
+      "range": [
+        -0.45,
+        0
+      ],
+      "unit": "m",
+      "note": "右扉は逆方向。"
+    },
+    {
+      "id": "closure-shutter",
+      "type": "slide",
+      "pivot_m": [
+        0,
+        0,
+        -12
+      ],
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "range": [
+        0,
+        2.6
+      ],
+      "unit": "m",
+      "note": "入口の閉鎖シャッター、営業時は全開。"
+    }
+  ],
+  "ports": [
+    {
+      "id": "to-concourse",
+      "floor_center_local_m": [
+        2,
+        -6,
+        14
+      ],
+      "outward_normal_xyz": [
+        0,
+        0,
+        1
+      ],
+      "clear_width_m": 11,
+      "clear_height_m": 3,
+      "connects_to": "subway-concourse:from-entrance"
+    }
+  ],
+  "details": [
+    "駅の北側に道路面を想定。地上入口正面は-Z側。エレベーター地上出入口は+Z側に向き、東側舗装で接近する。",
+    "階段とエスカレーターの床高に合わせて屋根下面を段階的に下げる。入口の地上スラブを階段頭上に通して頭を塞がない。",
+    "主入口の床開口はX=-3.5〜3.5、Z=-12〜4.08。B1の入口ホールでは階段と昇降機通路が合流。",
+    "手すり径40mm、金属アンカー120mm角、排水スリット幅15mm。雨掛かり部と地下の汚れを分ける。",
+    "設備脇の黄色い点字ブロックは移動路と停止位置を区別し、階段へ向かう線と昇降機へ向かう線を分岐。"
+  ],
+  "qa": [
+    "36段×1/6m=6m、踊場を含む上下の床高が0/-6mに一致。",
+    "地上東側アプローチ→EV→B1東通路→下部ホールに連続した床がある。",
+    "to-concourseの位置・幅・高さが改札通路のfrom-entranceと一致。",
+    "参考画像ではなく生成済みモデルから正面・背面・斜め・細部・必要な動きの証拠を保存。",
+    "地上参考画像で、歩道→最初の下り段→地下踊場の高低差が明確。上り階段に見える構図は採用しない。"
+  ],
+  "ownership": {
+    "owns": [
+      "地上庇・階段・地上B1エスカレーター2基・地上B1エレベーター・下部ホール"
+    ],
+    "boundary": "ローカルZ14（駅共通Z=-48）で壁・床を止める。接続面を塞ぐ壁は作らない。"
+  },
+  "implementation_gaps": [
+    "エスカレーターの無限循環、ドア状態制御、ガラス透過、照明・表示のランタイム実装は別途必要。"
+  ],
+  "target": {
+    "engine": "Unity / HDRP（実装時にバージョン固定）",
+    "exports": [
+      "制作ソース",
+      "GLB（静的形状・PBR・ベイク済み動作）",
+      "Unityの制御設定",
+      "正面/側面/背面/細部PNGと動作MP4"
+    ],
+    "triangles_lod0_max": 600000,
+    "texture_resolution_max": 4096,
+    "texture_policy": "共有材2K、案内表示/近接設備4K。BaseColor=sRGB、Normal/Roughness/Metallic=linear。",
+    "texel_density_px_per_m": 512,
+    "lod_ratios": [
+      1,
+      0.5,
+      0.2,
+      0.08
+    ],
+    "streaming": "入口・B1・B2を別チャンク。反復設備は共有形状、可動部を別ノード。",
+    "texture_resident_budget_mib": 256,
+    "texture_detail_policy": "長い床・壁は実寸タイリング材とデカールを併用。駅全長を1枚の4Kテクスチャに詰めない。接写部品だけ固有UV。"
+  },
+  "image_generation": {
+    "tool": "built-in image_gen",
+    "reference_sheet": "images/reference-sheet-v2.png",
+    "prompt_file": "image-prompt-v2.txt",
+    "role": "concept_only_not_geometry_evidence"
+  },
+  "stairs": [
+    {
+      "id": "entry-stair",
+      "clear_width_m": 2.0,
+      "riser_count": 36,
+      "rise_m": 0.16666666666666666,
+      "tread_m": 0.28,
+      "flights": 2,
+      "flight_treads": 18,
+      "upper_landing_depth_m": 2,
+      "mid_landing_depth_m": 2,
+      "lower_landing_depth_m": 2,
+      "top_floor_y_m": 0,
+      "bottom_floor_y_m": -6,
+      "start_z_m": -12,
+      "end_z_m": 4.080000000000002,
+      "direction_z": 1,
+      "x_range_m": [
+        -3.1,
+        -1.1
+      ],
+      "section_profile_zy": [
+        [
+          -12,
+          0
+        ],
+        [
+          -10,
+          0
+        ],
+        [
+          -4.959999999999999,
+          -3.0
+        ],
+        [
+          -2.959999999999999,
+          -3.0
+        ],
+        [
+          2.080000000000002,
+          -6
+        ],
+        [
+          4.080000000000002,
+          -6
+        ]
+      ],
+      "treads": [
+        {
+          "id": "entry-stair-tread-00",
+          "x_range_m": [
+            -3.1,
+            -1.1
+          ],
+          "z_range_m": [
+            -10.0,
+            -9.72
+          ],
+          "top_y_m": -0.16666666666666666
+        },
+        {
+          "id": "entry-stair-tread-01",
+          "x_range_m": [
+            -3.1,
+            -1.1
+          ],
+          "z_range_m": [
+            -9.72,
+            -9.440000000000001
+          ],
+          "top_y_m": -0.3333333333333333
+        },
+        {
+          "id": "entry-stair-tread-02",
+          "x_range_m": [
+            -3.1,
+            -1.1
+          ],
+          "z_range_m": [
+            -9.44,
+            -9.16
+          ],
+          "top_y_m": -0.5
+        },
+        {
+          "id": "entry-stair-tread-03",
+          "x_range_m": [
+            -3.1,
+            -1.1
+          ],
+          "z_range_m": [
+            -9.16,
+            -8.88
+          ],
+          "top_y_m": -0.6666666666666666
+        },
+        {
+          "id": "entry-stair-tread-04",
+          "x_range_m": [
+            -3.1,
+            -1.1
+          ],
+          "z_range_m": [
+            -8.879999999999999,
+            -8.6
+          ],
+          "top_y_m": -0.8333333333333333
+        },
+        {
+          "id": "entry-stair-tread-05",
+          "x_range_m": [
+            -3.1,
+            -1.1
+          ],
+          "z_range_m": [
+            -8.6,
+            -8.32
+          ],
+          "top_y_m": -1.0
+        },
+        {
+          "id": "entry-stair-tread-06",
+          "x_range_m": [
+            -3.1,
+            -1.1
+          ],
+          "z_range_m": [
+            -8.32,
+            -8.040000000000001
+          ],
+          "top_y_m": -1.1666666666666665
+        },
+        {
+          "id": "entry-stair-tread-07",
+          "x_range_m": [
+            -3.1,
+            -1.1
+          ],
+          "z_range_m": [
+            -8.04,
+            -7.759999999999999
+          ],
+          "top_y_m": -1.3333333333333333
+        },
+        {
+          "id": "entry-stair-tread-08",
+          "x_range_m": [
+            -3.1,
+            -1.1
+          ],
+          "z_range_m": [
+            -7.76,
+            -7.4799999999999995
+          ],
+          "top_y_m": -1.5
+        },
+        {
+          "id": "entry-stair-tread-09",
+          "x_range_m": [
+            -3.1,
+            -1.1
+          ],
+          "z_range_m": [
+            -7.4799999999999995,
+            -7.199999999999999
+          ],
+          "top_y_m": -1.6666666666666665
+        },
+        {
+          "id": "entry-stair-tread-10",
+          "x_range_m": [
+            -3.1,
+            -1.1
+          ],
+          "z_range_m": [
+            -7.199999999999999,
+            -6.919999999999999
+          ],
+          "top_y_m": -1.8333333333333333
+        },
+        {
+          "id": "entry-stair-tread-11",
+          "x_range_m": [
+            -3.1,
+            -1.1
+          ],
+          "z_range_m": [
+            -6.92,
+            -6.64
+          ],
+          "top_y_m": -2.0
+        },
+        {
+          "id": "entry-stair-tread-12",
+          "x_range_m": [
+            -3.1,
+            -1.1
+          ],
+          "z_range_m": [
+            -6.64,
+            -6.359999999999999
+          ],
+          "top_y_m": -2.1666666666666665
+        },
+        {
+          "id": "entry-stair-tread-13",
+          "x_range_m": [
+            -3.1,
+            -1.1
+          ],
+          "z_range_m": [
+            -6.359999999999999,
+            -6.079999999999999
+          ],
+          "top_y_m": -2.333333333333333
+        },
+        {
+          "id": "entry-stair-tread-14",
+          "x_range_m": [
+            -3.1,
+            -1.1
+          ],
+          "z_range_m": [
+            -6.08,
+            -5.8
+          ],
+          "top_y_m": -2.5
+        },
+        {
+          "id": "entry-stair-tread-15",
+          "x_range_m": [
+            -3.1,
+            -1.1
+          ],
+          "z_range_m": [
+            -5.8,
+            -5.52
+          ],
+          "top_y_m": -2.6666666666666665
+        },
+        {
+          "id": "entry-stair-tread-16",
+          "x_range_m": [
+            -3.1,
+            -1.1
+          ],
+          "z_range_m": [
+            -5.52,
+            -5.239999999999999
+          ],
+          "top_y_m": -2.833333333333333
+        },
+        {
+          "id": "entry-stair-tread-17",
+          "x_range_m": [
+            -3.1,
+            -1.1
+          ],
+          "z_range_m": [
+            -5.239999999999999,
+            -4.959999999999999
+          ],
+          "top_y_m": -3.0
+        },
+        {
+          "id": "entry-stair-tread-18",
+          "x_range_m": [
+            -3.1,
+            -1.1
+          ],
+          "z_range_m": [
+            -2.959999999999999,
+            -2.679999999999999
+          ],
+          "top_y_m": -3.1666666666666665
+        },
+        {
+          "id": "entry-stair-tread-19",
+          "x_range_m": [
+            -3.1,
+            -1.1
+          ],
+          "z_range_m": [
+            -2.679999999999999,
+            -2.3999999999999986
+          ],
+          "top_y_m": -3.333333333333333
+        },
+        {
+          "id": "entry-stair-tread-20",
+          "x_range_m": [
+            -3.1,
+            -1.1
+          ],
+          "z_range_m": [
+            -2.399999999999999,
+            -2.119999999999999
+          ],
+          "top_y_m": -3.5
+        },
+        {
+          "id": "entry-stair-tread-21",
+          "x_range_m": [
+            -3.1,
+            -1.1
+          ],
+          "z_range_m": [
+            -2.119999999999999,
+            -1.8399999999999992
+          ],
+          "top_y_m": -3.6666666666666665
+        },
+        {
+          "id": "entry-stair-tread-22",
+          "x_range_m": [
+            -3.1,
+            -1.1
+          ],
+          "z_range_m": [
+            -1.839999999999999,
+            -1.559999999999999
+          ],
+          "top_y_m": -3.833333333333333
+        },
+        {
+          "id": "entry-stair-tread-23",
+          "x_range_m": [
+            -3.1,
+            -1.1
+          ],
+          "z_range_m": [
+            -1.559999999999999,
+            -1.279999999999999
+          ],
+          "top_y_m": -4.0
+        },
+        {
+          "id": "entry-stair-tread-24",
+          "x_range_m": [
+            -3.1,
+            -1.1
+          ],
+          "z_range_m": [
+            -1.279999999999999,
+            -0.9999999999999989
+          ],
+          "top_y_m": -4.166666666666666
+        },
+        {
+          "id": "entry-stair-tread-25",
+          "x_range_m": [
+            -3.1,
+            -1.1
+          ],
+          "z_range_m": [
+            -0.9999999999999989,
+            -0.7199999999999989
+          ],
+          "top_y_m": -4.333333333333333
+        },
+        {
+          "id": "entry-stair-tread-26",
+          "x_range_m": [
+            -3.1,
+            -1.1
+          ],
+          "z_range_m": [
+            -0.7199999999999989,
+            -0.43999999999999884
+          ],
+          "top_y_m": -4.5
+        },
+        {
+          "id": "entry-stair-tread-27",
+          "x_range_m": [
+            -3.1,
+            -1.1
+          ],
+          "z_range_m": [
+            -0.4399999999999986,
+            -0.1599999999999986
+          ],
+          "top_y_m": -4.666666666666666
+        },
+        {
+          "id": "entry-stair-tread-28",
+          "x_range_m": [
+            -3.1,
+            -1.1
+          ],
+          "z_range_m": [
+            -0.1599999999999988,
+            0.12000000000000122
+          ],
+          "top_y_m": -4.833333333333333
+        },
+        {
+          "id": "entry-stair-tread-29",
+          "x_range_m": [
+            -3.1,
+            -1.1
+          ],
+          "z_range_m": [
+            0.120000000000001,
+            0.400000000000001
+          ],
+          "top_y_m": -5.0
+        },
+        {
+          "id": "entry-stair-tread-30",
+          "x_range_m": [
+            -3.1,
+            -1.1
+          ],
+          "z_range_m": [
+            0.40000000000000124,
+            0.6800000000000013
+          ],
+          "top_y_m": -5.166666666666666
+        },
+        {
+          "id": "entry-stair-tread-31",
+          "x_range_m": [
+            -3.1,
+            -1.1
+          ],
+          "z_range_m": [
+            0.6800000000000015,
+            0.9600000000000015
+          ],
+          "top_y_m": -5.333333333333333
+        },
+        {
+          "id": "entry-stair-tread-32",
+          "x_range_m": [
+            -3.1,
+            -1.1
+          ],
+          "z_range_m": [
+            0.9600000000000013,
+            1.2400000000000013
+          ],
+          "top_y_m": -5.5
+        },
+        {
+          "id": "entry-stair-tread-33",
+          "x_range_m": [
+            -3.1,
+            -1.1
+          ],
+          "z_range_m": [
+            1.240000000000001,
+            1.5200000000000011
+          ],
+          "top_y_m": -5.666666666666666
+        },
+        {
+          "id": "entry-stair-tread-34",
+          "x_range_m": [
+            -3.1,
+            -1.1
+          ],
+          "z_range_m": [
+            1.5200000000000014,
+            1.8000000000000014
+          ],
+          "top_y_m": -5.833333333333333
+        },
+        {
+          "id": "entry-stair-tread-35",
+          "x_range_m": [
+            -3.1,
+            -1.1
+          ],
+          "z_range_m": [
+            1.8000000000000016,
+            2.080000000000002
+          ],
+          "top_y_m": -6.0
+        }
+      ],
+      "handrail": {
+        "height_above_pitch_m": 0.85,
+        "tube_diameter_m": 0.04,
+        "extension_m": 0.3
+      },
+      "note": "段と踊場の高さはtreadsを正とする。断面図の斜線は段鼻を結ぶ基準線。"
+    }
+  ],
+  "escalators": [
+    {
+      "id": "entry-es-up",
+      "center_x_m": -0.05,
+      "overall_width_m": 1.5,
+      "step_clear_width_m": 1.0,
+      "vertical_drop_m": 6,
+      "slope_deg": 30,
+      "horizontal_slope_run_m": 10.392304845413264,
+      "landing_run_each_m": 2,
+      "top_floor_y_m": 0,
+      "bottom_floor_y_m": -6,
+      "direction_z": 1,
+      "travel": "up",
+      "speed_m_s": 0.5,
+      "handrail_speed_ratio": 1,
+      "step_pitch_m": 0.4,
+      "section_profile_zy": [
+        [
+          -12,
+          0
+        ],
+        [
+          -10,
+          0
+        ],
+        [
+          0.39230484541326405,
+          -6
+        ],
+        [
+          2.392304845413264,
+          -6
+        ]
+      ],
+      "animation": "上・下の水平区間→傾斜区間→床下の戻り区間で閉ループ。運転面だけを直線移動して端で消す方式は不可。",
+      "details": "櫛板の歯ピッチ5mm、踏面溝3mm、端に黄色ライン20mm。ガラス欄干上端は踏面上0.9m。"
+    },
+    {
+      "id": "entry-es-down",
+      "center_x_m": 1.65,
+      "overall_width_m": 1.5,
+      "step_clear_width_m": 1.0,
+      "vertical_drop_m": 6,
+      "slope_deg": 30,
+      "horizontal_slope_run_m": 10.392304845413264,
+      "landing_run_each_m": 2,
+      "top_floor_y_m": 0,
+      "bottom_floor_y_m": -6,
+      "direction_z": 1,
+      "travel": "down",
+      "speed_m_s": 0.5,
+      "handrail_speed_ratio": 1,
+      "step_pitch_m": 0.4,
+      "section_profile_zy": [
+        [
+          -12,
+          0
+        ],
+        [
+          -10,
+          0
+        ],
+        [
+          0.39230484541326405,
+          -6
+        ],
+        [
+          2.392304845413264,
+          -6
+        ]
+      ],
+      "animation": "上・下の水平区間→傾斜区間→床下の戻り区間で閉ループ。運転面だけを直線移動して端で消す方式は不可。",
+      "details": "櫛板の歯ピッチ5mm、踏面溝3mm、端に黄色ライン20mm。ガラス欄干上端は踏面上0.9m。"
+    }
+  ],
+  "roof_soffit_profile_zy": [
+    [
+      -12,
+      3.1
+    ],
+    [
+      -4.96,
+      3.1
+    ],
+    [
+      -2.96,
+      0
+    ],
+    [
+      2.08,
+      -3
+    ],
+    [
+      14,
+      -3
+    ]
+  ],
+  "elevator": {
+    "id": "entry-lift",
+    "shaft_center_xz_m": [
+      6,
+      -9
+    ],
+    "shaft_size_xz_m": [
+      2.6,
+      2.6
+    ],
+    "cabin_clear_xyz_m": [
+      1.6,
+      2.2,
+      1.5
+    ],
+    "stops_y_m": [
+      0,
+      -6
+    ],
+    "door_normal_xyz": [
+      0,
+      0,
+      1
+    ],
+    "door_clear_wh_m": [
+      0.9,
+      2.1
+    ],
+    "door_floor_center_xz_m": [
+      6,
+      -7.7
+    ],
+    "travel_speed_m_s": 1.0,
+    "door_open_time_s": 1.8
+  },
+  "views": {
+    "front": {
+      "camera_direction_xyz": [
+        0,
+        0,
+        1
+      ],
+      "screen_right_xyz": [
+        -1,
+        0,
+        0
+      ],
+      "note": "北から南へ。画像右が西。"
+    },
+    "east_section": {
+      "camera_direction_xyz": [
+        -1,
+        0,
+        0
+      ],
+      "screen_right_xyz": [
+        0,
+        0,
+        -1
+      ],
+      "note": "東から西へ。画像右が北。側断面に上面図を混ぜない。"
+    },
+    "rear": {
+      "camera_direction_xyz": [
+        0,
+        0,
+        -1
+      ],
+      "screen_right_xyz": [
+        1,
+        0,
+        0
+      ],
+      "note": "南から北へ。画像右が東。"
+    },
+    "street_entry_reference": {
+      "camera": "北側の地上踊場から南向きに見下ろす。正投影立面ではなく、下りを明確に示す参考パース。",
+      "pitch_down_deg": 40,
+      "ground_y_m": 0,
+      "mid_landing_y_m": -3,
+      "destination_y_m": -6,
+      "requirement": "最初の段は歩道面から下へ。地下の踊場が見えること。入口奥へ登る段や地上より高い踊場を描かない。"
+    }
+  },
+  "clips": [
+    {
+      "id": "walkthrough",
+      "duration_s": 20,
+      "description": "正面入口→主動線→次の接続口を連続移動して床切れ/衝突を確認。"
+    },
+    {
+      "id": "equipment-cycle",
+      "duration_s": 12,
+      "description": "各可動設備を個別に停止→動作→停止させる。単体試験と接続した駅全体で確認。"
+    },
+    {
+      "id": "emergency-lighting",
+      "duration_s": 6,
+      "description": "通常照明→非常照明、案内と床の視認性を同じカメラで記録。"
+    }
+  ],
+  "revision_notes": [
+    "地上から上りに見えていた参考画像を差替え。全体/正面は上から入口を見下ろす構図、近接は地上から下りを見る視点。",
+    "階段形状の数値は元から0m→-6mの下りであり、接続座標・寸法・断面図は維持。"
+  ]
+}

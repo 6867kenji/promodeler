@@ -1,0 +1,340 @@
+{
+  "schema": "promodeler-blueprint/1.0",
+  "folder": "04-office",
+  "id": "office",
+  "name": "汐見スクエア・8階オフィス",
+  "category": "office-building",
+  "kind": "architecture",
+  "status": "design_review",
+  "summary": "現代日本の中規模オフィス。全8階、1階ロビー・上階貸室・水回り・階段・EVを含む。",
+  "dimensions": {
+    "envelope_xyz_m": [
+      24,
+      30.6,
+      18
+    ],
+    "origin": "地面・床面の平面中心。女性は裸足の両足接地中央。",
+    "axis": "右手系: +X東/画面右、+Y上、+Z南/正面。北=-Z。人物の解剖学的右は-X。",
+    "priority": "数値JSON > 寸法SVG > 仕様書 > 参考画像",
+    "floor_levels_m": [
+      0,
+      4.2,
+      7.8,
+      11.4,
+      15,
+      18.6,
+      22.2,
+      25.8
+    ],
+    "roof_m": 29.4,
+    "parapet_m": 1.2,
+    "slab_m": 0.25,
+    "clear_ceiling_ground_m": 3.6,
+    "clear_ceiling_upper_m": 3,
+    "outer_wall_m": 0.2
+  },
+  "metadata": {
+    "tags": [
+      "日本",
+      "現代",
+      "写実",
+      "office-building"
+    ],
+    "usage": "PC向けリアルタイム探索・映像用のモデル設計",
+    "license": "独自制作物として管理。現段階は私有・配布許諾未設定。販売用ライセンスは公開時に別途設定。",
+    "approval": "モデル未生成・販売未承認"
+  },
+  "target": {
+    "engine": "Unity / HDRP を主想定。バージョンはモデル実装時に固定。",
+    "exports": [
+      "編集可能な制作ソース",
+      "GLB（形状・PBR・ベイクした骨アニメ）",
+      "Unity用物理設定",
+      "検証PNGとMP4"
+    ],
+    "triangles_lod0_max": 900000,
+    "texture_resolution_max": 4096,
+    "texture_policy": "共有材2K、主役・顔4K。BaseColor=sRGB、Normal/Roughness/Metallic=linear。AOをBaseColorへ焼き込まない。",
+    "texel_density_px_per_m": 512,
+    "lod_ratios": [
+      1,
+      0.5,
+      0.2,
+      0.08
+    ]
+  },
+  "materials": [
+    {
+      "id": "glass",
+      "base_color_srgb": "#D7E2E0",
+      "roughness": [
+        0.03,
+        0.12
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        5e-05,
+        0.0001
+      ],
+      "detail": "建築ガラス厚6–12mm。透明・反射を別設定、IOR目標1.5。透過は現行APIとの差分実装対象。汚れ1%以下。"
+    },
+    {
+      "id": "metal",
+      "base_color_srgb": "#45494A",
+      "roughness": [
+        0.25,
+        0.4
+      ],
+      "metallic": 1,
+      "feature_scale_m": [
+        5e-05,
+        0.0002
+      ],
+      "detail": "アルミ・ステンレス。ヘアラインを部材長手方向へ。切断端ベベル0.5–1mm、汚れは継ぎ目に限定。"
+    },
+    {
+      "id": "concrete",
+      "base_color_srgb": "#B6B5B0",
+      "roughness": [
+        0.65,
+        0.85
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        0.0002,
+        0.003
+      ],
+      "detail": "型枠目地900×1800mm、Pコン径22mm・深さ3mm。雨筋は上端と排水近傍だけ。大域変形は最大1mm。"
+    },
+    {
+      "id": "tile",
+      "base_color_srgb": "#D7D3C8",
+      "roughness": [
+        0.35,
+        0.55
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        0.045,
+        0.095
+      ],
+      "detail": "外壁45×95mm、目地5mm・深さ2mm。色差は明度±3%。床用は300角・目地3mm。"
+    },
+    {
+      "id": "paint",
+      "base_color_srgb": "#E5E4DA",
+      "roughness": [
+        0.45,
+        0.65
+      ],
+      "metallic": 0,
+      "feature_scale_m": [
+        0.0001,
+        0.0005
+      ],
+      "detail": "塗装鋼板は非金属の塗膜として扱う。下地金属露出は角の面積0.3%以下。"
+    }
+  ],
+  "parts": [
+    {
+      "id": "envelope",
+      "name": "全体包絡",
+      "center_m": [
+        0,
+        15.3,
+        0
+      ],
+      "size_m": [
+        24,
+        30.6,
+        18
+      ],
+      "material": "glass",
+      "note": "スラブ・柱・マリオンを別生成。"
+    },
+    {
+      "id": "facade-module",
+      "name": "標準マリオン",
+      "center_m": [
+        0,
+        1.8,
+        9
+      ],
+      "size_m": [
+        0.06,
+        3.6,
+        0.15
+      ],
+      "material": "metal",
+      "note": "幅1.5mピッチ。正面16列、側面12列。"
+    },
+    {
+      "id": "roof-screen",
+      "name": "屋上設備目隠し",
+      "center_m": [
+        0,
+        30,
+        0
+      ],
+      "size_m": [
+        8,
+        1.2,
+        6
+      ],
+      "material": "metal",
+      "note": "屋上高さ上限30.6m。"
+    }
+  ],
+  "motions": [
+    {
+      "id": "lobby-entry",
+      "type": "slide",
+      "pivot_m": [
+        -0.6,
+        0,
+        9
+      ],
+      "axis": [
+        1,
+        0,
+        0
+      ],
+      "range": [
+        -1.2,
+        0
+      ],
+      "unit": "m",
+      "note": "右扉は逆方向、クリア幅2.4m。"
+    },
+    {
+      "id": "stair-door",
+      "type": "hinge",
+      "pivot_m": [
+        -8,
+        0,
+        -3
+      ],
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "range": [
+        0,
+        100
+      ],
+      "unit": "degree",
+      "note": "幅0.9×高2.1m。踊場の有効幅を侵さない。"
+    },
+    {
+      "id": "lift-cabin",
+      "type": "slide",
+      "pivot_m": [
+        -1.25,
+        0,
+        -7.3
+      ],
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "range": [
+        0,
+        25.8
+      ],
+      "unit": "m",
+      "note": "8停止点。ドア閉鎖→移動→停止→開放の順。"
+    }
+  ],
+  "layout": [
+    {
+      "id": "office",
+      "rect_xz_m": [
+        -11.8,
+        -2.8,
+        11.8,
+        8.8
+      ],
+      "use": "貸室・1階ロビー。可動家具なし。"
+    },
+    {
+      "id": "west-stair",
+      "rect_xz_m": [
+        -11.8,
+        -8.8,
+        -8,
+        -3
+      ],
+      "use": "避難階段"
+    },
+    {
+      "id": "toilets",
+      "rect_xz_m": [
+        -7.8,
+        -8.8,
+        -2.8,
+        -3
+      ],
+      "use": "トイレ・給湯"
+    },
+    {
+      "id": "elevators",
+      "rect_xz_m": [
+        -2.5,
+        -8.8,
+        2.5,
+        -5.8
+      ],
+      "use": "EV2基"
+    },
+    {
+      "id": "service",
+      "rect_xz_m": [
+        2.8,
+        -8.8,
+        7.8,
+        -3
+      ],
+      "use": "機械・清掃・EPS"
+    },
+    {
+      "id": "east-stair",
+      "rect_xz_m": [
+        8,
+        -8.8,
+        11.8,
+        -3
+      ],
+      "use": "避難階段"
+    },
+    {
+      "id": "hall",
+      "rect_xz_m": [
+        -8,
+        -5.6,
+        8,
+        -3
+      ],
+      "use": "中央共用通路。設備室の南側を切り欠く。"
+    }
+  ],
+  "details": [
+    "ガラス面は平面のまま色・粗さに小差。板を波打たせて写実感を作らない。シール目地15mm、ガスケット6mm。",
+    "1階床は600角石材。上階床は500角カーペットタイル、OA床高100mmを別レイヤー。",
+    "上階階段は20段×0.18m、1階は24段×0.175m。踏面0.28m、折返し、幅1.2m、踊場1.2m。",
+    "上階全室は空室内装。階ごとに床・天井・壁・建具・水回りを用意。ガラス越しに単色空洞が見えない。"
+  ],
+  "qa": [
+    "床レベルはfloor_levels_mに完全一致。",
+    "東西2階段とEV2基に全階から到達できる。",
+    "前面16列・側面12列のマリオン割付を寸法図で照合。"
+  ],
+  "implementation_gaps": [],
+  "image_generation": {
+    "tool": "built-in image_gen",
+    "prompt_file": "image-prompt.txt",
+    "reference_sheet": "images/reference-sheet.png",
+    "role": "concept_only_not_geometry_evidence"
+  }
+}
