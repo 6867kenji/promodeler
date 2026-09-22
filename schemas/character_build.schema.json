@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://promodeler.local/schemas/character_build.schema.json",
+  "title": "CharacterBuild",
+  "description": "build.json written by the Unity character creator batch build (docs/03-character-recipe-pipeline.md, 9.4). Key names follow the Blender kernel's report.json so promodeler tooling (contact sheet, check) reads both. Hand-written; the Unity DTO must match.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["status", "seconds"],
+  "properties": {
+    "status": {"type": "string", "enum": ["ok", "failed"]},
+    "recipe_hash": {"type": "string", "pattern": "^[0-9a-f]{12,64}$"},
+    "error": {
+      "type": "object",
+      "required": ["code", "message"],
+      "properties": {"code": {"type": "string"}, "message": {"type": "string"}, "stack": {"type": "string"}},
+      "additionalProperties": false
+    },
+    "environment": {
+      "type": "object",
+      "properties": {
+        "unity": {"type": "string"}, "hdrp": {"type": "string"}, "uma": {"type": "string"}, "catalog_version": {"type": "string"},
+        "unity_gltf": {"type": "string"}
+      },
+      "additionalProperties": true
+    },
+    "resolved": {
+      "type": "object",
+      "description": "What the resolvers chose. dna keys are UMA names and stay on this side of the boundary.",
+      "properties": {
+        "race": {"type": "string"},
+        "dna": {"type": "object", "additionalProperties": {"type": "number", "minimum": 0, "maximum": 1}},
+        "root_scale": {"type": "number", "minimum": 0.9, "maximum": 1.1},
+        "iterations": {"type": "integer", "minimum": 0},
+        "residuals_m": {"type": "object", "additionalProperties": {"type": "number"}}
+      },
+      "additionalProperties": false
+    },
+    "measured_m": {
+      "type": "object",
+      "description": "BodyMeasurer output with the same definitions as promodeler.human.mhr.MHRModel.measure; garments holds per-slot finished measurements of the dressed body.",
+      "properties": {
+        "barefoot_height": {"type": "number"}, "standing_shod_height": {"type": "number"}, "inseam": {"type": "number"},
+        "shoulder_width": {"type": "number"}, "joint_shoulder_width": {"type": "number"}, "foot_length": {"type": "number"},
+        "head_height": {"type": "number"}, "chest": {"type": "number"}, "bust": {"type": "number"}, "underbust": {"type": "number"},
+        "waist": {"type": "number"}, "hip": {"type": "number"},
+        "garments": {"type": "object", "additionalProperties": {"type": "object", "additionalProperties": {"type": "number"}}}
+      },
+      "patternProperties": {"^(chest|bust|underbust|waist|hip|shoulders|neck|head)_(width|depth)$": {"type": "number"}},
+      "additionalProperties": false
+    },
+    "parts": {
+      "type": "object",
+      "description": "Per part (body, hair, eyes, teeth and one entry per wardrobe slot / accessory id) geometry counts.",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {"triangles": {"type": "integer", "minimum": 0}, "vertices": {"type": "integer", "minimum": 0}, "materials": {"type": "integer", "minimum": 0}},
+        "additionalProperties": true
+      }
+    },
+    "totals": {
+      "type": "object",
+      "properties": {"triangles": {"type": "integer", "minimum": 0}, "vertices": {"type": "integer", "minimum": 0}, "materials": {"type": "integer", "minimum": 0}, "texture_resident_mib": {"type": "number", "minimum": 0}},
+      "additionalProperties": false
+    },
+    "wardrobe": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["slot", "catalog_id"],
+        "properties": {"slot": {"type": "string"}, "catalog_id": {"type": ["string", "null"]}, "resolved": {"type": ["string", "null"]}, "fitted": {"type": "boolean"}},
+        "additionalProperties": false
+      }
+    },
+    "accessories": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "attached"],
+        "properties": {"id": {"type": "string"}, "source": {"type": ["string", "null"]}, "socket": {"type": ["string", "null"]}, "attached": {"type": "boolean"}},
+        "additionalProperties": false
+      }
+    },
+    "renders": {
+      "type": "array",
+      "description": "Same entry shape as report.json renders so promodeler.contact_sheet composes them.",
+      "items": {
+        "type": "object",
+        "required": ["view", "path", "written"],
+        "properties": {
+          "view": {"type": "string"}, "pass": {"type": "string", "enum": ["shaded", "clay"]}, "path": {"type": "string"},
+          "written": {"type": "boolean"}, "seconds": {"type": "number"}, "video": {"type": "boolean"}, "clip": {"type": "string"},
+          "frames": {"type": "integer"}, "fps": {"type": "integer"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "contact_sheet": {"type": ["object", "null"]},
+    "exports": {
+      "type": "object",
+      "properties": {
+        "fbx": {"$ref": "#/$defs/file"}, "glb": {"$ref": "#/$defs/file"},
+        "prefab": {"type": "string"}, "physics_settings": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "warnings": {
+      "type": "array",
+      "items": {"type": "object", "required": ["code", "message"], "properties": {"code": {"type": "string"}, "message": {"type": "string"}}, "additionalProperties": false}
+    },
+    "seconds": {"type": "number", "minimum": 0},
+    "wall_seconds": {"type": "number", "minimum": 0}
+  },
+  "$defs": {
+    "file": {
+      "type": "object",
+      "required": ["path", "written"],
+      "properties": {"path": {"type": "string"}, "written": {"type": "boolean"}, "bytes": {"type": "integer", "minimum": 0}},
+      "additionalProperties": false
+    }
+  }
+}

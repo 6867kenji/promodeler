@@ -108,6 +108,21 @@ def cmd_doctor(args) -> int:
         print("anthropic: available (critique enabled)")
     except ImportError:
         print("anthropic: missing (critique disabled; pip install anthropic)")
+    from .character import bridge as character_bridge
+    from .character.catalog import Catalog
+
+    try:
+        catalog = Catalog()
+        print(f"catalog: version {catalog.version}, {len(catalog.entries)} entries ({catalog.root})")
+    except ModelingError as exc:
+        print(f"catalog: NOT LOADED ({exc.message})")
+    try:
+        print(f"unity: {character_bridge.find_unity()}")
+    except character_bridge.UnityNotFound as exc:
+        print(f"unity: NOT FOUND ({exc}); character builds need it from M10 on")
+    project = character_bridge.project_version()
+    print(f"unity project: {project or 'not created yet (unity/ProModelerCharacterCreator, M10)'}"
+          + (f", uma {character_bridge.uma_version() or 'unknown'}" if project else ""))
     return 0
 
 
@@ -267,6 +282,10 @@ def main(argv: list[str] | None = None) -> int:
     new.add_argument("path", help="Where to create it, e.g. assets/lamp.py")
     new.add_argument("--name", default=None)
     new.set_defaults(func=cmd_new)
+
+    from .character.cli import add_parsers as add_character_parsers
+
+    add_character_parsers(sub)
 
     args = parser.parse_args(argv)
     try:

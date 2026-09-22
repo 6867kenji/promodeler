@@ -13,7 +13,8 @@ dependencies = []
 sheets = ["pillow"]
 critique = ["anthropic"]
 human = ["numpy", "torch"]
-all = ["pillow", "anthropic", "numpy", "torch"]
+character = ["jsonschema"]
+all = ["pillow", "anthropic", "numpy", "torch", "jsonschema"]
 
 [project.scripts]
 promodeler = "promodeler.cli:main"

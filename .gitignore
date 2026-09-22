@@ -5,3 +5,9 @@ __pycache__/
 *.blend1
 .venv/
 external/
+unity/**/Library/
+unity/**/Temp/
+unity/**/Logs/
+unity/**/UserSettings/
+unity/**/obj/
+unity/**/Assets/ProModeler/Generated/

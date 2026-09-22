@@ -1,0 +1,18 @@
+{
+  "allowed": [
+    "CC0-1.0",
+    "MIT",
+    "Apache-2.0",
+    "own"
+  ],
+  "attribution_required": [
+    "CC-BY-4.0",
+    "CC-BY-3.0"
+  ],
+  "forbidden_fragments": [
+    "NC",
+    "ND",
+    "unknown"
+  ],
+  "note": "Reference products from blueprints/japan-realistic-v1/references.json are never copied into catalog entries. Purchased assets use type 'purchased' with redistribution false and stay out of Git."
+}

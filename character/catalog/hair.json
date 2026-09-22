@@ -1,0 +1,509 @@
+{
+  "category": "hair",
+  "version": "2026.09",
+  "entries": [
+    {
+      "id": "hair_short_01",
+      "category": "hair",
+      "name": "短髪",
+      "slots": [],
+      "match": [
+        "短い黒髪",
+        "短い白髪",
+        "短い塩胡椒髪",
+        "短く刈った",
+        "短い"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": []
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/hair/hair_short_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "short"
+      ]
+    },
+    {
+      "id": "hair_short_side_part_01",
+      "category": "hair",
+      "name": "短髪・サイドパート",
+      "slots": [],
+      "match": [
+        "左分け",
+        "右分け",
+        "サイドパート"
+      ],
+      "priority": 1,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": []
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/hair/hair_short_side_part_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "short",
+        "side_part"
+      ]
+    },
+    {
+      "id": "hair_short_mash_01",
+      "category": "hair",
+      "name": "短いマッシュ",
+      "slots": [],
+      "match": [
+        "マッシュ"
+      ],
+      "priority": 1,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": []
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/hair/hair_short_mash_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "short"
+      ]
+    },
+    {
+      "id": "hair_bob_01",
+      "category": "hair",
+      "name": "ボブ",
+      "slots": [],
+      "match": [
+        "ボブ"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": []
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/hair/hair_bob_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "medium"
+      ]
+    },
+    {
+      "id": "hair_short_bob_01",
+      "category": "hair",
+      "name": "ショートボブ",
+      "slots": [],
+      "match": [
+        "ショートボブ"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": []
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/hair/hair_short_bob_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "short"
+      ]
+    },
+    {
+      "id": "hair_low_ponytail_01",
+      "category": "hair",
+      "name": "低いひとつ結び",
+      "slots": [],
+      "match": [
+        "低いひとつ結び",
+        "低いポニーテール"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": []
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/hair/hair_low_ponytail_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "tied"
+      ]
+    },
+    {
+      "id": "hair_ponytail_01",
+      "category": "hair",
+      "name": "ポニーテール",
+      "slots": [],
+      "match": [
+        "ポニーテール"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": []
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/hair/hair_ponytail_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "tied"
+      ]
+    },
+    {
+      "id": "hair_low_bun_01",
+      "category": "hair",
+      "name": "低いシニヨン",
+      "slots": [],
+      "match": [
+        "シニヨン"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": []
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/hair/hair_low_bun_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "tied"
+      ]
+    },
+    {
+      "id": "hair_high_bun_01",
+      "category": "hair",
+      "name": "高めの束ね髪",
+      "slots": [],
+      "match": [
+        "高めの束ね髪",
+        "束ね髪"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": []
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/hair/hair_high_bun_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "tied"
+      ]
+    },
+    {
+      "id": "hair_long_wave_01",
+      "category": "hair",
+      "name": "肩下ウェーブ",
+      "slots": [],
+      "match": [
+        "ウェーブ"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": []
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/hair/hair_long_wave_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "long"
+      ]
+    },
+    {
+      "id": "hair_long_straight_01",
+      "category": "hair",
+      "name": "ロングストレート",
+      "slots": [],
+      "match": [
+        "ロングヘア",
+        "ロング"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": []
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/hair/hair_long_straight_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "long"
+      ]
+    },
+    {
+      "id": "hair_long_braided_back_01",
+      "category": "hair",
+      "name": "編み込みでまとめたロング",
+      "slots": [],
+      "match": [
+        "編み込み"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": []
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/hair/hair_long_braided_back_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "long",
+        "tied"
+      ]
+    }
+  ]
+}

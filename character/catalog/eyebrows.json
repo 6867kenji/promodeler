@@ -1,0 +1,78 @@
+{
+  "category": "eyebrows",
+  "version": "2026.09",
+  "entries": [
+    {
+      "id": "brow_natural_m_01",
+      "category": "eyebrows",
+      "name": "自然な眉（男性）",
+      "slots": [],
+      "match": [],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male"
+        ],
+        "layers_over": [],
+        "hides": []
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/eyebrows/brow_natural_m_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": []
+    },
+    {
+      "id": "brow_natural_f_01",
+      "category": "eyebrows",
+      "name": "自然な眉（女性）",
+      "slots": [],
+      "match": [],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": []
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/eyebrows/brow_natural_f_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": []
+    }
+  ]
+}

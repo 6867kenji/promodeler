@@ -1,0 +1,45 @@
+{
+  "category": "facial_hair",
+  "version": "2026.09",
+  "entries": [
+    {
+      "id": "stubble_light_01",
+      "category": "facial_hair",
+      "name": "薄いひげ跡",
+      "slots": [],
+      "match": [
+        "ひげ跡",
+        "ひげ"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male"
+        ],
+        "layers_over": [],
+        "hides": []
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/facial_hair/stubble_light_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": []
+    }
+  ]
+}

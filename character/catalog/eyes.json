@@ -1,0 +1,86 @@
+{
+  "category": "eyes",
+  "version": "2026.09",
+  "entries": [
+    {
+      "id": "eye_brown_01",
+      "category": "eyes",
+      "name": "茶の虹彩",
+      "slots": [],
+      "match": [
+        "ブラウン",
+        "茶"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": []
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/eyes/eye_brown_01"
+      },
+      "base_color_srgb": "#574335",
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": []
+    },
+    {
+      "id": "eye_dark_brown_01",
+      "category": "eyes",
+      "name": "濃い茶の虹彩",
+      "slots": [],
+      "match": [
+        "黒目",
+        "濃い茶"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": []
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/eyes/eye_dark_brown_01"
+      },
+      "base_color_srgb": "#3E2C22",
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": []
+    }
+  ]
+}

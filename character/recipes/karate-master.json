@@ -1,0 +1,392 @@
+{
+  "schema": "promodeler-character/1.0",
+  "id": "karate-master",
+  "name": "石田誠・道場の師範",
+  "seed": 27,
+  "source": {
+    "kind": "blueprint",
+    "path": "blueprints/japan-realistic-v1/27-karate-master/blueprint.json",
+    "sha256": "3c5e5345e1b1e86445ef3b1a419e25cb6655f3be788b853d30cc6b8aa0ffd724",
+    "generator_version": 1,
+    "catalog_version": "2f6d334150ab"
+  },
+  "identity": {
+    "fictional": true,
+    "sex": "male",
+    "age": 52,
+    "descriptors": [
+      "短い塩胡椒髪",
+      "角張った顔",
+      "目尻のしわ",
+      "鍛えた体格"
+    ]
+  },
+  "base": {
+    "skeleton": "humanoid_a_pose",
+    "race": "human_male"
+  },
+  "body": {
+    "measurements_m": {
+      "barefoot_height": 1.78,
+      "inseam": 0.81,
+      "shoulder_width": 0.47,
+      "foot_length": 0.27,
+      "head_height": null,
+      "circumferences": {
+        "chest": 1.04,
+        "waist": 0.88,
+        "hip": 1.0
+      },
+      "cross_sections": [
+        {
+          "landmark": "chest",
+          "height": 1.391,
+          "width": 0.3536,
+          "depth": 0.3077,
+          "circumference": 1.04
+        },
+        {
+          "landmark": "waist",
+          "height": 1.179,
+          "width": 0.2992,
+          "depth": 0.2604,
+          "circumference": 0.88
+        },
+        {
+          "landmark": "hip",
+          "height": 1.057,
+          "width": 0.34,
+          "depth": 0.2959,
+          "circumference": 1
+        }
+      ]
+    },
+    "shape": {
+      "muscle": 0.72,
+      "body_fat": 0.483,
+      "posture": 0.5
+    },
+    "tolerances_m": {
+      "barefoot_height": 0.002,
+      "circumference": 0.005,
+      "length": 0.005
+    },
+    "reference_fit": null
+  },
+  "face": {
+    "metrics_m": {
+      "eyeball_diameter": 0.024,
+      "iris_diameter": 0.0115,
+      "mouth_width": null,
+      "nose_width": null
+    },
+    "shape": {
+      "face_length": 0.5,
+      "jaw_width": 0.68,
+      "chin_size": 0.6,
+      "cheek_width": 0.5,
+      "nose_width": 0.5,
+      "nose_length": 0.5,
+      "nose_bridge": 0.5,
+      "eye_size": 0.5,
+      "eye_spacing": 0.5,
+      "eye_tilt": 0.5,
+      "mouth_width": 0.5,
+      "lip_thickness": 0.5,
+      "brow_height": 0.5,
+      "forehead_height": 0.5
+    },
+    "descriptors": [
+      "角張った顔",
+      "目尻のしわ"
+    ]
+  },
+  "appearance": {
+    "skin": {
+      "preset": "skin_jp_light_02",
+      "base_color_srgb": "#DFC1AD",
+      "roughness": [
+        0.35,
+        0.58
+      ]
+    },
+    "hair": {
+      "style": "hair_short_01",
+      "base_color_srgb": "#28201D",
+      "length_m": null
+    },
+    "eyebrows": {
+      "style": "brow_natural_m_01",
+      "color_srgb": "#28201D"
+    },
+    "eyes": {
+      "iris_color_srgb": "#574335",
+      "sclera_color_srgb": "#ECE8E4"
+    },
+    "facial_hair": null,
+    "teeth": {
+      "preset": "teeth_natural_01",
+      "base_color_srgb": "#DCD4C3"
+    }
+  },
+  "wardrobe": [
+    {
+      "slot": "upper",
+      "catalog_id": "karate_gi_jacket_01",
+      "blueprint_garment": "gi-jacket",
+      "name": "空手着上衣",
+      "material": {
+        "base_color_srgb": "#E7E5DE",
+        "roughness": [
+          0.65,
+          0.85
+        ],
+        "metallic": 0
+      },
+      "finished_measurements_m": {
+        "back_length": 0.789,
+        "chest_circumference": 1.28,
+        "sleeve_from_center_back": 0.789,
+        "cuff_circumference": 0.36,
+        "overlap": 0.16,
+        "thickness": 0.0012
+      },
+      "deformation": "cloth",
+      "construction": "着用者の左前を外側、右前を内側。左右脇紐で固定、股脇スリット100mm、襟幅45mm、襟は6列ステッチ。",
+      "sole_height_m": null,
+      "heel_height_m": null,
+      "internal_length_m": null,
+      "controls": {}
+    },
+    {
+      "slot": "lower",
+      "catalog_id": "karate_gi_pants_01",
+      "blueprint_garment": "gi-pants",
+      "name": "空手着下衣",
+      "material": {
+        "base_color_srgb": "#E7E5DE",
+        "roughness": [
+          0.65,
+          0.85
+        ],
+        "metallic": 0
+      },
+      "finished_measurements_m": {
+        "waist_relaxed": 0.9,
+        "hip_circumference": 1.2,
+        "inseam": 0.775,
+        "hem_circumference": 0.4,
+        "gusset_length": 0.22
+      },
+      "deformation": "cloth",
+      "construction": "ウエスト紐、股下ひし形マチ、膝の屈曲用ゆとり。",
+      "sole_height_m": null,
+      "heel_height_m": null,
+      "internal_length_m": null,
+      "controls": {}
+    },
+    {
+      "slot": "waist",
+      "catalog_id": "karate_belt_01",
+      "blueprint_garment": "belt",
+      "name": "黒帯",
+      "material": {
+        "base_color_srgb": "#252729",
+        "roughness": [
+          0.6,
+          0.85
+        ],
+        "metallic": 0
+      },
+      "finished_measurements_m": {
+        "length": 2.71,
+        "width": 0.045,
+        "thickness": 0.004
+      },
+      "deformation": "pinned_cloth",
+      "construction": "腰を2周し正面で平らに結ぶ。端の長さを左右で揃える。端に実在流派名なし。",
+      "sole_height_m": null,
+      "heel_height_m": null,
+      "internal_length_m": null,
+      "controls": {}
+    }
+  ],
+  "accessories": [],
+  "animation": {
+    "rest_pose": "a_pose_35deg",
+    "limits_deg": {
+      "elbow_flexion": [
+        0.0,
+        135.0
+      ],
+      "knee_flexion": [
+        0.0,
+        140.0
+      ],
+      "hip_flexion": [
+        0.0,
+        130.0
+      ],
+      "shoulder_raise": [
+        0.0,
+        170.0
+      ],
+      "neck_yaw": [
+        -65.0,
+        65.0
+      ],
+      "finger_curl": [
+        0.0,
+        90.0
+      ],
+      "hip_abduction": [
+        0.0,
+        65.0
+      ]
+    },
+    "face_shapes": [
+      "blink_l",
+      "blink_r",
+      "smile",
+      "jaw_open",
+      "vowel_a",
+      "vowel_i",
+      "vowel_u",
+      "vowel_e",
+      "vowel_o"
+    ],
+    "clips": [
+      {
+        "id": "idle",
+        "duration_s": 4.0,
+        "loop": true,
+        "description": "呼吸、瞬き、視線"
+      },
+      {
+        "id": "walk",
+        "duration_s": 1.2,
+        "loop": true,
+        "description": "左右足接地、1周期の移動1.1m、腕振り"
+      },
+      {
+        "id": "turn",
+        "duration_s": 2.0,
+        "loop": false,
+        "description": "180度方向転換"
+      },
+      {
+        "id": "sit",
+        "duration_s": 3.0,
+        "loop": false,
+        "description": "座面高0.43mへ着座。靴底の高さを接地IKに含める。"
+      },
+      {
+        "id": "physics-settle",
+        "duration_s": 6.0,
+        "loop": false,
+        "description": "静止2秒、歩行2秒、停止2秒。服/胸部/髪のON/OFF比較"
+      },
+      {
+        "id": "karate",
+        "duration_s": 8.0,
+        "loop": false,
+        "description": "礼、前屈立ち、正拳突き、腰高の前蹴り。左右の技を各1回、振り上げ脚と裾を確認。"
+      }
+    ]
+  },
+  "physics": {
+    "common": {
+      "execution": "ランタイムで継続する物理演算。GLB単体では再現不可。",
+      "fixed_step_s": 0.016666666666666666,
+      "substeps": 4,
+      "gravity_m_s2": [
+        0,
+        -9.81,
+        0
+      ],
+      "initial_settle_s": 2,
+      "collision_margin_m": 0.004,
+      "penetration_tolerance": "通常動作の可視貫通0。計測最大2mm未満かつ2フレーム以内。基準超過時は設定または形状を修正。"
+    },
+    "clothing": {
+      "method": "低解像度クロスを部品別に300–1800頂点、合計6000頂点以内。スキニングの基準形状へ追従し表示メッシュへ転送。",
+      "areal_density_kg_m2": 0.3,
+      "stretch_ratio_max": 1.03,
+      "bend_radius_min_m": 0.005,
+      "pin": "肩・襟・ウエスト100%。ジャケット身頃上部80%、袖口/裾20%。帯結びとエプロン紐は固定、遊び端のみ可動。",
+      "collision": "身体の胸・腹・骨盤・大腿・腕の追従コライダー。自己衝突ON。靴と裾の接近時も検証。",
+      "range": "一般衣服の遊び部は静止形状から80mm以内、空手着袖裾は120mm以内。細部は拘束付き、身体を伸縮させて代用しない。"
+    },
+    "breast": {
+      "method": "左右独立のばね質点/補助ボーン動力学。胸郭ローカルで求解し布側コライダーへ反映。",
+      "effective_mass_kg": 0.08,
+      "stiffness_n_m": 280,
+      "damping_n_s_m": 12,
+      "max_translation_m": [
+        0.002,
+        0.003,
+        0.002
+      ],
+      "max_rotation_deg": 2,
+      "collision": "胸郭へのめり込み制限、左右相互衝突、衣服は追従コライダーに衝突。基準姿勢を拘束中心とする。",
+      "note": "実人体の推定物性ではない演出初期値。女性はインナー支持、男性は胸部軟部のごく小さな追従として設定。服へコライダーを反映。"
+    },
+    "hair": {
+      "method": "短髪の主形状は頭へスキニング、前髪・毛先4–8束に2–3節の補助ボーン。",
+      "root_pin": 1,
+      "max_segment_angle_deg": 10,
+      "max_tip_displacement_m": 0.008,
+      "collision": "頭・肩・胸・背中のカプセル。髪は服の外側4mmの代理面と衝突。",
+      "damping_ratio": 0.8
+    },
+    "solve_order": [
+      "身体アニメーションとIK",
+      "胸の動力学",
+      "胸コライダー更新",
+      "服クロス",
+      "髪動力学",
+      "表示メッシュ更新"
+    ],
+    "accessories": {
+      "method": "バッグ本体は補助ボーン+ばね、持ち手は手または肩に固定。内容物は空にせず形状保持。",
+      "max_swing_deg": 15,
+      "collision": "骨盤・大腿・腕の代理面と衝突。着座時はバッグを外す/膝に置くアニメを別にする。"
+    }
+  },
+  "target": {
+    "engine": "unity_hdrp",
+    "exports": [
+      "BLEND（編集可能な形状・リグ・物理設定、実装時に制作）",
+      "GLB（形状・PBR・ベイクした骨アニメ）",
+      "Unity用物理設定",
+      "検証PNGとMP4"
+    ],
+    "triangles_lod0_max": 110000,
+    "texture_resolution_max": 4096,
+    "texture_policy": "共有材2K、主役・顔4K。BaseColor=sRGB、Normal/Roughness/Metallic=linear。AOをBaseColorへ焼き込まない。",
+    "texel_density_px_per_m": 1024,
+    "lod_ratios": [
+      1,
+      0.5,
+      0.2,
+      0.08
+    ],
+    "triangles_by_part": {
+      "body": 35000,
+      "hair": 20000,
+      "clothing": 35000,
+      "shoes_accessories_eyes": 20000
+    },
+    "texture_resident_budget_mib": 160,
+    "engine_note": "Unity / HDRP を主想定。バージョンはモデル実装時に固定。"
+  },
+  "acceptance": [
+    "裸足身長±2mm、指定円周±5mmを実メッシュで計測。",
+    "正面/側面/背面で髪型・顔・服・アクセサリーが同一。",
+    "指5本×左右、関節の体積、肩・脇・股・肘・膝のウェイトを確認。",
+    "各clipを正面/側面で60fps記録。服・胸部・髪は物理ON/OFF比較を保存。",
+    "通常動作で可視貫通0。計測上2mm未満かつ2フレーム以内、超える場合は修正。",
+    "停止後2秒で胸部1mm未満・髪と裾5mm未満へ収束するよう調整。",
+    "checksは未検証のまま。実モデル証拠を確認してから更新。"
+  ]
+}

@@ -1,0 +1,206 @@
+{
+  "category": "skin",
+  "version": "2026.09",
+  "entries": [
+    {
+      "id": "skin_jp_light_01",
+      "category": "skin",
+      "name": "明るい肌 01",
+      "slots": [],
+      "match": [],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": []
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/skin/skin_jp_light_01"
+      },
+      "base_color_srgb": "#EBD2C3",
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "jp",
+        "light"
+      ]
+    },
+    {
+      "id": "skin_jp_light_02",
+      "category": "skin",
+      "name": "明るい肌 02",
+      "slots": [],
+      "match": [],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": []
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/skin/skin_jp_light_02"
+      },
+      "base_color_srgb": "#DFC1AD",
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "jp",
+        "light"
+      ]
+    },
+    {
+      "id": "skin_jp_medium_01",
+      "category": "skin",
+      "name": "中間の肌 01",
+      "slots": [],
+      "match": [],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": []
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/skin/skin_jp_medium_01"
+      },
+      "base_color_srgb": "#CFAE95",
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "jp",
+        "medium"
+      ]
+    },
+    {
+      "id": "skin_jp_medium_02",
+      "category": "skin",
+      "name": "中間の肌 02",
+      "slots": [],
+      "match": [],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": []
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/skin/skin_jp_medium_02"
+      },
+      "base_color_srgb": "#C39C82",
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "jp",
+        "medium"
+      ]
+    },
+    {
+      "id": "skin_jp_tan_01",
+      "category": "skin",
+      "name": "日焼けした肌 01",
+      "slots": [],
+      "match": [],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": []
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/skin/skin_jp_tan_01"
+      },
+      "base_color_srgb": "#B08968",
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "jp",
+        "tan"
+      ]
+    }
+  ]
+}

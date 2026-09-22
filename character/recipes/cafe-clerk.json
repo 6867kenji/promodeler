@@ -1,0 +1,405 @@
+{
+  "schema": "promodeler-character/1.0",
+  "id": "cafe-clerk",
+  "name": "森結衣・カフェ店員",
+  "seed": 26,
+  "source": {
+    "kind": "blueprint",
+    "path": "blueprints/japan-realistic-v1/26-cafe-clerk/blueprint.json",
+    "sha256": "29c339ab3ca20820e9522168bc5d6d728f37652cb85d83c9fb25072f218bfbc9",
+    "generator_version": 1,
+    "catalog_version": "2f6d334150ab"
+  },
+  "identity": {
+    "fictional": true,
+    "sex": "female",
+    "age": 25,
+    "descriptors": [
+      "ダークブラウン髪を低いシニヨン",
+      "柔らかい卵型の顔"
+    ]
+  },
+  "base": {
+    "skeleton": "humanoid_a_pose",
+    "race": "human_female"
+  },
+  "body": {
+    "measurements_m": {
+      "barefoot_height": 1.62,
+      "inseam": 0.735,
+      "shoulder_width": 0.37,
+      "foot_length": 0.235,
+      "head_height": null,
+      "circumferences": {
+        "bust": 0.85,
+        "waist": 0.65,
+        "hip": 0.89
+      },
+      "cross_sections": [
+        {
+          "landmark": "chest",
+          "height": 1.266,
+          "width": 0.289,
+          "depth": 0.2515,
+          "circumference": 0.85
+        },
+        {
+          "landmark": "waist",
+          "height": 1.073,
+          "width": 0.221,
+          "depth": 0.1923,
+          "circumference": 0.65
+        },
+        {
+          "landmark": "hip",
+          "height": 0.962,
+          "width": 0.3026,
+          "depth": 0.2633,
+          "circumference": 0.89
+        }
+      ]
+    },
+    "shape": {
+      "muscle": 0.35,
+      "body_fat": 0.309,
+      "posture": 0.5
+    },
+    "tolerances_m": {
+      "barefoot_height": 0.002,
+      "circumference": 0.005,
+      "length": 0.005
+    },
+    "reference_fit": null
+  },
+  "face": {
+    "metrics_m": {
+      "eyeball_diameter": 0.024,
+      "iris_diameter": 0.0115,
+      "mouth_width": null,
+      "nose_width": null
+    },
+    "shape": {
+      "face_length": 0.55,
+      "jaw_width": 0.45,
+      "chin_size": 0.5,
+      "cheek_width": 0.5,
+      "nose_width": 0.5,
+      "nose_length": 0.5,
+      "nose_bridge": 0.5,
+      "eye_size": 0.5,
+      "eye_spacing": 0.5,
+      "eye_tilt": 0.5,
+      "mouth_width": 0.5,
+      "lip_thickness": 0.5,
+      "brow_height": 0.5,
+      "forehead_height": 0.5
+    },
+    "descriptors": [
+      "柔らかい卵型の顔"
+    ]
+  },
+  "appearance": {
+    "skin": {
+      "preset": "skin_jp_light_01",
+      "base_color_srgb": "#E8CABA",
+      "roughness": [
+        0.35,
+        0.58
+      ]
+    },
+    "hair": {
+      "style": "hair_low_bun_01",
+      "base_color_srgb": "#28201D",
+      "length_m": null
+    },
+    "eyebrows": {
+      "style": "brow_natural_f_01",
+      "color_srgb": "#28201D"
+    },
+    "eyes": {
+      "iris_color_srgb": "#574335",
+      "sclera_color_srgb": "#ECE8E4"
+    },
+    "facial_hair": null,
+    "teeth": {
+      "preset": "teeth_natural_01",
+      "base_color_srgb": "#DCD4C3"
+    }
+  },
+  "wardrobe": [
+    {
+      "slot": "inner",
+      "catalog_id": "shirt_three_quarter_01",
+      "blueprint_garment": "inner",
+      "name": "白七分袖シャツ",
+      "material": {
+        "base_color_srgb": "#ECE9E0",
+        "roughness": [
+          0.65,
+          0.85
+        ],
+        "metallic": 0
+      },
+      "finished_measurements_m": {
+        "chest_circumference": 0.95,
+        "back_length": 0.589,
+        "thickness": 0.0006
+      },
+      "deformation": "cloth",
+      "construction": "不透明な身頃。襟・肩・脇の縫合。裾は下衣との重なりを保持。",
+      "sole_height_m": null,
+      "heel_height_m": null,
+      "internal_length_m": null,
+      "controls": {}
+    },
+    {
+      "slot": "lower",
+      "catalog_id": "pants_tapered_01",
+      "blueprint_garment": "lower",
+      "name": "黒テーパードパンツ",
+      "material": {
+        "base_color_srgb": "#292C30",
+        "roughness": [
+          0.65,
+          0.85
+        ],
+        "metallic": 0
+      },
+      "finished_measurements_m": {
+        "waist_circumference": 0.68,
+        "hip_circumference": 0.97,
+        "inseam": 0.71,
+        "hem_circumference": 0.34
+      },
+      "deformation": "cloth",
+      "construction": "左右脚・前後身頃・股ぐり・ベルト部・袋布を分離。股と膝に関節補正。",
+      "sole_height_m": null,
+      "heel_height_m": null,
+      "internal_length_m": null,
+      "controls": {}
+    },
+    {
+      "slot": "waist",
+      "catalog_id": "apron_bib_01",
+      "blueprint_garment": "apron",
+      "name": "胸当てエプロン",
+      "material": {
+        "base_color_srgb": "#737A65",
+        "roughness": [
+          0.6,
+          0.85
+        ],
+        "metallic": 0
+      },
+      "finished_measurements_m": {
+        "length": 0.82,
+        "width_hem": 0.7,
+        "bib_width": 0.26,
+        "strap_width": 0.025,
+        "pocket_width": 0.18,
+        "pocket_height": 0.19
+      },
+      "deformation": "pinned_cloth",
+      "construction": "肩紐2本を背面へつなぎ、腰紐は背面だけで蝶結び。前面は結び目なし、ポケット2個。紐端のみ可動。",
+      "sole_height_m": null,
+      "heel_height_m": null,
+      "internal_length_m": null,
+      "controls": {}
+    },
+    {
+      "slot": "footwear",
+      "catalog_id": "work_shoe_01",
+      "blueprint_garment": null,
+      "name": "作業靴",
+      "material": {
+        "base_color_srgb": "#3D4142",
+        "roughness": [
+          0.65,
+          0.85
+        ],
+        "metallic": 0
+      },
+      "finished_measurements_m": {},
+      "deformation": "rigid_skinned",
+      "construction": "左右別。靴甲1.5mm、内張り1mm、紐径4mm。靴底の屈曲を足趾に追従。パンプスは踵高と足裏傾斜を別に調整。",
+      "sole_height_m": 0.025,
+      "heel_height_m": 0.025,
+      "internal_length_m": 0.247,
+      "controls": {}
+    }
+  ],
+  "accessories": [],
+  "animation": {
+    "rest_pose": "a_pose_35deg",
+    "limits_deg": {
+      "elbow_flexion": [
+        0.0,
+        135.0
+      ],
+      "knee_flexion": [
+        0.0,
+        130.0
+      ],
+      "hip_flexion": [
+        0.0,
+        115.0
+      ],
+      "shoulder_raise": [
+        0.0,
+        160.0
+      ],
+      "neck_yaw": [
+        -65.0,
+        65.0
+      ],
+      "finger_curl": [
+        0.0,
+        90.0
+      ]
+    },
+    "face_shapes": [
+      "blink_l",
+      "blink_r",
+      "smile",
+      "jaw_open",
+      "vowel_a",
+      "vowel_i",
+      "vowel_u",
+      "vowel_e",
+      "vowel_o"
+    ],
+    "clips": [
+      {
+        "id": "idle",
+        "duration_s": 4.0,
+        "loop": true,
+        "description": "呼吸、瞬き、視線"
+      },
+      {
+        "id": "walk",
+        "duration_s": 1.2,
+        "loop": true,
+        "description": "左右足接地、1周期の移動1.1m、腕振り"
+      },
+      {
+        "id": "turn",
+        "duration_s": 2.0,
+        "loop": false,
+        "description": "180度方向転換"
+      },
+      {
+        "id": "sit",
+        "duration_s": 3.0,
+        "loop": false,
+        "description": "座面高0.43mへ着座。靴底の高さを接地IKに含める。"
+      },
+      {
+        "id": "physics-settle",
+        "duration_s": 6.0,
+        "loop": false,
+        "description": "静止2秒、歩行2秒、停止2秒。服/胸部/髪のON/OFF比較"
+      },
+      {
+        "id": "serve",
+        "duration_s": 8.0,
+        "loop": false,
+        "description": "台高0.9mで受け渡し。手IKと指把持、肘・エプロンを確認。"
+      }
+    ]
+  },
+  "physics": {
+    "common": {
+      "execution": "ランタイムで継続する物理演算。GLB単体では再現不可。",
+      "fixed_step_s": 0.016666666666666666,
+      "substeps": 4,
+      "gravity_m_s2": [
+        0,
+        -9.81,
+        0
+      ],
+      "initial_settle_s": 2,
+      "collision_margin_m": 0.004,
+      "penetration_tolerance": "通常動作の可視貫通0。計測最大2mm未満かつ2フレーム以内。基準超過時は設定または形状を修正。"
+    },
+    "clothing": {
+      "method": "低解像度クロスを部品別に300–1800頂点、合計6000頂点以内。スキニングの基準形状へ追従し表示メッシュへ転送。",
+      "areal_density_kg_m2": 0.2,
+      "stretch_ratio_max": 1.03,
+      "bend_radius_min_m": 0.005,
+      "pin": "肩・襟・ウエスト100%。ジャケット身頃上部80%、袖口/裾20%。帯結びとエプロン紐は固定、遊び端のみ可動。",
+      "collision": "身体の胸・腹・骨盤・大腿・腕の追従コライダー。自己衝突ON。靴と裾の接近時も検証。",
+      "range": "一般衣服の遊び部は静止形状から80mm以内、空手着袖裾は120mm以内。細部は拘束付き、身体を伸縮させて代用しない。"
+    },
+    "breast": {
+      "method": "左右独立のばね質点/補助ボーン動力学。胸郭ローカルで求解し布側コライダーへ反映。",
+      "effective_mass_kg": 0.22,
+      "stiffness_n_m": 220,
+      "damping_n_s_m": 14,
+      "max_translation_m": [
+        0.004,
+        0.006,
+        0.004
+      ],
+      "max_rotation_deg": 3,
+      "collision": "胸郭へのめり込み制限、左右相互衝突、衣服は追従コライダーに衝突。基準姿勢を拘束中心とする。",
+      "note": "実人体の推定物性ではない演出初期値。女性はインナー支持、男性は胸部軟部のごく小さな追従として設定。服へコライダーを反映。"
+    },
+    "hair": {
+      "method": "結び目/頭皮を固定し6–10ガイド束、1束4–6節。シニヨンは3節の短い毛先のみ。",
+      "root_pin": 1,
+      "max_segment_angle_deg": 22,
+      "max_tip_displacement_m": 0.1,
+      "collision": "頭・肩・胸・背中のカプセル。髪は服の外側4mmの代理面と衝突。",
+      "damping_ratio": 0.8
+    },
+    "solve_order": [
+      "身体アニメーションとIK",
+      "胸の動力学",
+      "胸コライダー更新",
+      "服クロス",
+      "髪動力学",
+      "表示メッシュ更新"
+    ],
+    "accessories": {
+      "method": "バッグ本体は補助ボーン+ばね、持ち手は手または肩に固定。内容物は空にせず形状保持。",
+      "max_swing_deg": 15,
+      "collision": "骨盤・大腿・腕の代理面と衝突。着座時はバッグを外す/膝に置くアニメを別にする。"
+    }
+  },
+  "target": {
+    "engine": "unity_hdrp",
+    "exports": [
+      "BLEND（編集可能な形状・リグ・物理設定、実装時に制作）",
+      "GLB（形状・PBR・ベイクした骨アニメ）",
+      "Unity用物理設定",
+      "検証PNGとMP4"
+    ],
+    "triangles_lod0_max": 110000,
+    "texture_resolution_max": 4096,
+    "texture_policy": "共有材2K、主役・顔4K。BaseColor=sRGB、Normal/Roughness/Metallic=linear。AOをBaseColorへ焼き込まない。",
+    "texel_density_px_per_m": 1024,
+    "lod_ratios": [
+      1,
+      0.5,
+      0.2,
+      0.08
+    ],
+    "triangles_by_part": {
+      "body": 35000,
+      "hair": 20000,
+      "clothing": 35000,
+      "shoes_accessories_eyes": 20000
+    },
+    "texture_resident_budget_mib": 160,
+    "engine_note": "Unity / HDRP を主想定。バージョンはモデル実装時に固定。"
+  },
+  "acceptance": [
+    "裸足身長±2mm、指定円周±5mmを実メッシュで計測。",
+    "正面/側面/背面で髪型・顔・服・アクセサリーが同一。",
+    "指5本×左右、関節の体積、肩・脇・股・肘・膝のウェイトを確認。",
+    "各clipを正面/側面で60fps記録。服・胸部・髪は物理ON/OFF比較を保存。",
+    "通常動作で可視貫通0。計測上2mm未満かつ2フレーム以内、超える場合は修正。",
+    "停止後2秒で胸部1mm未満・髪と裾5mm未満へ収束するよう調整。",
+    "checksは未検証のまま。実モデル証拠を確認してから更新。"
+  ]
+}

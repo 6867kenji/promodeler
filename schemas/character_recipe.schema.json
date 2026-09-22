@@ -1,0 +1,946 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://promodeler.local/schemas/character_recipe.schema.json",
+  "title": "CharacterRecipe",
+  "description": "A complete humanoid character description for the Unity character creator.",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "type": "string",
+      "enum": [
+        "promodeler-character/1.0"
+      ]
+    },
+    "id": {
+      "type": "string",
+      "pattern": "[a-z0-9][a-z0-9_-]*"
+    },
+    "name": {
+      "type": "string",
+      "default": ""
+    },
+    "seed": {
+      "type": "integer",
+      "default": 0
+    },
+    "source": {
+      "$ref": "#/$defs/Source"
+    },
+    "identity": {
+      "$ref": "#/$defs/Identity"
+    },
+    "base": {
+      "$ref": "#/$defs/Base"
+    },
+    "body": {
+      "$ref": "#/$defs/Body"
+    },
+    "face": {
+      "$ref": "#/$defs/Face"
+    },
+    "appearance": {
+      "$ref": "#/$defs/Appearance"
+    },
+    "wardrobe": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Garment"
+      },
+      "default": []
+    },
+    "accessories": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Accessory"
+      },
+      "default": []
+    },
+    "animation": {
+      "$ref": "#/$defs/Animation"
+    },
+    "physics": {
+      "type": "object"
+    },
+    "target": {
+      "type": "object"
+    },
+    "acceptance": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "id"
+  ],
+  "$defs": {
+    "Accessory": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "[a-z0-9][a-z0-9_-]*"
+        },
+        "source": {
+          "$ref": "#/$defs/AccessorySource"
+        },
+        "socket": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "hand_l",
+            "hand_r",
+            "wrist_l",
+            "wrist_r",
+            "shoulder_l",
+            "shoulder_r",
+            "back",
+            "waist",
+            "head",
+            "face",
+            "chest",
+            null
+          ],
+          "default": null
+        },
+        "size_xyz_m": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "minItems": 3,
+          "maxItems": 3,
+          "default": null
+        },
+        "detail": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "physics": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Accessory(id: 'str', source: 'AccessorySource' = <factory>, socket: 'str | None' = None, size_xyz_m: 'tuple[float, float, float] | None' = None, detail: 'str | None' = None, physics: 'dict' = <factory>)",
+      "required": [
+        "id"
+      ]
+    },
+    "AccessorySource": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "catalog",
+            "promodeler_asset"
+          ],
+          "default": "promodeler_asset"
+        },
+        "catalog_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "path": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "assets/props/<name>.py for a promodeler-built GLB.",
+          "default": null
+        },
+        "build_hash": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        }
+      },
+      "additionalProperties": false,
+      "description": "AccessorySource(kind: 'str' = 'promodeler_asset', catalog_id: 'str | None' = None, path: 'str | None' = None, build_hash: 'str | None' = None)"
+    },
+    "Animation": {
+      "type": "object",
+      "properties": {
+        "rest_pose": {
+          "type": "string",
+          "enum": [
+            "a_pose_35deg"
+          ],
+          "default": "a_pose_35deg"
+        },
+        "limits_deg": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "minItems": 2,
+            "maxItems": 2
+          }
+        },
+        "face_shapes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "clips": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ClipSpec"
+          },
+          "default": []
+        }
+      },
+      "additionalProperties": false,
+      "description": "Animation(rest_pose: 'str' = 'a_pose_35deg', limits_deg: 'dict[str, tuple[float, float]]' = <factory>, face_shapes: 'tuple[str, ...]' = (), clips: 'tuple[ClipSpec, ...]' = ())"
+    },
+    "Appearance": {
+      "type": "object",
+      "properties": {
+        "skin": {
+          "$ref": "#/$defs/Skin"
+        },
+        "hair": {
+          "$ref": "#/$defs/Hair"
+        },
+        "eyebrows": {
+          "$ref": "#/$defs/Eyebrows"
+        },
+        "eyes": {
+          "$ref": "#/$defs/Eyes"
+        },
+        "facial_hair": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FacialHair"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "teeth": {
+          "$ref": "#/$defs/Teeth"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Appearance(skin: 'Skin' = <factory>, hair: 'Hair' = <factory>, eyebrows: 'Eyebrows' = <factory>, eyes: 'Eyes' = <factory>, facial_hair: 'FacialHair | None' = None, teeth: 'Teeth' = <factory>)"
+    },
+    "Base": {
+      "type": "object",
+      "properties": {
+        "skeleton": {
+          "type": "string",
+          "enum": [
+            "humanoid_a_pose"
+          ],
+          "default": "humanoid_a_pose"
+        },
+        "race": {
+          "type": "string",
+          "enum": [
+            "human_male",
+            "human_female"
+          ],
+          "default": "human_female"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Base(skeleton: 'str' = 'humanoid_a_pose', race: 'str' = 'human_female')"
+    },
+    "Body": {
+      "type": "object",
+      "properties": {
+        "measurements_m": {
+          "$ref": "#/$defs/Measurements"
+        },
+        "shape": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          },
+          "description": "0...1 semantic sliders without a metric: muscle, body_fat, posture."
+        },
+        "tolerances_m": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "reference_fit": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ReferenceFit"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "additionalProperties": false,
+      "description": "Body(measurements_m: 'Measurements', shape: 'dict[str, float]' = <factory>, tolerances_m: 'dict[str, float]' = <factory>, reference_fit: 'ReferenceFit | None' = None)",
+      "required": [
+        "measurements_m"
+      ]
+    },
+    "ClipSpec": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "[a-z0-9][a-z0-9_-]*"
+        },
+        "duration_s": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 3600.0
+        },
+        "loop": {
+          "type": "boolean",
+          "default": false
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        }
+      },
+      "additionalProperties": false,
+      "description": "ClipSpec(id: 'str', duration_s: 'float', loop: 'bool' = False, description: 'str | None' = None)",
+      "required": [
+        "id",
+        "duration_s"
+      ]
+    },
+    "CrossSection": {
+      "type": "object",
+      "properties": {
+        "landmark": {
+          "type": "string",
+          "enum": [
+            "chest",
+            "bust",
+            "underbust",
+            "waist",
+            "hip",
+            "shoulders",
+            "neck",
+            "head"
+          ]
+        },
+        "height": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 2.5
+        },
+        "width": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.0,
+          "default": null
+        },
+        "depth": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.0,
+          "default": null
+        },
+        "circumference": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.0,
+          "default": null
+        }
+      },
+      "additionalProperties": false,
+      "description": "A horizontal torso/head section at an absolute barefoot height (meters).",
+      "required": [
+        "landmark",
+        "height"
+      ]
+    },
+    "Eyebrows": {
+      "type": "object",
+      "properties": {
+        "style": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "color_srgb": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "#[0-9A-Fa-f]{6}",
+          "default": null
+        }
+      },
+      "additionalProperties": false,
+      "description": "Eyebrows(style: 'str | None' = None, color_srgb: 'str | None' = None)"
+    },
+    "Eyes": {
+      "type": "object",
+      "properties": {
+        "iris_color_srgb": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "#[0-9A-Fa-f]{6}",
+          "default": null
+        },
+        "sclera_color_srgb": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "#[0-9A-Fa-f]{6}",
+          "default": null
+        }
+      },
+      "additionalProperties": false,
+      "description": "Eyes(iris_color_srgb: 'str | None' = None, sclera_color_srgb: 'str | None' = None)"
+    },
+    "Face": {
+      "type": "object",
+      "properties": {
+        "metrics_m": {
+          "type": "object",
+          "additionalProperties": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "description": "Metric face targets where the blueprint gives numbers."
+        },
+        "shape": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          },
+          "description": "0...1 anatomical sliders; 0.5 is the neutral race face."
+        },
+        "descriptors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        }
+      },
+      "additionalProperties": false,
+      "description": "Face(metrics_m: 'dict[str, float | None]' = <factory>, shape: 'dict[str, float]' = <factory>, descriptors: 'tuple[str, ...]' = ())"
+    },
+    "FacialHair": {
+      "type": "object",
+      "properties": {
+        "style": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "color_srgb": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "#[0-9A-Fa-f]{6}",
+          "default": null
+        }
+      },
+      "additionalProperties": false,
+      "description": "FacialHair(style: 'str | None' = None, color_srgb: 'str | None' = None)"
+    },
+    "Garment": {
+      "type": "object",
+      "properties": {
+        "slot": {
+          "type": "string",
+          "enum": [
+            "inner",
+            "upper",
+            "lower",
+            "dress",
+            "outer",
+            "neck",
+            "waist",
+            "hands",
+            "footwear",
+            "headwear",
+            "socks"
+          ]
+        },
+        "catalog_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "blueprint_garment": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The blueprint garments[].id this came from.",
+          "default": null
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "material": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GarmentMaterial"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "finished_measurements_m": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          },
+          "description": "Verification targets measured on the dressed body; never used for generation."
+        },
+        "deformation": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "cloth",
+            "pinned_cloth",
+            "skinned",
+            "skinned_with_correctives",
+            "skinned_with_secondary_cloth",
+            "rigid",
+            "rigid_skinned",
+            null
+          ],
+          "default": null
+        },
+        "construction": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "sole_height_m": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.0,
+          "maximum": 0.2,
+          "default": null
+        },
+        "heel_height_m": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.0,
+          "maximum": 0.2,
+          "default": null
+        },
+        "internal_length_m": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.0,
+          "default": null
+        },
+        "controls": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "description": "One wardrobe slot. ``catalog_id`` null means unresolved (warning) unless the outfit says barefoot.",
+      "required": [
+        "slot"
+      ]
+    },
+    "GarmentMaterial": {
+      "type": "object",
+      "properties": {
+        "base_color_srgb": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "#[0-9A-Fa-f]{6}",
+          "default": null
+        },
+        "roughness": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "minItems": 2,
+          "maxItems": 2,
+          "default": null
+        },
+        "metallic": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "default": null
+        }
+      },
+      "additionalProperties": false,
+      "description": "GarmentMaterial(base_color_srgb: 'str | None' = None, roughness: 'tuple[float, float] | None' = None, metallic: 'float | None' = None)"
+    },
+    "Hair": {
+      "type": "object",
+      "properties": {
+        "style": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Catalog id (category hair).",
+          "default": null
+        },
+        "base_color_srgb": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "#[0-9A-Fa-f]{6}",
+          "default": null
+        },
+        "length_m": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.0,
+          "maximum": 2.0,
+          "default": null
+        }
+      },
+      "additionalProperties": false,
+      "description": "Hair(style: 'str | None' = None, base_color_srgb: 'str | None' = None, length_m: 'float | None' = None)"
+    },
+    "Identity": {
+      "type": "object",
+      "properties": {
+        "fictional": {
+          "type": "boolean",
+          "default": true
+        },
+        "sex": {
+          "type": "string",
+          "enum": [
+            "male",
+            "female"
+          ],
+          "default": "female"
+        },
+        "age": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 18,
+          "maximum": 100,
+          "default": null
+        },
+        "descriptors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Free-text traits from the blueprint, kept for humans and LLMs.",
+          "default": []
+        }
+      },
+      "additionalProperties": false,
+      "description": "Identity(fictional: 'bool' = True, sex: 'str' = 'female', age: 'int | None' = None, descriptors: 'tuple[str, ...]' = ())"
+    },
+    "Measurements": {
+      "type": "object",
+      "properties": {
+        "barefoot_height": {
+          "type": "number",
+          "minimum": 1.0,
+          "maximum": 2.5
+        },
+        "inseam": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.0,
+          "default": null
+        },
+        "shoulder_width": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.0,
+          "description": "Outer (acromion) torso slice width at the shoulder landmark, not the joint distance.",
+          "default": null
+        },
+        "foot_length": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.0,
+          "default": null
+        },
+        "head_height": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.0,
+          "default": null
+        },
+        "circumferences": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          },
+          "description": "Keys: chest, bust, underbust, waist, hip."
+        },
+        "cross_sections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CrossSection"
+          },
+          "default": []
+        }
+      },
+      "additionalProperties": false,
+      "description": "Metric body targets, same vocabulary as the blueprint ``dimensions`` block. Meters.",
+      "required": [
+        "barefoot_height"
+      ]
+    },
+    "ReferenceFit": {
+      "type": "object",
+      "properties": {
+        "solver": {
+          "type": "string"
+        },
+        "fit_version": {
+          "type": "integer"
+        },
+        "measured_m": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "residuals_m": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "seconds": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "default": null
+        },
+        "note": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        }
+      },
+      "additionalProperties": false,
+      "description": "Result of the optional MHR reference fit: proves the measurement set describes a possible body.",
+      "required": [
+        "solver",
+        "fit_version",
+        "measured_m",
+        "residuals_m"
+      ]
+    },
+    "Skin": {
+      "type": "object",
+      "properties": {
+        "preset": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Catalog id (category skin).",
+          "default": null
+        },
+        "base_color_srgb": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "#[0-9A-Fa-f]{6}",
+          "default": null
+        },
+        "roughness": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "minItems": 2,
+          "maxItems": 2,
+          "default": null
+        }
+      },
+      "additionalProperties": false,
+      "description": "Skin(preset: 'str | None' = None, base_color_srgb: 'str | None' = None, roughness: 'tuple[float, float] | None' = None)"
+    },
+    "Source": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "blueprint",
+            "prompt",
+            "random",
+            "manual",
+            "gui"
+          ],
+          "default": "blueprint"
+        },
+        "path": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Repository-relative path of the blueprint or prompt file.",
+          "default": null
+        },
+        "sha256": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "generator_version": {
+          "type": "integer",
+          "default": 1
+        },
+        "catalog_version": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        }
+      },
+      "additionalProperties": false,
+      "description": "Where the recipe came from, so it can be regenerated and diffed."
+    },
+    "Teeth": {
+      "type": "object",
+      "properties": {
+        "preset": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "base_color_srgb": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "#[0-9A-Fa-f]{6}",
+          "default": null
+        }
+      },
+      "additionalProperties": false,
+      "description": "Teeth(preset: 'str | None' = None, base_color_srgb: 'str | None' = None)"
+    }
+  }
+}

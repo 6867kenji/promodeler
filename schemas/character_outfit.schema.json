@@ -1,0 +1,364 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://promodeler.local/schemas/character_outfit.schema.json",
+  "title": "OutfitRecipe",
+  "description": "A wardrobe set that dresses an existing character without changing its body (blueprint kind ``wearable``).",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "type": "string",
+      "enum": [
+        "promodeler-outfit/1.0"
+      ]
+    },
+    "id": {
+      "type": "string",
+      "pattern": "[a-z0-9][a-z0-9_-]*"
+    },
+    "base_character": {
+      "type": "string",
+      "pattern": "[a-z0-9][a-z0-9_-]*"
+    },
+    "name": {
+      "type": "string",
+      "default": ""
+    },
+    "source": {
+      "$ref": "#/$defs/Source"
+    },
+    "body_policy": {
+      "type": "string",
+      "enum": [
+        "keep"
+      ],
+      "default": "keep"
+    },
+    "barefoot": {
+      "type": "boolean",
+      "default": false
+    },
+    "wardrobe": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Garment"
+      },
+      "default": []
+    },
+    "hair_override": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Hair"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "extra_bones": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "controls": {
+      "type": "object"
+    },
+    "clips_extra": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/ClipSpec"
+      },
+      "default": []
+    },
+    "physics": {
+      "type": "object"
+    },
+    "target": {
+      "type": "object"
+    },
+    "acceptance": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "id",
+    "base_character"
+  ],
+  "$defs": {
+    "ClipSpec": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "[a-z0-9][a-z0-9_-]*"
+        },
+        "duration_s": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 3600.0
+        },
+        "loop": {
+          "type": "boolean",
+          "default": false
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        }
+      },
+      "additionalProperties": false,
+      "description": "ClipSpec(id: 'str', duration_s: 'float', loop: 'bool' = False, description: 'str | None' = None)",
+      "required": [
+        "id",
+        "duration_s"
+      ]
+    },
+    "Garment": {
+      "type": "object",
+      "properties": {
+        "slot": {
+          "type": "string",
+          "enum": [
+            "inner",
+            "upper",
+            "lower",
+            "dress",
+            "outer",
+            "neck",
+            "waist",
+            "hands",
+            "footwear",
+            "headwear",
+            "socks"
+          ]
+        },
+        "catalog_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "blueprint_garment": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The blueprint garments[].id this came from.",
+          "default": null
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "material": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GarmentMaterial"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "finished_measurements_m": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          },
+          "description": "Verification targets measured on the dressed body; never used for generation."
+        },
+        "deformation": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "cloth",
+            "pinned_cloth",
+            "skinned",
+            "skinned_with_correctives",
+            "skinned_with_secondary_cloth",
+            "rigid",
+            "rigid_skinned",
+            null
+          ],
+          "default": null
+        },
+        "construction": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "sole_height_m": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.0,
+          "maximum": 0.2,
+          "default": null
+        },
+        "heel_height_m": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.0,
+          "maximum": 0.2,
+          "default": null
+        },
+        "internal_length_m": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.0,
+          "default": null
+        },
+        "controls": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "description": "One wardrobe slot. ``catalog_id`` null means unresolved (warning) unless the outfit says barefoot.",
+      "required": [
+        "slot"
+      ]
+    },
+    "GarmentMaterial": {
+      "type": "object",
+      "properties": {
+        "base_color_srgb": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "#[0-9A-Fa-f]{6}",
+          "default": null
+        },
+        "roughness": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "minItems": 2,
+          "maxItems": 2,
+          "default": null
+        },
+        "metallic": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "default": null
+        }
+      },
+      "additionalProperties": false,
+      "description": "GarmentMaterial(base_color_srgb: 'str | None' = None, roughness: 'tuple[float, float] | None' = None, metallic: 'float | None' = None)"
+    },
+    "Hair": {
+      "type": "object",
+      "properties": {
+        "style": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Catalog id (category hair).",
+          "default": null
+        },
+        "base_color_srgb": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "#[0-9A-Fa-f]{6}",
+          "default": null
+        },
+        "length_m": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.0,
+          "maximum": 2.0,
+          "default": null
+        }
+      },
+      "additionalProperties": false,
+      "description": "Hair(style: 'str | None' = None, base_color_srgb: 'str | None' = None, length_m: 'float | None' = None)"
+    },
+    "Source": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "blueprint",
+            "prompt",
+            "random",
+            "manual",
+            "gui"
+          ],
+          "default": "blueprint"
+        },
+        "path": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Repository-relative path of the blueprint or prompt file.",
+          "default": null
+        },
+        "sha256": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "generator_version": {
+          "type": "integer",
+          "default": 1
+        },
+        "catalog_version": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        }
+      },
+      "additionalProperties": false,
+      "description": "Where the recipe came from, so it can be regenerated and diffed."
+    }
+  }
+}

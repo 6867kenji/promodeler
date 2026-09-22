@@ -1,0 +1,237 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://promodeler.local/schemas/asset_catalog.schema.json",
+  "title": "AssetCatalog",
+  "description": "One ``character/catalog/<category>.json`` document.",
+  "type": "object",
+  "properties": {
+    "category": {
+      "type": "string",
+      "enum": [
+        "skin",
+        "hair",
+        "eyebrows",
+        "facial_hair",
+        "eyes",
+        "teeth",
+        "wardrobe",
+        "footwear",
+        "accessories"
+      ]
+    },
+    "version": {
+      "type": "string",
+      "default": "0"
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/CatalogEntry"
+      },
+      "default": []
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "category"
+  ],
+  "$defs": {
+    "CatalogEntry": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "[a-z0-9][a-z0-9_-]*"
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "skin",
+            "hair",
+            "eyebrows",
+            "facial_hair",
+            "eyes",
+            "teeth",
+            "wardrobe",
+            "footwear",
+            "accessories"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "default": ""
+        },
+        "slots": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Wardrobe slots this entry can fill (wardrobe/footwear only).",
+          "default": []
+        },
+        "match": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Blueprint text fragments that select this entry; higher priority, then the longest fragment wins.",
+          "default": []
+        },
+        "priority": {
+          "type": "integer",
+          "description": "Tie-break for match_text: specific styles (a side part) beat generic ones (short hair).",
+          "default": 0
+        },
+        "compatibility": {
+          "$ref": "#/$defs/Compatibility"
+        },
+        "runtime": {
+          "$ref": "#/$defs/Runtime"
+        },
+        "base_color_srgb": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "#[0-9A-Fa-f]{6}",
+          "description": "Nominal color of presets (skin, teeth, eyes) used for nearest-color selection.",
+          "default": null
+        },
+        "materials": {
+          "type": "object"
+        },
+        "neutral_measurements_m": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "triangles": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "default": null
+        },
+        "license": {
+          "$ref": "#/$defs/License"
+        },
+        "provenance": {
+          "type": "object"
+        },
+        "version": {
+          "type": "string",
+          "default": "0"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        }
+      },
+      "additionalProperties": false,
+      "description": "CatalogEntry(id: 'str', category: 'str', name: 'str' = '', slots: 'tuple[str, ...]' = (), match: 'tuple[str, ...]' = (), priority: 'int' = 0, compatibility: 'Compatibility' = <factory>, runtime: 'Runtime' = <factory>, base_color_srgb: 'str | None' = None, materials: 'dict' = <factory>, neutral_measurements_m: 'dict[str, float]' = <factory>, triangles: 'int | None' = None, license: 'License' = <factory>, provenance: 'dict' = <factory>, version: 'str' = '0', tags: 'tuple[str, ...]' = ())",
+      "required": [
+        "id",
+        "category"
+      ]
+    },
+    "Compatibility": {
+      "type": "object",
+      "properties": {
+        "races": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Base races this asset fits.",
+          "default": [
+            "human_male",
+            "human_female"
+          ]
+        },
+        "layers_over": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Slots this garment may be worn over.",
+          "default": []
+        },
+        "hides": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Body regions hidden under the garment.",
+          "default": []
+        }
+      },
+      "additionalProperties": false,
+      "description": "Compatibility(races: 'tuple[str, ...]' = ('human_male', 'human_female'), layers_over: 'tuple[str, ...]' = (), hides: 'tuple[str, ...]' = ())"
+    },
+    "License": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "SPDX-like identifier: CC0-1.0, CC-BY-4.0, MIT, Apache-2.0, own, purchased, unknown.",
+          "default": "own"
+        },
+        "source": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "attribution": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "redistribution": {
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "additionalProperties": false,
+      "description": "License(type: 'str' = 'own', source: 'str | None' = None, attribution: 'str | None' = None, redistribution: 'bool' = True)"
+    },
+    "Runtime": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "placeholder",
+            "ready",
+            "deprecated"
+          ],
+          "default": "placeholder"
+        },
+        "uma_wardrobe_recipe": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "addressable": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        }
+      },
+      "additionalProperties": false,
+      "description": "Runtime(status: 'str' = 'placeholder', uma_wardrobe_recipe: 'str | None' = None, addressable: 'str | None' = None)"
+    }
+  }
+}

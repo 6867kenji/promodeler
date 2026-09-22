@@ -176,6 +176,29 @@ clips=(Clip(id, duration, keyframes=(Keyframe(time, pose_id_or_None), ...), loop
 - クリップ動画: `python -m promodeler build assets/haruka.py --clip walk --views front,side --resolution 384`。
   歯（口は閉じている）、ランタイム物理そのもの、髪のカーブ書き出しは未着手。
 
+### 人型キャラクター: CharacterRecipe（M9〜）
+
+人型はもうコードで髪・服・靴を組み立てない。設計書（`blueprints/japan-realistic-v1/*/blueprint.json` の `kind: humanoid` / `wearable`）を
+**Recipe JSON**（`character/recipes/<id>.json`, `character/outfits/<id>.json`、schema `promodeler-character/1.0`）へ変換し、
+Unity + UMA のキャラクタークリエイター（M10 以降、`unity/ProModelerCharacterCreator/`）がそれを組み立てる。設計は
+[docs/03-character-recipe-pipeline.md](docs/03-character-recipe-pipeline.md)。人型に限り **Recipe が正**（GUI 編集と往復するため）で、
+`source` に設計書のパスと sha256 を残し `character diff` で再生成との差分を追う。
+
+```sh
+python -m promodeler generate blueprints/japan-realistic-v1/22-businessman/blueprint.json   # kind で振り分け（人型は Recipe 経路）
+python -m promodeler character recipe <blueprint.json> [--force]      # 設計書 → Recipe（既存は上書きしない）
+python -m promodeler character validate <id> [--mhr] [--strict]       # スキーマ・カタログ・ライセンス・寸法整合性。--mhr で MHR 参照フィット
+python -m promodeler character check <id> [--build <dir>]             # 設計書目標 × Recipe × Unity build.json の照合表
+python -m promodeler character diff <id>                              # Recipe と設計書再生成の差分
+python -m promodeler character catalog list [--category wardrobe --slot upper --race human_male]
+python -m promodeler character schema [--write]                       # dataclass から schemas/*.json を生成・照合
+```
+
+- Recipe の身体寸法はメートルの絶対値（`body.measurements_m`、設計書と同じ語彙）。0..1 のスライダーは寸法のない項目だけ（`body.shape`, `face.shape`）。
+- 髪・肌・衣服・靴はカタログ ID（`character/catalog/*.json`、Unity と共有）。現在の 65 項目は **すべてプレースホルダ**（中身なし）で、参照ごとに `catalog.placeholder` 警告が出る。
+- `validate` は設計書内の矛盾を Unity 前に出す（05-woman のヒップ断面楕円 0.775 m vs 周長 0.87 m など）。`--mhr` は `promodeler.human.mhr` で参照フィットを取り `body.reference_fit` に残差を書く（torch 必須、初回約 40 s）。
+- `assets/haruka.py` の Blender 人型経路は参照用に凍結。新しい人型 `.py` は書かない。装備品（鞄・眼鏡・時計）は従来どおり `assets/props/*.py` で作り、Recipe の `accessories[].source` から参照する。
+
 ### シェイプキー（M8）
 
 `MeshFile` の npz に `shape_names` と `shape:<name>` [V, 3] の差分を入れると、パーツにシェイプキーが付き glTF の

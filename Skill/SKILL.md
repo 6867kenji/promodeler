@@ -103,7 +103,17 @@ Rules:
 - `report.stages` lists seconds per pipeline stage; use it before blaming Blender for a slow build.
 - Clip videos: `--clip <id> [--clip-fps 60]` (or `RenderSettings(clip=...)`) renders that clip for every view/camera as a PNG sequence that the host encodes to .mp4 (ffmpeg on PATH) or animated .webp (Pillow). Shaded pass only; the contact sheet skips videos. Budget frames x per-frame render time (about 5 s per 384 px EEVEE frame on this machine) and pick short clips or `--views front`.
 
-## Human bodies
+## Characters (humanoid blueprints)
+
+- Humanoid and wearable blueprints (`kind: humanoid` / `wearable`) are **not** authored as `.py` assets any more. They become recipes: `python -m promodeler character recipe <blueprint.json>` writes `character/recipes/<id>.json` (or `character/outfits/`), `character validate <id> [--mhr]` checks schema, catalog IDs, licenses and measurement consistency, `character check <id>` prints the blueprint-vs-recipe table. The Unity + UMA build (`character build`) arrives with M10; see `docs/03-character-recipe-pipeline.md`.
+- The recipe JSON is the source of truth for characters (it round-trips with the GUI editor). Never regenerate over an edited recipe without `--force`; use `character diff <id>` to see what an edit changed against the blueprint.
+- Do not build new hair, dresses or shoes from `Strands` / `Loft`; those are catalog assets. Props a character carries (bags, glasses, watches) stay ordinary `assets/props/<name>.py` assets referenced from `accessories[].source`.
+- `catalog.placeholder` warnings mean the catalog entry has no content yet; report them, do not silence them.
+
+## Human bodies (Blender reference path, frozen)
+
+The MHR body below still works and `assets/haruka.py` stays buildable as the Blender-only reference, but it is not extended. New humanoid work goes through the character recipes above.
+
 
 - Do not build a human body from lofts. Fit Meta's MHR to the blueprint: `fit = fitted_body(blueprint_targets(blueprint), out_root=ROOT / "build" / "human", name=<asset>)`, then `Part(id="body", shape=MeshFile(fit["mesh"]), material="skin", skinned=True)` and `rig = rig_from_file(fit["rig"], rig_id=<asset>)` (126 joints, MHR names such as `l_uparm`, `r_upleg`, `c_spine3`, `c_head`; rest pose is an A-pose with arms about 40 degrees below horizontal). The first build fits for about 40 s and caches under `build/human/`.
 - Fit clothing and hair to the fitted surface, not to the blueprint numbers: slice `body.npz` at the section heights (`assets/haruka.py` has `BodyMeasure.slice`) and add ease. Loft sections must run bottom to top or the closed shell faces inward (`geometry.insideOut`).

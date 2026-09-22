@@ -1,0 +1,415 @@
+{
+  "category": "footwear",
+  "version": "2026.09",
+  "entries": [
+    {
+      "id": "oxford_lace_01",
+      "category": "footwear",
+      "name": "革の紐靴",
+      "slots": [
+        "footwear"
+      ],
+      "match": [
+        "紐靴",
+        "革靴"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": [
+          "feet"
+        ]
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/footwear/oxford_lace_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "business",
+        "leather"
+      ]
+    },
+    {
+      "id": "pumps_low_01",
+      "category": "footwear",
+      "name": "低いパンプス",
+      "slots": [
+        "footwear"
+      ],
+      "match": [
+        "パンプス"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": [
+          "feet"
+        ]
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/footwear/pumps_low_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "business"
+      ]
+    },
+    {
+      "id": "sneaker_low_01",
+      "category": "footwear",
+      "name": "ローカットスニーカー",
+      "slots": [
+        "footwear"
+      ],
+      "match": [
+        "スニーカー"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": [
+          "feet"
+        ]
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/footwear/sneaker_low_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "casual"
+      ]
+    },
+    {
+      "id": "work_shoe_01",
+      "category": "footwear",
+      "name": "作業靴",
+      "slots": [
+        "footwear"
+      ],
+      "match": [
+        "作業靴"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": [
+          "feet"
+        ]
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/footwear/work_shoe_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "uniform"
+      ]
+    },
+    {
+      "id": "flat_shoe_01",
+      "category": "footwear",
+      "name": "フラットシューズ",
+      "slots": [
+        "footwear"
+      ],
+      "match": [
+        "フラットシューズ"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": [
+          "feet"
+        ]
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/footwear/flat_shoe_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "casual"
+      ]
+    },
+    {
+      "id": "walking_shoe_01",
+      "category": "footwear",
+      "name": "ウォーキングシューズ",
+      "slots": [
+        "footwear"
+      ],
+      "match": [
+        "ウォーキングシューズ",
+        "歩きやすい靴"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": [
+          "feet"
+        ]
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/footwear/walking_shoe_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "casual"
+      ]
+    },
+    {
+      "id": "loafer_01",
+      "category": "footwear",
+      "name": "ローファー",
+      "slots": [
+        "footwear"
+      ],
+      "match": [
+        "ローファー"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": [
+          "feet"
+        ]
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/footwear/loafer_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "casual",
+        "leather"
+      ]
+    },
+    {
+      "id": "running_shoe_01",
+      "category": "footwear",
+      "name": "ランニングシューズ",
+      "slots": [
+        "footwear"
+      ],
+      "match": [
+        "ランニングシューズ"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": [
+          "feet"
+        ]
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/footwear/running_shoe_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "sport"
+      ]
+    },
+    {
+      "id": "boots_short_leather_01",
+      "category": "footwear",
+      "name": "ショートブーツ",
+      "slots": [
+        "footwear"
+      ],
+      "match": [
+        "ショートブーツ",
+        "ブーツ"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": [
+          "feet",
+          "ankles"
+        ]
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/footwear/boots_short_leather_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "outfit",
+        "leather"
+      ]
+    }
+  ]
+}

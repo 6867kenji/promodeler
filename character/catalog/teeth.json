@@ -1,0 +1,43 @@
+{
+  "category": "teeth",
+  "version": "2026.09",
+  "entries": [
+    {
+      "id": "teeth_natural_01",
+      "category": "teeth",
+      "name": "自然な歯 01",
+      "slots": [],
+      "match": [],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": []
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/teeth/teeth_natural_01"
+      },
+      "base_color_srgb": "#DCD4C3",
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": []
+    }
+  ]
+}

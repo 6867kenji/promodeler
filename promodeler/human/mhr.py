@@ -146,6 +146,10 @@ class MHRModel:
         arm_vertex = arm_group[dominant] & (self.weights.max(axis=1) > 0.0)
         torso = ~(arm_vertex[edges[:, 0]] | arm_vertex[edges[:, 1]])
         self.torso_edges = torch.from_numpy(edges[torso])
+        # Landmark heights as fractions of the standing height. The module defaults are the 05-woman planes;
+        # ``fit(..., landmarks=...)`` replaces them per body (a 1.76 m man's shoulders are not at 0.8375 of his height).
+        self.landmarks = dict(LANDMARKS)
+        self.extent_landmarks = dict(EXTENT_LANDMARKS)
 
     # --- evaluation ---------------------------------------------------------------------
 
@@ -222,13 +226,13 @@ class MHRModel:
         # Blueprint shoulder width is the outer (acromion) width: the torso slice at the shoulder landmark.
         # The upper-arm joint distance is reported alongside.
         joint_shoulder_width = (self.joint(joints, "l_uparm") - self.joint(joints, "r_uparm")).norm()
-        shoulder_width, _ = self.slice_extents(vertices, float((floor + EXTENT_LANDMARKS["shoulders"] * height).detach()))
+        shoulder_width, _ = self.slice_extents(vertices, float((floor + self.extent_landmarks["shoulders"] * height).detach()))
         head_height = (y.max() - self.joint(joints, "c_head")[1]) + 0.03
         out = {"height": height, "inseam": inseam, "foot_length": foot_length, "shoulder_width": shoulder_width,
                "joint_shoulder_width": joint_shoulder_width, "head_height": head_height}
-        for name, fraction in LANDMARKS.items():
+        for name, fraction in self.landmarks.items():
             out[name] = self.slice_perimeter(vertices, float((floor + fraction * height).detach()))
-        for name, fraction in EXTENT_LANDMARKS.items():
+        for name, fraction in self.extent_landmarks.items():
             width, depth = self.slice_extents(vertices, float((floor + fraction * height).detach()))
             out[f"{name}_width"], out[f"{name}_depth"] = width, depth
         return out
@@ -241,7 +245,7 @@ class MHRModel:
         v = vertices.detach()
         floor = v[:, 1].min()
         height = v[:, 1].max() - floor
-        y_c = floor + LANDMARKS["bust"] * height
+        y_c = floor + self.landmarks["bust"] * height
         points = self.slice_points(v, float(y_c))
         z_c = points[:, 1].mean() if points.shape[0] else v[:, 2].mean()
         front = torch.sigmoid((v[:, 2] - z_c) / 0.015)
@@ -265,10 +269,17 @@ class MHRModel:
     # chasing them with head coefficients drove them to the clamps (distorted jaw, pencil neck).
     HEAD = ("head_width", "head_depth")
 
-    def fit(self, targets: dict, iterations: int = 800, weights: dict | None = None, log=None) -> Body:
-        """Three stages: skeletal scales for lengths, identity for girths, then a joint refinement."""
+    def fit(self, targets: dict, iterations: int = 800, weights: dict | None = None, log=None,
+            landmarks: dict | None = None) -> Body:
+        """Three stages: skeletal scales for lengths, identity for girths, then a joint refinement.
+
+        ``landmarks`` maps ``bust/underbust/waist/hip/shoulders/neck/head`` to fractions of the standing
+        height and overrides the 05-woman defaults for the planes it names.
+        """
         torch = self.torch
         weights = {**DEFAULT_WEIGHTS, **(weights or {})}
+        self.landmarks = {**LANDMARKS, **{k: v for k, v in (landmarks or {}).items() if k in LANDMARKS}}
+        self.extent_landmarks = {**EXTENT_LANDMARKS, **{k: v for k, v in (landmarks or {}).items() if k in EXTENT_LANDMARKS}}
         body_coeffs = torch.zeros(20, requires_grad=True)  # identity[0:20]: body surface
         head_coeffs = torch.zeros(20, requires_grad=True)  # identity[20:40]: head surface
         hands = torch.zeros(5)  # identity[40:45] stay at the mean
@@ -393,21 +404,30 @@ class MHRModel:
             joints.append({"id": bone["name"], "parent": bone["parent"], "head": [float(c) for c in head], "tail": [float(c) for c in tail]})
         rig_path = out_dir / "rig.json"
         rig_path.write_text(json.dumps({"id": "mhr", "joints": joints, "measurements": body.measurements,
+                                        "landmarks": {**self.landmarks, **self.extent_landmarks},
                                         "identity": body.identity.tolist(), "parameters": body.parameters.tolist()},
                                        ensure_ascii=False, indent=1), encoding="utf-8")
         return {"mesh": str(mesh_path), "rig": str(rig_path), "measurements": body.measurements}
 
 
-def fitted_body(targets: dict, out_root: str | Path = "build/human", name: str = "body", log=None) -> dict:
-    """Fit once per (targets, version) and cache the exported files under ``out_root/<name>-<hash>``."""
-    digest = hashlib.sha256(json.dumps({"targets": targets, "version": FIT_VERSION}, sort_keys=True).encode()).hexdigest()[:12]
+def fitted_body(targets: dict, out_root: str | Path = "build/human", name: str = "body", log=None,
+                landmarks: dict | None = None) -> dict:
+    """Fit once per (targets, landmarks, version) and cache the exported files under ``out_root/<name>-<hash>``.
+
+    ``landmarks`` (fractions of the height, see ``MHRModel.fit``) is optional; omitting it keeps the 05-woman
+    planes and the cache keys of earlier fits.
+    """
+    key = {"targets": targets, "version": FIT_VERSION}
+    if landmarks:
+        key["landmarks"] = landmarks
+    digest = hashlib.sha256(json.dumps(key, sort_keys=True).encode()).hexdigest()[:12]
     out_dir = Path(out_root) / f"{name}-{digest}"
     marker = out_dir / "rig.json"
     if marker.is_file() and (out_dir / "body.npz").is_file():
         info = json.loads(marker.read_text(encoding="utf-8"))
         return {"mesh": str(out_dir / "body.npz"), "rig": str(marker), "measurements": info.get("measurements", {}), "cached": True}
     model = MHRModel()
-    body = model.fit(targets, log=log)
+    body = model.fit(targets, log=log, landmarks=landmarks)
     result = model.export(body, out_dir)
     result["cached"] = False
     return result

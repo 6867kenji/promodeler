@@ -1,0 +1,1519 @@
+{
+  "category": "wardrobe",
+  "version": "2026.09",
+  "entries": [
+    {
+      "id": "suit_jacket_2button_01",
+      "category": "wardrobe",
+      "name": "2ボタン・シングルスーツ上着",
+      "slots": [
+        "upper"
+      ],
+      "match": [
+        "2ボタンスーツ上着",
+        "スーツ上着"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male"
+        ],
+        "layers_over": [
+          "inner"
+        ],
+        "hides": [
+          "torso",
+          "upper_arms"
+        ]
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/wardrobe/suit_jacket_2button_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "business"
+      ]
+    },
+    {
+      "id": "pantsuit_jacket_01",
+      "category": "wardrobe",
+      "name": "パンツスーツ上着",
+      "slots": [
+        "upper"
+      ],
+      "match": [
+        "パンツスーツ上着"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_female"
+        ],
+        "layers_over": [
+          "inner"
+        ],
+        "hides": [
+          "torso",
+          "upper_arms"
+        ]
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/wardrobe/pantsuit_jacket_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "business"
+      ]
+    },
+    {
+      "id": "jacket_light_01",
+      "category": "wardrobe",
+      "name": "薄手ジャケット",
+      "slots": [
+        "upper"
+      ],
+      "match": [
+        "薄手ベージュジャケット",
+        "ジャケット"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [
+          "inner"
+        ],
+        "hides": [
+          "torso"
+        ]
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/wardrobe/jacket_light_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "casual"
+      ]
+    },
+    {
+      "id": "overshirt_01",
+      "category": "wardrobe",
+      "name": "オーバーシャツ",
+      "slots": [
+        "upper"
+      ],
+      "match": [
+        "オーバーシャツ"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [
+          "inner"
+        ],
+        "hides": [
+          "torso"
+        ]
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/wardrobe/overshirt_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "casual"
+      ]
+    },
+    {
+      "id": "hoodie_01",
+      "category": "wardrobe",
+      "name": "パーカ",
+      "slots": [
+        "upper"
+      ],
+      "match": [
+        "パーカ"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": [
+          "torso",
+          "upper_arms"
+        ]
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/wardrobe/hoodie_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "casual"
+      ]
+    },
+    {
+      "id": "cardigan_01",
+      "category": "wardrobe",
+      "name": "カーディガン",
+      "slots": [
+        "upper"
+      ],
+      "match": [
+        "カーディガン"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_female"
+        ],
+        "layers_over": [
+          "inner"
+        ],
+        "hides": []
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/wardrobe/cardigan_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "casual"
+      ]
+    },
+    {
+      "id": "polo_shirt_01",
+      "category": "wardrobe",
+      "name": "ポロシャツ",
+      "slots": [
+        "upper",
+        "inner"
+      ],
+      "match": [
+        "ポロ"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": [
+          "torso"
+        ]
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/wardrobe/polo_shirt_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "casual",
+        "uniform"
+      ]
+    },
+    {
+      "id": "shirt_short_sleeve_01",
+      "category": "wardrobe",
+      "name": "半袖シャツ",
+      "slots": [
+        "upper",
+        "inner"
+      ],
+      "match": [
+        "半袖シャツ",
+        "青半袖シャツ"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": [
+          "torso"
+        ]
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/wardrobe/shirt_short_sleeve_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "casual"
+      ]
+    },
+    {
+      "id": "shirt_three_quarter_01",
+      "category": "wardrobe",
+      "name": "七分袖シャツ",
+      "slots": [
+        "inner",
+        "upper"
+      ],
+      "match": [
+        "七分袖シャツ"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": [
+          "torso"
+        ]
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/wardrobe/shirt_three_quarter_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "uniform"
+      ]
+    },
+    {
+      "id": "dress_shirt_01",
+      "category": "wardrobe",
+      "name": "ドレスシャツ",
+      "slots": [
+        "inner",
+        "upper"
+      ],
+      "match": [
+        "白シャツ",
+        "シャツ"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": [
+          "torso"
+        ]
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/wardrobe/dress_shirt_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "business"
+      ]
+    },
+    {
+      "id": "blouse_01",
+      "category": "wardrobe",
+      "name": "ブラウス",
+      "slots": [
+        "inner",
+        "upper"
+      ],
+      "match": [
+        "ブラウス"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": [
+          "torso"
+        ]
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/wardrobe/blouse_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "business",
+        "casual"
+      ]
+    },
+    {
+      "id": "tshirt_01",
+      "category": "wardrobe",
+      "name": "Tシャツ・カットソー",
+      "slots": [
+        "inner",
+        "upper"
+      ],
+      "match": [
+        "Tシャツ",
+        "カットソー"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": [
+          "torso"
+        ]
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/wardrobe/tshirt_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "casual"
+      ]
+    },
+    {
+      "id": "tshirt_athletic_01",
+      "category": "wardrobe",
+      "name": "運動用Tシャツ",
+      "slots": [
+        "inner",
+        "upper"
+      ],
+      "match": [
+        "運動Tシャツ",
+        "運動用Tシャツ"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": [
+          "torso"
+        ]
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/wardrobe/tshirt_athletic_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "sport"
+      ]
+    },
+    {
+      "id": "sports_inner_01",
+      "category": "wardrobe",
+      "name": "スポーツインナー",
+      "slots": [
+        "inner"
+      ],
+      "match": [
+        "スポーツインナー"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": [
+          "chest"
+        ]
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/wardrobe/sports_inner_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "sport"
+      ]
+    },
+    {
+      "id": "support_lining_01",
+      "category": "wardrobe",
+      "name": "内蔵支持ライニング",
+      "slots": [
+        "inner"
+      ],
+      "match": [
+        "支持ライニング"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": [
+          "chest"
+        ]
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/wardrobe/support_lining_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "outfit"
+      ]
+    },
+    {
+      "id": "necktie_01",
+      "category": "wardrobe",
+      "name": "ネクタイ",
+      "slots": [
+        "neck"
+      ],
+      "match": [
+        "ネクタイ"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male"
+        ],
+        "layers_over": [],
+        "hides": []
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/wardrobe/necktie_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "business"
+      ]
+    },
+    {
+      "id": "apron_bib_01",
+      "category": "wardrobe",
+      "name": "胸当てエプロン",
+      "slots": [
+        "waist"
+      ],
+      "match": [
+        "エプロン"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [
+          "inner",
+          "lower"
+        ],
+        "hides": []
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/wardrobe/apron_bib_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "uniform"
+      ]
+    },
+    {
+      "id": "slacks_01",
+      "category": "wardrobe",
+      "name": "スラックス",
+      "slots": [
+        "lower"
+      ],
+      "match": [
+        "スラックス"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": [
+          "legs"
+        ]
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/wardrobe/slacks_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "business"
+      ]
+    },
+    {
+      "id": "chinos_01",
+      "category": "wardrobe",
+      "name": "チノパン",
+      "slots": [
+        "lower"
+      ],
+      "match": [
+        "チノパン",
+        "チノ"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": [
+          "legs"
+        ]
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/wardrobe/chinos_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "casual"
+      ]
+    },
+    {
+      "id": "jeans_straight_01",
+      "category": "wardrobe",
+      "name": "ストレートジーンズ",
+      "slots": [
+        "lower"
+      ],
+      "match": [
+        "ジーンズ"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": [
+          "legs"
+        ]
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/wardrobe/jeans_straight_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "casual"
+      ]
+    },
+    {
+      "id": "pants_tapered_01",
+      "category": "wardrobe",
+      "name": "テーパードパンツ",
+      "slots": [
+        "lower"
+      ],
+      "match": [
+        "テーパードパンツ"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": [
+          "legs"
+        ]
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/wardrobe/pants_tapered_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "uniform"
+      ]
+    },
+    {
+      "id": "pants_wide_01",
+      "category": "wardrobe",
+      "name": "ゆったりパンツ",
+      "slots": [
+        "lower"
+      ],
+      "match": [
+        "ゆったり紺パンツ",
+        "ゆったりパンツ"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": [
+          "legs"
+        ]
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/wardrobe/pants_wide_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "casual"
+      ]
+    },
+    {
+      "id": "cargo_pants_01",
+      "category": "wardrobe",
+      "name": "カーゴパンツ",
+      "slots": [
+        "lower"
+      ],
+      "match": [
+        "カーゴパンツ"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": [
+          "legs"
+        ]
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/wardrobe/cargo_pants_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "casual"
+      ]
+    },
+    {
+      "id": "joggers_01",
+      "category": "wardrobe",
+      "name": "ジョガーパンツ",
+      "slots": [
+        "lower"
+      ],
+      "match": [
+        "ジョガーパンツ"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": [
+          "legs"
+        ]
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/wardrobe/joggers_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "sport"
+      ]
+    },
+    {
+      "id": "pants_01",
+      "category": "wardrobe",
+      "name": "パンツ",
+      "slots": [
+        "lower"
+      ],
+      "match": [
+        "パンツ"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": [
+          "legs"
+        ]
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/wardrobe/pants_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "casual"
+      ]
+    },
+    {
+      "id": "skirt_long_01",
+      "category": "wardrobe",
+      "name": "足首丈スカート",
+      "slots": [
+        "lower"
+      ],
+      "match": [
+        "スカート"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": [
+          "legs"
+        ]
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/wardrobe/skirt_long_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "casual"
+      ]
+    },
+    {
+      "id": "dress_sleeveless_uneck_01",
+      "category": "wardrobe",
+      "name": "ノースリーブ U ネックワンピース",
+      "slots": [
+        "dress"
+      ],
+      "match": [
+        "ワンピース"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": [
+          "torso",
+          "hips"
+        ]
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/wardrobe/dress_sleeveless_uneck_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "casual"
+      ]
+    },
+    {
+      "id": "karate_gi_jacket_01",
+      "category": "wardrobe",
+      "name": "空手着上衣",
+      "slots": [
+        "upper"
+      ],
+      "match": [
+        "空手着上衣"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [
+          "inner"
+        ],
+        "hides": [
+          "torso",
+          "upper_arms"
+        ]
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/wardrobe/karate_gi_jacket_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "karate"
+      ]
+    },
+    {
+      "id": "karate_gi_pants_01",
+      "category": "wardrobe",
+      "name": "空手着下衣",
+      "slots": [
+        "lower"
+      ],
+      "match": [
+        "空手着下衣"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": [
+          "legs"
+        ]
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/wardrobe/karate_gi_pants_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "karate"
+      ]
+    },
+    {
+      "id": "karate_belt_01",
+      "category": "wardrobe",
+      "name": "帯",
+      "slots": [
+        "waist"
+      ],
+      "match": [
+        "黒帯",
+        "白帯",
+        "帯"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [
+          "upper"
+        ],
+        "hides": []
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/wardrobe/karate_belt_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "karate"
+      ]
+    },
+    {
+      "id": "leather_jacket_separate_01",
+      "category": "wardrobe",
+      "name": "セパレート革ジャケット",
+      "slots": [
+        "upper"
+      ],
+      "match": [
+        "革ジャケット"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_female"
+        ],
+        "layers_over": [
+          "inner"
+        ],
+        "hides": [
+          "torso",
+          "upper_arms"
+        ]
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/wardrobe/leather_jacket_separate_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "outfit",
+        "leather"
+      ]
+    },
+    {
+      "id": "leather_pants_highwaist_01",
+      "category": "wardrobe",
+      "name": "ハイウエスト革パンツ",
+      "slots": [
+        "lower"
+      ],
+      "match": [
+        "革パンツ"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": [
+          "legs"
+        ]
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/wardrobe/leather_pants_highwaist_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "outfit",
+        "leather"
+      ]
+    },
+    {
+      "id": "gloves_leather_01",
+      "category": "wardrobe",
+      "name": "革グローブ",
+      "slots": [
+        "hands"
+      ],
+      "match": [
+        "グローブ"
+      ],
+      "priority": 0,
+      "compatibility": {
+        "races": [
+          "human_male",
+          "human_female"
+        ],
+        "layers_over": [],
+        "hides": [
+          "hands"
+        ]
+      },
+      "runtime": {
+        "status": "placeholder",
+        "uma_wardrobe_recipe": null,
+        "addressable": "character/wardrobe/gloves_leather_01"
+      },
+      "base_color_srgb": null,
+      "materials": {},
+      "neutral_measurements_m": {},
+      "triangles": null,
+      "license": {
+        "type": "own",
+        "source": null,
+        "attribution": null,
+        "redistribution": true
+      },
+      "provenance": {
+        "origin": "placeholder",
+        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+      },
+      "version": "2026.09",
+      "tags": [
+        "outfit",
+        "leather"
+      ]
+    }
+  ]
+}

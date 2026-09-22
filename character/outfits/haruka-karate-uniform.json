@@ -1,0 +1,236 @@
+{
+  "schema": "promodeler-outfit/1.0",
+  "id": "haruka-karate-uniform",
+  "base_character": "woman",
+  "name": "春香用・黒帯の空手着",
+  "source": {
+    "kind": "blueprint",
+    "path": "blueprints/japan-realistic-v1/36-haruka-karate-uniform/blueprint.json",
+    "sha256": "eb2eeba8e69df7bc365f51662d6cf60e4139fbf4e7b9b1d0e3b5765f1645414c",
+    "generator_version": 1,
+    "catalog_version": "2f6d334150ab"
+  },
+  "body_policy": "keep",
+  "barefoot": true,
+  "wardrobe": [
+    {
+      "slot": "upper",
+      "catalog_id": "karate_gi_jacket_01",
+      "blueprint_garment": "gi-jacket",
+      "name": "空手着上衣",
+      "material": {
+        "base_color_srgb": "#E8E6DE",
+        "roughness": [
+          0.75,
+          0.9
+        ],
+        "metallic": 0
+      },
+      "finished_measurements_m": {
+        "back_length": 0.709,
+        "chest_circumference": 1.14,
+        "sleeve_from_center_back": 0.709,
+        "cuff_circumference": 0.36,
+        "overlap": 0.16,
+        "thickness": 0.0012
+      },
+      "deformation": "cloth",
+      "construction": "着用者の左前を外側、右前を内側。左右脇紐で固定、股脇スリット100mm、襟幅45mm、襟は6列ステッチ。",
+      "sole_height_m": null,
+      "heel_height_m": null,
+      "internal_length_m": null,
+      "controls": {}
+    },
+    {
+      "slot": "lower",
+      "catalog_id": "karate_gi_pants_01",
+      "blueprint_garment": "gi-pants",
+      "name": "空手着下衣",
+      "material": {
+        "base_color_srgb": "#E8E6DE",
+        "roughness": [
+          0.75,
+          0.9
+        ],
+        "metallic": 0
+      },
+      "finished_measurements_m": {
+        "waist_relaxed": 0.61,
+        "hip_circumference": 1.07,
+        "inseam": 0.7,
+        "hem_circumference": 0.4,
+        "gusset_length": 0.22
+      },
+      "deformation": "cloth",
+      "construction": "ウエスト紐、股下ひし形マチ、膝の屈曲用ゆとり。",
+      "sole_height_m": null,
+      "heel_height_m": null,
+      "internal_length_m": null,
+      "controls": {}
+    },
+    {
+      "slot": "waist",
+      "catalog_id": "karate_belt_01",
+      "blueprint_garment": "belt",
+      "name": "黒帯",
+      "material": {
+        "base_color_srgb": "#252628",
+        "roughness": [
+          0.75,
+          0.9
+        ],
+        "metallic": 0
+      },
+      "finished_measurements_m": {
+        "length": 2.4,
+        "width": 0.045,
+        "thickness": 0.004
+      },
+      "deformation": "pinned_cloth",
+      "construction": "腰を2周し正面で平らに結ぶ。端の長さを左右で揃える。端に実在流派名なし。",
+      "sole_height_m": null,
+      "heel_height_m": null,
+      "internal_length_m": null,
+      "controls": {}
+    },
+    {
+      "slot": "inner",
+      "catalog_id": "sports_inner_01",
+      "blueprint_garment": "inner",
+      "name": "白スポーツインナー",
+      "material": {
+        "base_color_srgb": "#ECE9E0",
+        "roughness": [
+          0.65,
+          0.85
+        ],
+        "metallic": 0
+      },
+      "finished_measurements_m": {
+        "chest_circumference": 0.915,
+        "back_length": 0.582,
+        "thickness": 0.0006
+      },
+      "deformation": "cloth",
+      "construction": "不透明な身頃。襟・肩・脇の縫合。裾は下衣との重なりを保持。",
+      "sole_height_m": null,
+      "heel_height_m": null,
+      "internal_length_m": null,
+      "controls": {}
+    }
+  ],
+  "hair_override": {
+    "style": "hair_long_braided_back_01",
+    "base_color_srgb": null,
+    "length_m": null
+  },
+  "extra_bones": [
+    "belt-end.L",
+    "belt-end.R"
+  ],
+  "controls": {
+    "belt_tails_m": [
+      0.3,
+      0.3
+    ],
+    "jacket_overlap_m": 0.16,
+    "waist_wraps": 2,
+    "note": "結びに必要な長さは着用時に調整。黒帯と春香の体型を固定条件とする。"
+  },
+  "clips_extra": [
+    {
+      "id": "karate",
+      "duration_s": 8.0,
+      "loop": false,
+      "description": "礼、前屈立ち、正拳突き、腰高の前蹴り。左右の技を各1回、振り上げ脚と裾を確認。"
+    }
+  ],
+  "physics": {
+    "common": {
+      "execution": "ランタイムで継続する物理演算。GLB単体では再現不可。",
+      "fixed_step_s": 0.016666666666666666,
+      "substeps": 4,
+      "gravity_m_s2": [
+        0,
+        -9.81,
+        0
+      ],
+      "initial_settle_s": 2,
+      "collision_margin_m": 0.004,
+      "penetration_tolerance": "通常動作の可視貫通0。計測最大2mm未満かつ2フレーム以内。基準超過時は設定または形状を修正。"
+    },
+    "clothing": {
+      "method": "低解像度クロス4000–6000頂点。上衣、下衣、帯端を別領域として縫合/固定。",
+      "areal_density_kg_m2": 0.3,
+      "stretch_ratio_max": 1.03,
+      "bend_radius_min_m": 0.005,
+      "pin": "襟・肩・腰紐・帯結び100%、袖裾20%、帯端0%。上衣の重なりに自己衝突。",
+      "collision": "身体の胸・腹・骨盤・大腿・腕の追従コライダー。自己衝突ON。靴と裾の接近時も検証。",
+      "range": "袖裾120mm、帯端150mmの初期可動上限。蹴り上げでは身体/自己衝突を優先。"
+    },
+    "breast": {
+      "method": "左右独立のばね質点/補助ボーン動力学。胸郭ローカルで求解し布側コライダーへ反映。",
+      "effective_mass_kg": 0.35,
+      "stiffness_n_m": 260,
+      "damping_n_s_m": 15,
+      "max_translation_m": [
+        0.003,
+        0.004,
+        0.003
+      ],
+      "max_rotation_deg": 2,
+      "collision": "胸郭へのめり込み制限、左右相互衝突、衣服は追従コライダーに衝突。基準姿勢を拘束中心とする。",
+      "note": "衣装の内側支持を反映。既存身体を縮小せず、元のワンピース用物理値とは衣装プリセットを分ける。"
+    },
+    "hair": {
+      "method": "結び根元は固定、ポニーテール/編み込みを6–8節の代理チェーンで求解。元の髪長を保持。",
+      "root_pin": 1,
+      "max_segment_angle_deg": 25,
+      "max_tip_displacement_m": 0.12,
+      "collision": "頭・肩・胸・背中のカプセル。髪は服の外側4mmの代理面と衝突。",
+      "damping_ratio": 0.8
+    },
+    "solve_order": [
+      "身体アニメーションとIK",
+      "胸の動力学",
+      "胸コライダー更新",
+      "服クロス",
+      "髪動力学",
+      "表示メッシュ更新"
+    ]
+  },
+  "target": {
+    "engine": "unity_hdrp",
+    "exports": [
+      "BLEND（衣装形状・春香リグへのバインド・衣装別物理、実装時に制作）",
+      "GLB（形状・PBR・ベイクした骨アニメ）",
+      "Unity用物理設定",
+      "検証PNGとMP4"
+    ],
+    "triangles_lod0_max": 45000,
+    "texture_resolution_max": 4096,
+    "texture_policy": "共有材2K、主役・顔4K。BaseColor=sRGB、Normal/Roughness/Metallic=linear。AOをBaseColorへ焼き込まない。",
+    "texel_density_px_per_m": 2048,
+    "lod_ratios": [
+      1,
+      0.5,
+      0.2,
+      0.08
+    ],
+    "triangles_by_part": {
+      "jacket": 22000,
+      "pants": 15000,
+      "belt": 5000,
+      "inner": 3000
+    },
+    "texture_resident_budget_mib": 96,
+    "engine_note": "Unity / HDRP を主想定。バージョンはモデル実装時に固定。"
+  },
+  "acceptance": [
+    "既存春香の身体寸法と骨名を保持。衣装交換時に身体を重複表示しない。",
+    "黒帯/セパレート構造など指定した意匠を全方向で確認。",
+    "通常動作で可視貫通0、計測2mm未満かつ2フレーム以内。",
+    "物理と補正morphのON/OFF、動作停止後の収束を録画。",
+    "人体のrig、服、胸、髪のチェックは親モデル依存も含め未検証。"
+  ]
+}
