@@ -49,6 +49,8 @@ def part_statistics(obj: bpy.types.Object, depsgraph, skip_intersections: bool =
     mesh = evaluated.to_mesh()
     try:
         mesh.calc_loop_triangles()
+        corners = [space.blender_point_to_author(evaluated.matrix_world @ Vector(c)) for c in evaluated.bound_box]
+        part_bounds = {"min": [min(c[i] for c in corners) for i in range(3)], "max": [max(c[i] for c in corners) for i in range(3)]}
         bm = bmesh.new()
         bm.from_mesh(mesh)
         non_manifold = sum(1 for e in bm.edges if not e.is_manifold)
@@ -65,6 +67,7 @@ def part_statistics(obj: bpy.types.Object, depsgraph, skip_intersections: bool =
         volume = bm.calc_volume(signed=True) if watertight else None
         bm.free()
         return {
+            "bounds": part_bounds,
             "vertices": len(mesh.vertices),
             "faces": len(mesh.polygons),
             "triangles": len(mesh.loop_triangles),

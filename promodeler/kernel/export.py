@@ -10,6 +10,8 @@ from .compile import CompiledScene
 
 
 def _select_export_objects(scene: CompiledScene) -> None:
+    if scene.armature is not None and scene.armature.animation_data is not None:
+        scene.armature.animation_data.use_nla = True
     names = {scene.root.name, *scene.parts}
     names.update(obj.name for objects in scene.lods.values() for obj in objects)
     if scene.armature is not None:

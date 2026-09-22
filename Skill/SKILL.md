@@ -13,7 +13,7 @@ Python source is the model's source of truth. You edit an asset file, run a buil
 - `python -m promodeler new assets/<name>.py --name "<Name>"` creates a starting file.
 - `python -m promodeler recipe assets/<name>.py` validates and prints the recipe without Blender. Use it first after every edit; validation errors are `code: message` pairs and are the cheapest feedback.
 - `python -m promodeler build assets/<name>.py` builds. For iteration add `--texture-resolution 256 --bake-samples 4 --passes shaded`; for the final check drop those flags and add `--passes shaded,clay,wireframe --engine cycles`.
-- Overrides: `--views perspective,front,side,top`, `--passes shaded,clay,wireframe,normals,uv`, `--environment studio|overcast|sunny|sunset|<file.hdr>`, `--engine eevee|cycles`, `--force` (ignore caches).
+- Overrides: `--views perspective,front,back,side,top`, `--passes shaded,clay,wireframe,normals,uv`, `--environment studio|overcast|sunny|sunset|<file.hdr>`, `--engine eevee|cycles`, `--force` (ignore caches).
 - `python -m promodeler critique assets/<name>.py [--reference photo.jpg] [--goal "..."]` asks Claude for a structured review of the newest build. When you can view images yourself, look at the contact sheet directly instead.
 - `python -m promodeler clean --keep 2` prunes old builds.
 
@@ -95,7 +95,7 @@ Rules:
 
 ## Rigs, animation, scatter, fur, cloth, LODs
 
-- Rig: `Asset(rig=Rig(id, joints=(Joint(id, head, tail, parent), ...)), poses=(Pose(id, {joint: JointTransform(rotation=(x, y, z))}),), clips=(Clip(id, duration, keyframes=(Keyframe(t, pose_id_or_None), ...)),))`. Joint rotations are in the joint's local frame (Y from head to tail). `Part(skinned=True)` binds by automatic distance weights; `Part(parent_joint=...)` attaches rigidly. Use joint ids distinct from part ids. Verify poses with `--pose <id>` from a view perpendicular to the rotation axis; the export carries clips as glTF animations (`skins`, `animations` in the glb).
+- Rig: `Asset(rig=Rig(id, joints=(Joint(id, head, tail, parent), ...)), poses=(Pose(id, {joint: JointTransform(rotation=(x, y, z))}),), clips=(Clip(id, duration, keyframes=(Keyframe(t, pose_id_or_None), ...)),))`. Joint rotations default to the joint's local frame (Y from head to tail, roll dependent); write verification poses with `space="world"` so Z raises an arm sideways and X swings a limb forward. `Part(skinned=True)` binds by automatic distance weights; `Part(parent_joint=...)` attaches rigidly. Use joint ids distinct from part ids. Verify poses with `--pose <id>` from a view perpendicular to the rotation axis; the export carries clips as glTF animations (`skins`, `animations` in the glb).
 - `Scatter(surface=<part id>, instance=<shape>, density, seed, scale, mask)` and `Fur(surface, density, length, thickness, segments, sides, droop, curl, mask)` are shapes of their own parts. Fur triangles = strands x segments x sides x 2: keep strands in the low thousands.
 - `ClothDrape(frames, mass, stiffness, bending, pin=<field>)` simulates a part against the other parts and freezes the result; give the cloth a `Subdivision(smooth=False)` for resolution and expect a few self-intersections in folds.
 - `Part(lods=(LOD(distance, ratio), ...))` exports decimated `<id>:lod<n>` nodes. `ExportSettings(formats=("glb", "usdz"))` or `--formats glb,usdz` adds USDZ.

@@ -72,19 +72,33 @@ class Rig:
         return {"id": self.id, "joints": [j.to_recipe() for j in self.joints]}
 
 
+POSE_SPACES = ("joint", "world")
+
+
 @dataclass(frozen=True)
 class JointTransform:
-    """Rotation (XYZ Euler, radians) and translation (meters) in the joint's local rest frame."""
+    """Rotation (XYZ Euler, radians) and translation (meters) of one joint.
+
+    ``space="joint"`` uses the joint's local rest frame (Y from head to
+    tail), which depends on the bone roll. ``space="world"`` uses the
+    authoring axes (Y up, Z toward the viewer) as if every parent were at
+    rest, which is the natural way to write verification poses: raising an
+    arm sideways is a rotation about world Z.
+    """
 
     rotation: tuple[float, float, float] = (0.0, 0.0, 0.0)
     translation: tuple[float, float, float] = (0.0, 0.0, 0.0)
+    space: str = "joint"
 
     def validate(self, label: str) -> None:
         finite_vector(self.rotation, 3, "pose.rotation", f"{label}.rotation")
         finite_vector(self.translation, 3, "pose.translation", f"{label}.translation")
+        if self.space not in POSE_SPACES:
+            raise ModelingError("pose.space", f"{label}.space must be one of {POSE_SPACES}.")
 
     def to_recipe(self) -> dict:
-        return {"rotation": [float(c) for c in self.rotation], "translation": [float(c) for c in self.translation]}
+        return {"rotation": [float(c) for c in self.rotation], "translation": [float(c) for c in self.translation],
+                "space": self.space}
 
 
 @dataclass(frozen=True)

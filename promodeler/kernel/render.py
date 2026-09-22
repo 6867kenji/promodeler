@@ -28,6 +28,7 @@ from .report import world_bounds
 VIEW_DIRECTIONS = {
     "perspective": Vector((1.0, -1.2, 0.8)),
     "front": Vector((0.0, -1.0, 0.0)),
+    "back": Vector((0.0, 1.0, 0.0)),
     "side": Vector((1.0, 0.0, 0.0)),
     "top": Vector((0.0, -0.0001, 1.0)),
 }
@@ -430,9 +431,9 @@ def render_views(scene: CompiledScene, settings: dict, out_dir: str) -> list[dic
     passes = settings.get("passes") or ["shaded"]
     state = _PassState(scene, settings, bounds)
     results = []
-    if settings.get("pose") and scene.armature is not None:
+    if scene.armature is not None:
         from . import rig as rigging
-        rigging.apply_pose(scene, settings["pose"])
+        rigging.apply_pose(scene, settings.get("pose"))
     try:
         for pass_name in passes:
             state.apply(pass_name)
@@ -455,7 +456,7 @@ def render_views(scene: CompiledScene, settings: dict, out_dir: str) -> list[dic
                 })
     finally:
         state.revert()
-        if settings.get("pose") and scene.armature is not None:
+        if scene.armature is not None:
             from . import rig as rigging
             rigging.apply_pose(scene, None)
     return results

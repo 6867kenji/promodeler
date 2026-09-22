@@ -14,7 +14,7 @@ from .transform import Transform
 EXPORT_FORMATS = ("glb", "usdz")
 
 RENDER_ENGINES = ("eevee", "cycles")
-RENDER_VIEWS = ("perspective", "front", "side", "top")
+RENDER_VIEWS = ("perspective", "front", "back", "side", "top")
 RENDER_PASSES = ("shaded", "clay", "wireframe", "normals", "uv")
 RENDER_ENVIRONMENTS = ("studio", "overcast", "sunny", "sunset")
 

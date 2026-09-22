@@ -120,15 +120,25 @@ def apply_pose(scene: CompiledScene, pose_id: str | None) -> None:
     armature = scene.armature
     if armature is None:
         return
-    # Parked clips on NLA tracks would overwrite a hand-set pose at evaluation time.
+    # Parked clips on NLA tracks would overwrite the rest pose or a hand-set pose at
+    # evaluation time; renders always run with them muted and the export re-enables them.
     if armature.animation_data is not None:
-        armature.animation_data.use_nla = pose_id is None
+        armature.animation_data.use_nla = False
     spec = scene.pose_specs.get(pose_id, {"joints": {}}) if pose_id else {"joints": {}}
     for bone in armature.pose.bones:
         transform = spec["joints"].get(bone.name)
         if transform is None:
             bone.rotation_euler = Euler((0.0, 0.0, 0.0), "XYZ")
             bone.location = Vector((0.0, 0.0, 0.0))
+        elif transform.get("space", "joint") == "world":
+            # Authored axes -> Blender axes, then conjugate into the bone's rest frame.
+            rest = bone.bone.matrix_local.to_3x3()
+            authored = Euler(transform["rotation"], "XYZ").to_matrix()
+            a2b = space.A2B.to_3x3()
+            world = a2b @ authored @ a2b.inverted()
+            local = rest.inverted() @ world @ rest
+            bone.rotation_euler = local.to_euler("XYZ")
+            bone.location = rest.inverted() @ (a2b @ Vector(transform["translation"]))
         else:
             bone.rotation_euler = Euler(transform["rotation"], "XYZ")
             bone.location = Vector(transform["translation"])

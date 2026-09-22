@@ -118,7 +118,7 @@ Boolean の後に Bevel を掛けると切り口の細かい面で幅が収ま�
 `Asset(rig=Rig(id, joints=(Joint(id, head, tail, parent), ...)), poses=(Pose(id, {joint: JointTransform(rotation, translation)}), ...),
 clips=(Clip(id, duration, keyframes=(Keyframe(time, pose_id_or_None), ...), loop, interpolation), ...))`。
 `Part(skinned=True)` は距離ベースの自動ウェイト（最大 4 影響）でリグに結合し、`Part(parent_joint="j")` は関節に剛体で追従する。
-ポーズの回転は各関節のローカル座標系（Y が head → tail）で指定する。クリップは NLA トラックとして glTF の
+ポーズの回転は既定では各関節のローカル座標系（Y が head → tail、ロール依存）で指定する。検証ポーズには `JointTransform(..., space="world")` で作者座標系の軸（Z 回りで腕を横に上げる、X 回りで前後に振る）を使うと迷わない。クリップは NLA トラックとして glTF の
 アニメーションに書き出され、ランタイムのステートマシンはエンジン側に任せる。`RenderSettings(pose=...)` または
 `--pose` でポーズ付きの検証レンダができる。関節 ID とパーツ ID は書き出し先で同じノード名空間になるので別名にする。
 `assets/desk_lamp.py`（剛体アタッチ）と `assets/tentacle.py`（スキン）を参照。
@@ -142,7 +142,7 @@ clips=(Clip(id, duration, keyframes=(Keyframe(time, pose_id_or_None), ...), loop
 
 | 項目 | 選択肢 |
 | --- | --- |
-| `views` | `perspective`, `front`, `side`, `top` |
+| `views` | `perspective`, `front`, `back`, `side`, `top` |
 | `passes` | `shaded`（ベイク済みマテリアル）, `clay`（無彩色の粘土）, `wireframe`（粘土 + 辺）, `normals`（ワールド法線）, `uv`（チェッカー） |
 | `environment` | `studio`（勾配環境 + エリアライト）, `overcast`, `sunny` / `sunset`（物理空 + 太陽）, または `.hdr` / `.exr` のパス |
 | `pose` | リグのポーズ ID。指定時はクリップを無効にしてそのポーズで描く |

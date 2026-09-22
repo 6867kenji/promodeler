@@ -43,6 +43,12 @@ class RigTests(unittest.TestCase):
             build_recipe(Asset("x", (m,), (Part("body", Box(), "m"),)), render=RenderSettings(pose="nope"))
         self.assertEqual(ctx.exception.code, "render.pose")
 
+    def test_pose_space(self):
+        JointTransform(rotation=(0.1, 0, 0), space="world").validate("t")
+        with self.assertRaises(ModelingError):
+            JointTransform(space="camera").validate("t")
+        self.assertEqual(JointTransform(space="world").to_recipe()["space"], "world")
+
     def test_export_settings(self):
         with self.assertRaises(ModelingError):
             ExportSettings(formats=("usdz",)).validate()
