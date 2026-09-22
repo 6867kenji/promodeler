@@ -470,8 +470,8 @@ def build(input: GenerationInput) -> Asset:
         for segment, angle in zip((1, 2, 3), (8, 14, 10)):
             hands[f"{side}_thumb{segment}"] = JointTransform(rotation=(math.radians(angle), 0.0, 0.0))
 
-    def pose(pose_id: str, joints: dict) -> Pose:
-        return Pose(pose_id, {**hands, **joints})
+    def pose(pose_id: str, joints: dict, shapes: dict | None = None) -> Pose:
+        return Pose(pose_id, {**hands, **joints}, shapes=shapes or {})
 
     rest = pose("rest", {})
     raise_arms = pose("raise_arms", {"r_uparm": rot(z=-95), "l_uparm": rot(z=95)})
@@ -492,8 +492,18 @@ def build(input: GenerationInput) -> Asset:
         "l_upleg": rot(x=90), "l_lowleg": rot(x=-120), "r_lowarm": rot(z=-135), "r_uparm": rot(z=-110),
     })
     gaze_left = pose("gaze_left", {"l_eye": rot(y=18), "r_eye": rot(y=18), "c_head": rot(y=6)})
+    # Face shapes come from MHR's expression parameters (promodeler.human.mhr.FACE_SHAPES) as shape keys.
+    blink = pose("blink", {}, {"blink_l": 1.0, "blink_r": 1.0})
+    smile = pose("smile", {}, {"smile": 1.0, "blink_l": 0.15, "blink_r": 0.15})
+    mouth_open = pose("mouth_open", {}, {"jaw_open": 1.0})
+    vowels = tuple(pose(f"vowel_{v}", {}, {f"vowel_{v}": 1.0}) for v in "aiueo")
+    talk = pose("talk", {"c_head": rot(x=-2)}, {"vowel_a": 0.6, "smile": 0.3})
     clips = (
-        Clip("idle", duration=4.0, keyframes=(Keyframe(0.0, "rest"), Keyframe(2.0, "breathe"), Keyframe(4.0, "rest"))),
+        Clip("idle", duration=4.0, keyframes=(Keyframe(0.0, "rest"), Keyframe(1.0, "rest"), Keyframe(1.1, "blink"),
+                                              Keyframe(1.25, "rest"), Keyframe(2.0, "breathe"), Keyframe(4.0, "rest"))),
+        Clip("speak", duration=2.0, loop=False, keyframes=(
+            Keyframe(0.0, "rest"), Keyframe(0.3, "vowel_a"), Keyframe(0.6, "vowel_i"), Keyframe(0.9, "vowel_u"),
+            Keyframe(1.2, "vowel_e"), Keyframe(1.5, "vowel_o"), Keyframe(1.8, "smile"), Keyframe(2.0, "rest"))),
         Clip("walk", duration=1.2, keyframes=(Keyframe(0.0, "step_r"), Keyframe(0.6, "step_l"), Keyframe(1.2, "step_r"))),
         Clip("turn", duration=2.0, loop=False,
              keyframes=(Keyframe(0.0, "rest"), Keyframe(1.0, "turn_90"), Keyframe(2.0, "turn_180"))),
@@ -515,7 +525,8 @@ def build(input: GenerationInput) -> Asset:
     return Asset(
         name="Haruka", materials=(skin, hair, cloth, rubber, canvas, lace, eye),
         parts=(body, dress, hair_cap_part, hair_strands, *eyeballs, *shoe_parts), rig=rig,
-        poses=(rest, raise_arms, step_r, step_l, breathe, sit, turn_90, turn_180, range_check, gaze_left), clips=clips,
+        poses=(rest, raise_arms, step_r, step_l, breathe, sit, turn_90, turn_180, range_check, gaze_left,
+               blink, smile, mouth_open, *vowels, talk), clips=clips,
         extras=extras,
     )
 

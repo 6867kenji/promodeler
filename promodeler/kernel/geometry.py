@@ -18,6 +18,24 @@ GENERATED_KINDS = ("scatter", "fur")
 
 
 MESH_FILE_WEIGHTS: dict[str, tuple[list[str], "object", "object"]] = {}  # name -> (groups, weights [V, G], vertices)
+MESH_FILE_SHAPES: dict[str, tuple[dict, "object"]] = {}  # name -> ({shape name: deltas [V, 3] Blender space}, vertices)
+
+
+def nearest_indices(source_vertices, targets, with_distance: bool = False):
+    """Index of the nearest source vertex for every target coordinate (mathutils KD-tree),
+    optionally with the distances."""
+    import numpy as np
+    from mathutils.kdtree import KDTree
+
+    tree = KDTree(len(source_vertices))
+    for index, co in enumerate(source_vertices):
+        tree.insert(co, index)
+    tree.balance()
+    found = [tree.find(co) for co in targets]
+    indices = np.array([f[1] for f in found], dtype=np.int64)
+    if with_distance:
+        return indices, np.array([f[2] for f in found], dtype=np.float64)
+    return indices
 
 
 def build_mesh_file(name: str, shape: dict) -> bpy.types.Mesh:
@@ -42,6 +60,10 @@ def build_mesh_file(name: str, shape: dict) -> bpy.types.Mesh:
         uv_layer.data.foreach_set("uv", flat.ravel())
     if "weights" in data and "group_names" in data:
         MESH_FILE_WEIGHTS[name] = ([str(n) for n in data["group_names"]], data["weights"], blender_vertices)
+    if "shape_names" in data:
+        shapes = {str(n): data[f"shape:{n}"].astype(float) @ a2b.T for n in data["shape_names"] if f"shape:{n}" in data}
+        if shapes:
+            MESH_FILE_SHAPES[name] = (shapes, blender_vertices)
     mesh.validate()
     mesh.update()
     return mesh

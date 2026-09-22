@@ -441,9 +441,11 @@ class MeshFile(Shape):
     """A mesh authored elsewhere, loaded from an ``.npz`` written by promodeler tooling.
 
     The archive holds ``vertices`` [V, 3] in meters (Y up), ``faces`` [F, 3],
-    optional ``uv_per_loop``/``loop_tris`` for UVs and optional
-    ``weights`` [V, G] with ``group_names`` for skinning. The file's hash is
-    part of the recipe, so a changed file rebuilds.
+    optional ``uv_per_loop``/``loop_tris`` for UVs, optional ``weights``
+    [V, G] with ``group_names`` for skinning, and optional shape keys as
+    ``shape:<name>`` [V, 3] delta arrays listed in ``shape_names`` (they
+    become glTF morph targets; poses and clips drive them by name). The
+    file's hash is part of the recipe, so a changed file rebuilds.
     """
 
     kind: ClassVar[str] = "mesh_file"

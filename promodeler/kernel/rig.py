@@ -170,14 +170,27 @@ def apply_pose(scene: CompiledScene, pose_id: str | None, update: bool = True) -
     ``update=False`` skips the depsgraph update: while an action is assigned for keying, an update
     re-evaluates the action and overwrites the values just set (every key would record the rest pose).
     """
+    spec = scene.pose_specs.get(pose_id, {"joints": {}}) if pose_id else {"joints": {}}
+    # Shape keys: every key is set, unspecified ones go to 0.
+    shapes = spec.get("shapes") or {}
+    for part_id in scene.shape_parts:
+        key = scene.parts[part_id].data.shape_keys
+        if key.animation_data is not None:
+            key.animation_data.use_nla = False
+        for block in key.key_blocks[1:]:
+            block.value = float(shapes.get(block.name, 0.0))
+    unknown = set(shapes) - {b.name for pid in scene.shape_parts for b in scene.parts[pid].data.shape_keys.key_blocks}
+    if unknown:
+        raise ModelingError("pose.shape", f"Pose {pose_id!r} uses unknown shape keys {sorted(unknown)}.")
     armature = scene.armature
     if armature is None:
+        if update:
+            bpy.context.view_layer.update()
         return
     # Parked clips on NLA tracks would overwrite the rest pose or a hand-set pose at
     # evaluation time; renders always run with them muted and the export re-enables them.
     if armature.animation_data is not None:
         armature.animation_data.use_nla = False
-    spec = scene.pose_specs.get(pose_id, {"joints": {}}) if pose_id else {"joints": {}}
     for bone in armature.pose.bones:
         transform = spec["joints"].get(bone.name)
         if transform is None:
@@ -207,14 +220,17 @@ def solo_clip(scene: CompiledScene, clip_id: str | None) -> int:
     tracks = armature.animation_data.nla_tracks
     if clip_id is not None and clip_id not in tracks:
         raise ModelingError("render.clip", f"Unknown clip {clip_id!r}; clips are {[t.name for t in tracks]}.")
-    for track in tracks:
-        track.is_solo = False
-        track.mute = clip_id is not None and track.name != clip_id
-    armature.animation_data.use_nla = clip_id is not None
+    animated = [armature.animation_data] + [scene.parts[pid].data.shape_keys.animation_data for pid in scene.shape_parts
+                                            if scene.parts[pid].data.shape_keys.animation_data is not None]
     end = 1
-    if clip_id is not None:
-        for strip in tracks[clip_id].strips:
-            end = max(end, int(round(strip.frame_end)))
+    for data in animated:
+        for track in data.nla_tracks:
+            track.is_solo = False
+            track.mute = clip_id is not None and track.name != clip_id
+            if clip_id is not None and track.name == clip_id:
+                for strip in track.strips:
+                    end = max(end, int(round(strip.frame_end)))
+        data.use_nla = clip_id is not None
     bpy.context.view_layer.update()
     return end
 
@@ -229,6 +245,15 @@ def author_clip(scene: CompiledScene, clip: dict) -> dict:
     preferences.keyframe_new_interpolation_type = clip["interpolation"].upper()
     action = bpy.data.actions.new(clip["id"])
     armature.animation_data.action = action
+    # Shape keys animate on their own Key datablocks; one action per part per clip.
+    shape_keys = []
+    for part_id in scene.shape_parts:
+        key = scene.parts[part_id].data.shape_keys
+        if key.animation_data is None:
+            key.animation_data_create()
+        key_action = bpy.data.actions.new(f"{clip['id']}:{part_id}")
+        key.animation_data.action = key_action
+        shape_keys.append((key, key_action))
     try:
         for key in clip["keyframes"]:
             frame = 1 + key["time"] * FPS
@@ -237,18 +262,29 @@ def author_clip(scene: CompiledScene, clip: dict) -> dict:
             for bone in armature.pose.bones:
                 bone.keyframe_insert("rotation_euler", frame=frame)
                 bone.keyframe_insert("location", frame=frame)
+            for shape_key, _ in shape_keys:
+                for block in shape_key.key_blocks[1:]:
+                    block.keyframe_insert("value", frame=frame)
     finally:
         preferences.keyframe_new_interpolation_type = saved_interpolation
         armature.animation_data.action = None
-    track = armature.animation_data.nla_tracks.new()
-    track.name = clip["id"]
-    strip = track.strips.new(clip["id"], 1, action)
-    strip.name = clip["id"]
-    # Blender 4.4+ layered actions: a strip evaluates nothing until it points at the action's slot.
-    if hasattr(strip, "action_slot") and getattr(action, "slots", None):
-        strip.action_slot = action.slots[0]
-    if clip["loop"]:
-        strip.repeat = 1.0
+        for shape_key, _ in shape_keys:
+            shape_key.animation_data.action = None
+
+    def park(animation_data, clip_action) -> None:
+        track = animation_data.nla_tracks.new()
+        track.name = clip["id"]
+        strip = track.strips.new(clip["id"], 1, clip_action)
+        strip.name = clip["id"]
+        # Blender 4.4+ layered actions: a strip evaluates nothing until it points at the action's slot.
+        if hasattr(strip, "action_slot") and getattr(clip_action, "slots", None):
+            strip.action_slot = clip_action.slots[0]
+        if clip["loop"]:
+            strip.repeat = 1.0
+
+    park(armature.animation_data, action)
+    for shape_key, key_action in shape_keys:
+        park(shape_key.animation_data, key_action)
     bpy.context.scene.frame_set(1)
     apply_pose(scene, None)
     end_frame = int(round(1 + clip["duration"] * FPS))

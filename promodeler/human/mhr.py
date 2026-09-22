@@ -34,7 +34,7 @@ import numpy as np
 from ..core import Joint, Rig
 from ..core.diagnostics import ModelingError
 
-FIT_VERSION = 8
+FIT_VERSION = 10
 DEFAULT_ASSETS = Path(__file__).resolve().parent.parent.parent / "external" / "mhr"
 
 # Blueprint landmark heights as fractions of standing height (05-woman cross sections).
@@ -55,6 +55,24 @@ DEFAULT_WEIGHTS = {
 # torso extents cost 2-3 cm of circumference, so torso extents are measured and reported but not fitted.
 # Neck and head have no circumference and are fitted on extents alone.
 EXTENT_WEIGHTS = {"hip": 0.0, "waist": 0.0, "underbust": 0.0, "bust": 0.0, "shoulders": 0.0, "neck": 0.0, "head": 8.0}
+
+
+# MHR face expression parameters (72), identified by probing the vertex displacement they produce on the
+# default body: eyelids, jaw, mouth corners and lip protrusion. Values are the coefficient per parameter.
+# Blink lids need about 1.5x the unit displacement to meet; vowels are ARKit-style mixes of the basics.
+FACE_SHAPES = {
+    "blink_l": {14: 2.2, 12: 0.8},
+    "blink_r": {15: 2.2, 13: 0.8},
+    "jaw_open": {24: 1.0},
+    "smile": {32: 1.0, 33: 1.0},
+    "mouth_wide": {42: 1.0, 43: 1.0},
+    "pucker": {40: 1.0, 41: 1.0, 27: 1.0},
+    "vowel_a": {24: 0.9},
+    "vowel_i": {42: 0.8, 43: 0.8, 24: 0.15},
+    "vowel_u": {40: 1.0, 41: 1.0, 27: 1.0, 24: 0.2},
+    "vowel_e": {24: 0.45, 42: 0.5, 43: 0.5},
+    "vowel_o": {24: 0.55, 40: 0.7, 41: 0.7},
+}
 
 
 def assets_dir() -> Path:
@@ -87,6 +105,7 @@ class Body:
     identity: np.ndarray  # [45]
     parameters: np.ndarray  # [204]
     measurements: dict = field(default_factory=dict)
+    shape_keys: dict = field(default_factory=dict)  # name -> [V, 3] vertex deltas in meters
 
 
 class MHRModel:
@@ -125,11 +144,26 @@ class MHRModel:
 
     # --- evaluation ---------------------------------------------------------------------
 
-    def forward(self, identity, parameters):
+    def forward(self, identity, parameters, face=None):
         """Vertices [V, 3] and joint positions [J, 3] in meters (hips anchored, not yet grounded)."""
-        face = self.torch.zeros(1, 72)
-        vertices, skeleton = self.model(identity.reshape(1, 45), parameters.reshape(1, 204), face)
+        if face is None:
+            face = self.torch.zeros(1, 72)
+        vertices, skeleton = self.model(identity.reshape(1, 45), parameters.reshape(1, 204), face.reshape(1, 72))
         return vertices[0] / 100.0, skeleton[0][:, :3] / 100.0
+
+    def shape_keys(self, identity, parameters, shapes: dict | None = None) -> dict:
+        """Vertex deltas for each named face shape on this body (same frame as ``forward``)."""
+        torch = self.torch
+        with torch.no_grad():
+            base, _ = self.forward(identity, parameters)
+            out = {}
+            for name, coefficients in (shapes or FACE_SHAPES).items():
+                face = torch.zeros(72)
+                for index, value in coefficients.items():
+                    face[index] = value
+                vertices, _ = self.forward(identity, parameters, face)
+                out[name] = (vertices - base).numpy().astype(np.float32)
+        return out
 
     def joint(self, joints, name: str):
         return joints[self.bones_index(name) + 1]
@@ -270,7 +304,9 @@ class MHRModel:
             vertices[:, 1] -= floor
             joints[:, 1] -= floor
         measured["fit_seconds"] = round(time.perf_counter() - started, 1)
-        return Body(vertices.numpy(), joints.numpy(), identity_vector().detach().numpy(), parameters.detach().numpy(), measured)
+        identity_final = identity_vector().detach()
+        shape_keys = self.shape_keys(identity_final, parameters.detach())
+        return Body(vertices.numpy(), joints.numpy(), identity_final.numpy(), parameters.detach().numpy(), measured, shape_keys)
 
     # --- export -------------------------------------------------------------------------
 
@@ -283,6 +319,8 @@ class MHRModel:
             mesh_path, vertices=body.vertices.astype(np.float32), faces=self.faces.astype(np.int32),
             uv_per_loop=self.uv_per_loop, loop_tris=self.loop_tris, weights=self.weights,
             group_names=np.array(self.group_names),
+            shape_names=np.array(list(body.shape_keys)),
+            **{f"shape:{name}": deltas for name, deltas in body.shape_keys.items()},
         )
         joints = []
         heads = {bone["name"]: body.joints[i + 1] for i, bone in enumerate(self.bones)}

@@ -165,8 +165,20 @@ clips=(Clip(id, duration, keyframes=(Keyframe(time, pose_id_or_None), ...), loop
 - 設計書との照合: `python tools/blueprint_check.py blueprints/japan-realistic-v1/05-woman/blueprint.json` が
   最新ビルドの寸法・部位ボックス・三角形予算・警告を設計値と並べる。
 - 髪の動力学ガイド（後ろ 8 本・左右 2 本ずつ・前髪 2 本、各 4–6 節）を束メッシュとは別に `extras.hair_guides` へ出す。
+- 表情: MHR の表情パラメータ 72 個を頂点変位で探索し、瞬き（左右）、口開け、笑顔、横開き、すぼめ、母音 a/i/u/e/o を
+  `promodeler.human.mhr.FACE_SHAPES` として定義。フィット済み素体で差分を計算し `body.npz` の `shape:<名前>` として
+  書き出す。kernel は凍結後にシェイプキーとして付け（ブーリアン後は最近傍頂点で転写、面から 2 mm 以上離れた
+  空洞頂点には付けない）、glTF のモーフターゲットになる。`Pose(shapes={"blink_l": 1.0})` で静止画（`--pose blink`）、
+  クリップのキーフレームからモーフウェイトのアニメーションとして書き出す（idle の瞬き、`speak` の母音列）。
 - クリップ動画: `python -m promodeler build assets/haruka.py --clip walk --views front,side --resolution 384`。
   歯（口は閉じている）、ランタイム物理そのもの、髪のカーブ書き出しは未着手。
+
+### シェイプキー（M8）
+
+`MeshFile` の npz に `shape_names` と `shape:<name>` [V, 3] の差分を入れると、パーツにシェイプキーが付き glTF の
+モーフターゲット（`targetNames`）になる。`Pose(id, joints, shapes={name: 0...1})` はジョイントなしでもよく、
+未指定のキーは 0 に戻る。クリップは各キーフレームで全シェイプ値もキーし、Key データブロックの NLA トラックとして
+書き出す（`report.shape_keys` にパーツ別の名前一覧）。
 
 ### 散布・毛・クロス・LOD・USDZ（M5）
 

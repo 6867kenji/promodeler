@@ -79,3 +79,15 @@ class GeneratedTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class PoseShapeTests(unittest.TestCase):
+    def test_pose_with_shapes_only_and_range(self):
+        from promodeler.core import ModelingError, Pose
+        pose = Pose("blink", {}, shapes={"blink_l": 1.0})
+        pose.validate("p", set())
+        self.assertEqual(pose.to_recipe()["shapes"], {"blink_l": 1.0})
+        with self.assertRaises(ModelingError):
+            Pose("bad", {}, shapes={"x": 1.5}).validate("p", set())
+        with self.assertRaises(ModelingError):
+            Pose("empty", {}).validate("p", set())

@@ -46,6 +46,9 @@ def main() -> int:
         stage("compile", lambda: (compiler.reset_scene(), None)[1])
         scene = stage("compile", compiler.compile_recipe, recipe)
         stage("freeze", compiler.freeze_geometry, scene)
+        shape_keys = stage("shape_keys", compiler.apply_shape_keys, scene)
+        if shape_keys:
+            report["shape_keys"] = shape_keys
         stage("surface", surface.finish, scene, recipe, out_dir, reuse_textures=reuse_textures)
         stage("lods", compiler.build_lods, scene, recipe)
         rig_info = stage("rig", rig.bind_all, scene, recipe)

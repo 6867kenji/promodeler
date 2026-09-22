@@ -11,7 +11,8 @@ from promodeler.core.diagnostics import ModelingError
 from . import geometry, materials, space
 
 GENERATED_KINDS = ("scatter", "fur")
-OVERLAPPING_KINDS = ("strands",)  # closed shells that may overlap by design; no self-intersection check
+OVERLAPPING_KINDS = ("strands",)
+SHAPE_TRANSFER_RADIUS = 0.002  # meters; frozen vertices farther from any source vertex get no shape-key delta  # closed shells that may overlap by design; no self-intersection check
 
 
 @dataclass
@@ -33,6 +34,8 @@ class CompiledScene:
     cloth_frames: int = 0
     file_weights: dict = field(default_factory=dict)  # part id -> (group names, weights [V, G], source vertices) from a MeshFile
     extras: dict = field(default_factory=dict)  # asset extras, written to extras.json and glTF extras
+    file_shapes: dict = field(default_factory=dict)  # part id -> ({shape name: deltas}, source vertices) from a MeshFile
+    shape_parts: list = field(default_factory=list)  # part ids that carry shape keys after freezing
     frozen: bool = False
 
 
@@ -92,6 +95,8 @@ def compile_recipe(recipe: dict) -> CompiledScene:
         mesh = geometry.build_mesh(f"mesh:{part['id']}", part["shape"], quality)
         if f"mesh:{part['id']}" in geometry.MESH_FILE_WEIGHTS:
             scene.file_weights[part["id"]] = geometry.MESH_FILE_WEIGHTS[f"mesh:{part['id']}"]
+        if f"mesh:{part['id']}" in geometry.MESH_FILE_SHAPES:
+            scene.file_shapes[part["id"]] = geometry.MESH_FILE_SHAPES[f"mesh:{part['id']}"]
         if part["shape"]["kind"] in OVERLAPPING_KINDS:
             scene.overlapping.add(part["id"])
         if part["shape"]["kind"] not in GENERATED_KINDS:
@@ -193,6 +198,43 @@ def freeze_geometry(scene: CompiledScene) -> None:
     scene.frozen = True
     bpy.context.scene.frame_set(1)
     bpy.context.view_layer.update()
+
+
+def apply_shape_keys(scene: CompiledScene) -> dict:
+    """Add the MeshFile shape keys to the frozen parts as relative shape keys (glTF morph targets).
+
+    Modifiers may have changed the vertex count, so every frozen vertex takes the delta of the nearest
+    source vertex, like the skin weights.
+    """
+    import numpy as np
+
+    added: dict = {}
+    for part_id, (shapes, source_vertices) in scene.file_shapes.items():
+        obj = scene.parts[part_id]
+        mesh = obj.data
+        count = len(mesh.vertices)
+        coords = np.empty(count * 3, dtype=np.float64)
+        mesh.vertices.foreach_get("co", coords)
+        coords = coords.reshape(-1, 3)
+        mapping = None
+        keep = None
+        if count != len(source_vertices):
+            mapping, distance = geometry.nearest_indices(source_vertices, coords, with_distance=True)
+            # Vertices created away from the source surface (boolean cavities, cutter faces) get no delta;
+            # otherwise a socket wall inherits the lid's motion and bulges over the eyeball.
+            keep = (distance <= SHAPE_TRANSFER_RADIUS)[:, None]
+        if mesh.shape_keys is None:
+            obj.shape_key_add(name="Basis", from_mix=False)
+        for name, deltas in shapes.items():
+            block = obj.shape_key_add(name=name, from_mix=False)
+            moved = coords + (deltas if mapping is None else deltas[mapping] * keep)
+            block.data.foreach_set("co", moved.ravel())
+            block.value = 0.0
+            block.slider_max = 1.0
+        mesh.shape_keys.use_relative = True
+        scene.shape_parts.append(part_id)
+        added[part_id] = list(shapes)
+    return added
 
 
 def build_lods(scene: CompiledScene, recipe: dict) -> None:

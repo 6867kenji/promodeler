@@ -10,7 +10,7 @@ graph belongs to the consuming engine; the export carries the clips.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from .diagnostics import ModelingError, finite_vector, is_finite
 
@@ -103,21 +103,30 @@ class JointTransform:
 
 @dataclass(frozen=True)
 class Pose:
+    """Joint transforms plus shape-key weights (``shapes``: name -> 0...1, keys from a ``MeshFile``)."""
+
     id: str
     joints: dict[str, JointTransform]
+    shapes: dict[str, float] = field(default_factory=dict)
 
     def validate(self, label: str, joint_ids: set[str]) -> None:
         if not isinstance(self.id, str) or not self.id:
             raise ModelingError("pose.id", f"{label}.id must be a nonempty string.")
-        if not self.joints:
-            raise ModelingError("pose.joints", f"{label} sets no joints.")
+        if not self.joints and not self.shapes:
+            raise ModelingError("pose.joints", f"{label} sets no joints or shapes.")
         for joint_id, transform in self.joints.items():
             if joint_id not in joint_ids:
                 raise ModelingError("pose.joint", f"{label} references unknown joint {joint_id!r}.")
             transform.validate(f"{label}.joints[{joint_id!r}]")
+        for name, value in self.shapes.items():
+            if not isinstance(name, str) or not name:
+                raise ModelingError("pose.shape", f"{label}.shapes keys must be shape key names.")
+            if not is_finite(value) or not 0.0 <= float(value) <= 1.0:
+                raise ModelingError("pose.shape", f"{label}.shapes[{name!r}] must be in 0...1.")
 
     def to_recipe(self) -> dict:
-        return {"id": self.id, "joints": {k: v.to_recipe() for k, v in sorted(self.joints.items())}}
+        return {"id": self.id, "joints": {k: v.to_recipe() for k, v in sorted(self.joints.items())},
+                "shapes": {k: float(v) for k, v in sorted(self.shapes.items())}}
 
 
 @dataclass(frozen=True)
