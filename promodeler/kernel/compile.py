@@ -29,6 +29,7 @@ class CompiledScene:
     joints: dict = field(default_factory=dict)
     pose_specs: dict = field(default_factory=dict)
     cloth_frames: int = 0
+    file_weights: dict = field(default_factory=dict)  # part id -> (group names, weights [V, G]) from a MeshFile
     frozen: bool = False
 
 
@@ -82,6 +83,8 @@ def compile_recipe(recipe: dict) -> CompiledScene:
     # Create objects first, parent afterwards so declaration order is irrelevant.
     for part in asset["parts"]:
         mesh = geometry.build_mesh(f"mesh:{part['id']}", part["shape"], quality)
+        if f"mesh:{part['id']}" in geometry.MESH_FILE_WEIGHTS:
+            scene.file_weights[part["id"]] = geometry.MESH_FILE_WEIGHTS[f"mesh:{part['id']}"]
         if part["shape"]["kind"] not in GENERATED_KINDS:
             geometry.apply_shading(mesh, part["smooth_angle"])
         mesh.materials.append(scene.materials[part["material"]])

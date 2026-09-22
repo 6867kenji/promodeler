@@ -55,6 +55,37 @@ def _segment_distance(p: Vector, a: Vector, b: Vector) -> float:
     return (p - (a + ab * t)).length
 
 
+def skin_part_from_file(scene: CompiledScene, obj: bpy.types.Object, group_names: list[str], weights) -> dict | None:
+    """Authored weights from a MeshFile; used when the vertex count still matches and joints share the group names."""
+    armature = scene.armature
+    mesh = obj.data
+    if weights.shape[0] != len(mesh.vertices):
+        return None
+    bone_names = {b.name for b in armature.data.bones}
+    used = 0
+    for column, name in enumerate(group_names):
+        if name not in bone_names:
+            continue
+        values = weights[:, column]
+        indices = [int(i) for i in values.nonzero()[0]]
+        if not indices:
+            continue
+        group = obj.vertex_groups.new(name=name)
+        for index in indices:
+            group.add([index], float(values[index]), "REPLACE")
+        used += 1
+    if used == 0:
+        return None
+    saved = obj.matrix_world.copy()
+    obj.parent = armature
+    obj.parent_type = "OBJECT"
+    obj.matrix_world = saved
+    modifier = obj.modifiers.new("armature", "ARMATURE")
+    modifier.object = armature
+    modifier.use_vertex_groups = True
+    return {"joints": used, "influences": "file"}
+
+
 def skin_part(scene: CompiledScene, obj: bpy.types.Object, influences: int = 4) -> dict:
     """Distance-based weights: each vertex takes up to ``influences`` nearest bones, weighted by 1/d^4."""
     armature = scene.armature
@@ -104,7 +135,11 @@ def bind_all(scene: CompiledScene, recipe: dict) -> dict | None:
         objects = [scene.parts[part["id"]]] + [lod for lod in scene.lods.get(part["id"], [])]
         if part.get("skinned"):
             for obj in objects:
-                bindings[obj.name] = skin_part(scene, obj)
+                binding = None
+                if part["id"] in scene.file_weights and obj is scene.parts[part["id"]]:
+                    group_names, weights = scene.file_weights[part["id"]]
+                    binding = skin_part_from_file(scene, obj, group_names, weights)
+                bindings[obj.name] = binding or skin_part(scene, obj)
         elif part.get("parent_joint"):
             for obj in objects:
                 attach_part(scene, obj, part["parent_joint"])

@@ -101,6 +101,13 @@ Rules:
 - `Part(lods=(LOD(distance, ratio), ...))` exports decimated `<id>:lod<n>` nodes. `ExportSettings(formats=("glb", "usdz"))` or `--formats glb,usdz` adds USDZ.
 - `report.stages` lists seconds per pipeline stage; use it before blaming Blender for a slow build.
 
+## Human bodies
+
+- Do not build a human body from lofts. Fit Meta's MHR to the blueprint: `fit = fitted_body(blueprint_targets(blueprint), out_root=ROOT / "build" / "human", name=<asset>)`, then `Part(id="body", shape=MeshFile(fit["mesh"]), material="skin", skinned=True)` and `rig = rig_from_file(fit["rig"], rig_id=<asset>)` (126 joints, MHR names such as `l_uparm`, `r_upleg`, `c_spine3`, `c_head`; rest pose is an A-pose with arms about 40 degrees below horizontal). The first build fits for about 40 s and caches under `build/human/`.
+- Fit clothing and hair to the fitted surface, not to the blueprint numbers: slice `body.npz` at the section heights (`assets/haruka.py` has `BodyMeasure.slice`) and add ease. Loft sections must run bottom to top or the closed shell faces inward (`geometry.insideOut`).
+- Requires `torch` and `numpy` on the host Python and the MHR assets under `external/mhr` (see `tools/mhr_dump_lod1.py`); Blender never loads torch. If `mhr.assets` is raised, report it instead of falling back to a loft body.
+- Check the fitted measurements in `build/human/<name>-<hash>/rig.json` (`measurements`) against the blueprint before judging renders; a few millimeters on lengths and 1 to 2 cm on circumferences is the current accuracy.
+
 ## Interiors and architecture
 
 - Build rooms from the blueprint's zone rectangles as axis-aligned boxes (a small `box_part(x0, x1, y0, y1, z0, z1)` helper keeps extents readable) and cut openings with `Boolean("difference")` box cutters that overshoot the wall thickness by 2 cm.

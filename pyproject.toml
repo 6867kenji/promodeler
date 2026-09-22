@@ -12,7 +12,8 @@ dependencies = []
 [project.optional-dependencies]
 sheets = ["pillow"]
 critique = ["anthropic"]
-all = ["pillow", "anthropic"]
+human = ["numpy", "torch"]
+all = ["pillow", "anthropic", "numpy", "torch"]
 
 [project.scripts]
 promodeler = "promodeler.cli:main"

@@ -11,6 +11,9 @@ import math
 from dataclasses import dataclass, fields
 from typing import ClassVar
 
+import hashlib
+import os
+
 from .diagnostics import ModelingError, is_finite
 from .fields import Field, validate_geometry_field
 from .profile import Profile, validate_ring
@@ -398,5 +401,37 @@ class Fur(Shape):
         }
 
 
+@dataclass(frozen=True)
+class MeshFile(Shape):
+    """A mesh authored elsewhere, loaded from an ``.npz`` written by promodeler tooling.
+
+    The archive holds ``vertices`` [V, 3] in meters (Y up), ``faces`` [F, 3],
+    optional ``uv_per_loop``/``loop_tris`` for UVs and optional
+    ``weights`` [V, G] with ``group_names`` for skinning. The file's hash is
+    part of the recipe, so a changed file rebuilds.
+    """
+
+    kind: ClassVar[str] = "mesh_file"
+    path: str = ""
+
+    def validate(self, label: str) -> None:
+        if not isinstance(self.path, str) or not self.path:
+            raise ModelingError("meshfile.path", f"{label}.path is required.")
+        if not os.path.isfile(self.path):
+            raise ModelingError("meshfile.path", f"{label}.path does not exist: {self.path}")
+        if not self.path.lower().endswith(".npz"):
+            raise ModelingError("meshfile.format", f"{label}.path must be an .npz mesh archive.")
+
+    def digest(self) -> str:
+        h = hashlib.sha256()
+        with open(self.path, "rb") as f:
+            for chunk in iter(lambda: f.read(1 << 20), b""):
+                h.update(chunk)
+        return h.hexdigest()
+
+    def to_recipe(self) -> dict:
+        return {"kind": self.kind, "path": os.path.abspath(self.path), "sha256": self.digest()}
+
+
 GENERATED_KINDS = ("scatter", "fur")
-SHAPE_KINDS = {cls.kind: cls for cls in (Box, Plane, Cylinder, Cone, Sphere, Extrude, Revolve, Sweep, Loft, Scatter, Fur)}
+SHAPE_KINDS = {cls.kind: cls for cls in (Box, Plane, Cylinder, Cone, Sphere, Extrude, Revolve, Sweep, Loft, Scatter, Fur, MeshFile)}

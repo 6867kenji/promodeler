@@ -24,7 +24,7 @@ from .modifiers import Array, Bevel, Boolean, ClothDrape, Cutter, Displace, Mirr
 from .rig import Clip, Joint, JointTransform, Keyframe, Pose, Rig
 from .profile import Profile
 from .recipe import build_recipe, dump_recipe, recipe_hash
-from .shapes import Box, Cone, Cylinder, Extrude, Fur, Loft, LoftSection, Plane, Revolve, Scatter, Sphere, Sweep
+from .shapes import Box, Cone, Cylinder, Extrude, Fur, Loft, LoftSection, MeshFile, Plane, Revolve, Scatter, Sphere, Sweep
 from .transform import Transform
 
 __all__ = [
@@ -64,6 +64,7 @@ __all__ = [
     "Loft",
     "LoftSection",
     "Material",
+    "MeshFile",
     "Mirror",
     "Mix",
     "ModelingError",

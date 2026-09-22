@@ -124,6 +124,27 @@ clips=(Clip(id, duration, keyframes=(Keyframe(time, pose_id_or_None), ...), loop
 `--pose` でポーズ付きの検証レンダができる。関節 ID とパーツ ID は書き出し先で同じノード名空間になるので別名にする。
 `assets/desk_lamp.py`（剛体アタッチ）と `assets/tentacle.py`（スキン）を参照。
 
+### 人体素体: Meta MHR（M6）
+
+写実的な人体はプリミティブから手続き生成しない。素体は Meta の Momentum Human Rig
+(MHR, Apache 2.0) を設計書の寸法にフィットさせて取り込み、衣服・髪・マテリアル・ポーズはコードで書く。
+
+- `promodeler.human.mhr.fitted_body(targets)` が骨格スケール（背骨・首・肩幅・上腕・大腿・下腿・足首・足長）と
+  体型係数 20 個を Adam で最適化し、身長・股下・肩幅・足長・頭高とバスト/アンダー/ウエスト/ヒップ周を
+  微分可能な計測（水平断面の周長は腕を除いた胴体エッジで計算）で合わせる。結果は `build/human/<name>-<hash>/`
+  に `body.npz`（頂点・三角形・UV・スキンウェイト）と `rig.json`（126 関節）として出力・キャッシュされる。
+- アセット側は `Part(shape=MeshFile(path), skinned=True)` と `rig_from_file(path)` で読む。`MeshFile` は
+  ファイルの sha256 をレシピに含めるので、フィットが変われば再ビルドされる。ウェイトがファイルにあれば
+  距離ウェイトの代わりにそれを使う（MHR のツイストボーン込み）。
+- ポーズ・クリップは MHR の関節名（`l_uparm`, `r_upleg`, `c_spine3`, `c_head` ...）で書く。休止姿勢は
+  腕を 40° 下げた A ポーズ。
+- 準備: `external/mhr/assets/` に MHR 配布物（`mhr_model.pt`, `lod1.fbx`, `compact_v6_1.model`）を置き、
+  `blender -b --python tools/mhr_dump_lod1.py -- external/mhr` で FBX からトポロジ・ウェイト・ボーン階層を
+  `cache/` に書き出す。`pip install torch numpy`（`pip install -e .[human]`）。Blender 側に torch は不要。
+- `assets/haruka.py`（05-woman 設計書）が実例。設計値との差は身長 +2 mm、股下 −3 mm、肩幅 0 mm、
+  バスト +2 mm、ウエスト −4 mm、ヒップ −11 mm、アンダーバスト +20 mm（v0 ロフト素体では ±5 cm 以上ずれていた）。
+  顔の個体差（MHR 頭部係数）、指のポーズ、靴は未着手。
+
 ### 散布・毛・クロス・LOD・USDZ（M5）
 
 | 機能 | 内容 |

@@ -17,11 +17,43 @@ PRIMITIVE_KINDS = ("box", "plane", "cylinder", "cone", "sphere")
 GENERATED_KINDS = ("scatter", "fur")
 
 
+MESH_FILE_WEIGHTS: dict[str, tuple[list[str], "object"]] = {}
+
+
+def build_mesh_file(name: str, shape: dict) -> bpy.types.Mesh:
+    """Mesh from an .npz archive: vertices (meters, Y up), triangle faces, optional UVs and skin weights."""
+    import numpy as np
+
+    data = np.load(shape["path"], allow_pickle=False)
+    vertices = data["vertices"].astype(float)
+    faces = data["faces"].astype(int)
+    mesh = bpy.data.meshes.new(name)
+    a2b = np.array([[1.0, 0.0, 0.0], [0.0, 0.0, -1.0], [0.0, 1.0, 0.0]])  # author (x, y, z) -> Blender (x, -z, y)
+    blender_vertices = vertices @ a2b.T
+    mesh.from_pydata([tuple(v) for v in blender_vertices], [], [tuple(int(i) for i in f) for f in faces])
+    if "uv_per_loop" in data and "loop_tris" in data:
+        uv_layer = mesh.uv_layers.new(name="UVMap")
+        uv_per_loop = data["uv_per_loop"]
+        loop_tris = data["loop_tris"]
+        flat = np.zeros((len(mesh.loops), 2), dtype=np.float32)
+        for face_index, poly in enumerate(mesh.polygons):
+            for corner, loop_index in enumerate(range(poly.loop_start, poly.loop_start + poly.loop_total)):
+                flat[loop_index] = uv_per_loop[loop_tris[face_index][corner]]
+        uv_layer.data.foreach_set("uv", flat.ravel())
+    if "weights" in data and "group_names" in data:
+        MESH_FILE_WEIGHTS[name] = ([str(n) for n in data["group_names"]], data["weights"])
+    mesh.validate()
+    mesh.update()
+    return mesh
+
+
 def build_mesh(name: str, shape: dict, quality: dict) -> bpy.types.Mesh:
     kind = shape["kind"]
     if kind in GENERATED_KINDS:
         # Geometry Nodes replace this placeholder entirely.
         return bpy.data.meshes.new(name)
+    if kind == "mesh_file":
+        return build_mesh_file(name, shape)
     bm = bmesh.new()
     try:
         if kind in PRIMITIVE_KINDS:
