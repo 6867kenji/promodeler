@@ -70,6 +70,12 @@ def main() -> int:
         for key, target in blueprint_targets(blueprint).items():
             tol = 0.002 if key == "height" else (0.005 if key.endswith(("_width", "_depth")) else None)
             print(row(key, target, measured.get(key), tolerance=tol))
+        joints_bp = {j["id"]: j for j in blueprint.get("rig", {}).get("joints", [])}
+        if "upperarm.L" in joints_bp and "upperarm.R" in joints_bp and "joint_shoulder_width" in measured:
+            span = abs(joints_bp["upperarm.L"]["head_m"][0] - joints_bp["upperarm.R"]["head_m"][0])
+            print(row("shoulder joint distance", span, measured["joint_shoulder_width"]))
+        if "bust_bump_m" in measured:
+            print(f"  {'bust geometric bump':28s} {'-':>8}  {measured['bust_bump_m']:8.3f}   (added to MHR identity)")
 
     if body is not None:
         print("\n[barefoot body]")

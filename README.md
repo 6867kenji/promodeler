@@ -145,9 +145,12 @@ clips=(Clip(id, duration, keyframes=(Keyframe(time, pose_id_or_None), ...), loop
 - 準備: `external/mhr/assets/` に MHR 配布物（`mhr_model.pt`, `lod1.fbx`, `compact_v6_1.model`）を置き、
   `blender -b --python tools/mhr_dump_lod1.py -- external/mhr` で FBX からトポロジ・ウェイト・ボーン階層を
   `cache/` に書き出す。`pip install torch numpy`（`pip install -e .[human]`）。Blender 側に torch は不要。
-- `assets/haruka.py`（05-woman 設計書）が実例。設計値との差は身長 +1 mm、股下 −1 mm、肩幅 0 mm、足長 0 mm、
-  バスト +1 mm、ウエスト 0 mm、ヒップ −4 mm、アンダーバスト +10 mm（v0 ロフト素体では ±5 cm 以上ずれていた）。
-  設計書の断面幅/奥行きは周長と両立しないため計測・報告のみ（`tools/blueprint_check.py`）。
+- `assets/haruka.py`（05-woman 設計書）が実例。設計値との差は身長 +2 mm、股下 +15 mm、肩幅（肩先の外幅）−6 mm、
+  足長 0 mm、バスト +17 mm（幅 −1 mm・奥行 −18 mm）、ウエスト +4 mm、ヒップ −3 mm、アンダーバスト +20 mm。
+  周長だけを合わせると MHR は胸を横に広げて平らな胸・広い肩になったので、肩幅は関節間距離ではなく肩先の断面幅
+  (1.34 m) を目標にし、バストは幅・奥行きも目標に入れ、MHR の体型係数では出ない奥行きを幾何的な膨らみ
+  （`bust_field`、約 3 cm）で補っている。ヒップの断面寸法は周長と両立しないため計測・報告のみ
+  （`tools/blueprint_check.py`）。
 - 素体以外は設計書からコードで作る: 実測した胴の断面に沿わせたワンピース（前下がりの U ネック、胸元中央
   120 mm に 12 本のギャザーを断面形状で作り、クロスで凍結）、頭蓋の楕円体に沿う `Strands` の髪束
   （前髪 13 束・顔周り 4 束・後ろ 3 層 64 束、毛先 0.66 m）、足の実測外形から作る白スニーカー
