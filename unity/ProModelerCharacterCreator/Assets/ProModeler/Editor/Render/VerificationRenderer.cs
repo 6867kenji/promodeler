@@ -24,6 +24,22 @@ namespace ProModeler.Editor
             Directory.CreateDirectory(directory);
             var entries = new List<RenderEntry>();
             var bounds = Bounds(runtime);
+            // A manual render request does not run the player loop's skinning update: without this the skinned mesh shows
+            // the pose of the last editor tick (the imported white shirt's sleeves came out short while the posed clip
+            // frames, which set the same flag, showed them right).
+            var skinned = new List<SkinnedMeshRenderer>();
+            foreach (var renderer in runtime.AllRenderers)
+                if (renderer is SkinnedMeshRenderer smr && !smr.forceMatrixRecalculationPerRender) { smr.forceMatrixRecalculationPerRender = true; skinned.Add(smr); }
+            // ... and the bone matrices are only rebuilt for transforms that changed since the last skinning pass, so
+            // touch every bone (the clip recorder does this implicitly when it poses): otherwise the render shows the
+            // skinning from before the last adjust-bone pass, which shortened the imported shirt's sleeves.
+            foreach (var t in runtime.Root.GetComponentsInChildren<Transform>(true)) { var r = t.rotation; var pos = t.position; t.rotation = r; t.position = pos; }
+            // An enabled Animator (UMA adds one, even without a controller) feeds the skinned mesh its own cached humanoid
+            // pose - the T-pose - instead of the skeleton's transforms, so every render so far showed the T-pose whatever the
+            // bones did (female races generate an A-pose; adjust bones and slot skinning were not visible). Disable it.
+            var animator = runtime.Root.GetComponentInChildren<Animator>();
+            var animatorWasEnabled = animator != null && animator.enabled;
+            if (animator != null) animator.enabled = false;
             var environment = CreateEnvironment();
             var camera = CreateCamera();
             try
@@ -69,6 +85,8 @@ namespace ProModeler.Editor
             }
             finally
             {
+                foreach (var smr in skinned) if (smr != null) smr.forceMatrixRecalculationPerRender = false;
+                if (animator != null) animator.enabled = animatorWasEnabled;
                 UnityEngine.Object.DestroyImmediate(camera.gameObject);
                 foreach (var go in environment) UnityEngine.Object.DestroyImmediate(go);
             }

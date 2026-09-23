@@ -19,7 +19,7 @@ namespace ProModeler.Editor
 {
     public static class ClipRecorder
     {
-        public static readonly string[] KnownClips = { "idle", "walk", "turn", "sit", "raise-arms", "physics-settle", "device" };
+        public static readonly string[] KnownClips = { "rest", "idle", "walk", "turn", "sit", "raise-arms", "physics-settle", "device" };
 
         static readonly string[] PoseBones =
         {
@@ -158,6 +158,7 @@ namespace ProModeler.Editor
         static void Pose(string clip, float t, float duration, float specDuration, UMACharacterRuntime runtime, CharacterRecipe recipe, Transform[] bones, Dictionary<Transform, Quaternion> rest)
         {
             var p = duration > 0f ? t / duration : 0f;
+            if (clip == "rest") return;   // the generated pose, untouched: a reference frame for skinning checks
             if (clip != "raise-arms") Stance(runtime);
             switch (clip)
             {

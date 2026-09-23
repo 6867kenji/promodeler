@@ -336,8 +336,8 @@
         "uma_wardrobe_recipe": null,
         "addressable": "character/wardrobe/polo_shirt_01",
         "uma_wardrobe_recipe_by_race": {
-          "human_male": "male_tshirt_white_Recipe",
-          "human_female": "tshirt_turquoise_Recipe"
+          "human_male": "white_shirt_m_Wardrobe",
+          "human_female": "white_shirt_f_Wardrobe"
         }
       },
       "base_color_srgb": null,
@@ -352,8 +352,7 @@
       },
       "provenance": {
         "origin": "placeholder",
-        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12).",
-        "stand_in": "UMA 3.05 sample content (MIT) stands in until the real asset exists"
+        "note": "ID reserved; the promodeler white shirt stands in until a polo is cut (collar, placket)."
       },
       "version": "2026.09",
       "tags": [
@@ -488,16 +487,18 @@
         ]
       },
       "runtime": {
-        "status": "placeholder",
+        "status": "ready",
         "uma_wardrobe_recipe": null,
         "addressable": "character/wardrobe/dress_shirt_01",
         "uma_wardrobe_recipe_by_race": {
-          "human_male": "male_tshirt_white_Recipe",
-          "human_female": "tshirt_turquoise_Recipe"
+          "human_male": "white_shirt_m_Wardrobe",
+          "human_female": "white_shirt_f_Wardrobe"
         }
       },
       "base_color_srgb": null,
-      "materials": {},
+      "materials": {
+        "constant": true
+      },
       "neutral_measurements_m": {},
       "triangles": null,
       "license": {
@@ -507,9 +508,8 @@
         "redistribution": true
       },
       "provenance": {
-        "origin": "placeholder",
-        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12).",
-        "stand_in": "UMA 3.05 sample content (MIT) stands in until the real asset exists"
+        "origin": "promodeler",
+        "note": "white_shirt cut on the female profile; the male recipe is the same garment fitted to the male neutral body (fit-garment). Stand-in for a collared dress shirt."
       },
       "version": "2026.09",
       "tags": [

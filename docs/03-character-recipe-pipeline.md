@@ -437,6 +437,8 @@ python -m promodeler character diff <id>                              # Recipe �
 python -m promodeler character random --seed 100 --count 20 [--sex female] [--style business] [--out build/random]   # 18.10 節（presets は character/presets/anthropometry.json）
 python -m promodeler character prompt "20代女性。小柄で細身、丸顔。黒髪のボブ。カフェ店員で七分袖シャツにエプロン。" [--llm anthropic] [--build]   # 18.11 節
 python -m promodeler character profile human_female                   # レース中立体のプロファイル（衣服生成用、18.8 節）
+python -m promodeler character fit-garment <garment.glb|obj> --source <profile A> --target <profile B> --out <glb>   # 別の体の服を合わせる（18.13 節）
+python -m promodeler character profile-from-mesh <body.glb|obj> --landmarks <joints.json> --out <profile>          # 外部の体（MakeHuman など）のプロファイル
 python -m promodeler character import-slot --manifest character/garments.json   # promodeler 製衣服 → UMA スロット（18.8 節）
 python -m promodeler character edit <id>                              # Unity Editor を GUI で起動し Recipe を開く（原案 §14）
 python -m promodeler character catalog list [--category wardrobe --slot upper --race human_male]
@@ -1057,6 +1059,35 @@ businessman で 6 クリップ（2 秒・10 fps・384 px）を約 130 秒で記�
 
 残り: 実モーション（Mecanim クリップ）への差し替え口、MP4 の既定化（imageio-ffmpeg 同梱か ffmpeg 導入）、クリップの検証レンダへの
 コンタクトシート化。M13 の受入基準（1,000 体の決定的生成、プロンプト 1 文から build）は満たした。
+
+### 18.13 衣服のフィット工程（2026-09-23）
+
+18.9 節の推奨に沿って、**体 A 向けに作られた服を体 B の中立体へ移す工程**を `promodeler/character/fit.py` に実装した
+（`character fit-garment`、`import-slot --manifest` の `fit` 欄、外部の体は `character profile-from-mesh`）。
+
+**方法**: 両方の体をプロファイル（胴の高さ別輪郭、腕・脚の軸方向断面、関節位置）で表し、服の各頂点を「どの部位に付くか
+（胴・左右腕・左右脚、腋と股では滑らかに混合）、軸方向のどこか（胴は腰〜首の正規化高さ、四肢は軸長比）、軸周りの方位、
+**体表面からの半径方向オフセット**」に分解し、目標の体で同じオフセットのまま組み立てる。ゆとりはメートルで保たれ、下の体だけが変わる。
+MakeHuman の mhclo（体からのオフセットとして服を持つ）を、共通トポロジではなくプロファイルで 2 つの別メッシュに一般化したもの。
+精度は凸包輪郭の精度（シャツ・上着・パンツ・スカート向き。手袋や凹みに沿う服は不向き）。
+
+**検証**: 女性プロファイルで裁断した白シャツ（`white_shirt_f`）を男性プロファイルへ移し（`white_shirt_m`、2,408 頂点 0.15 秒、
+移動 平均 64 mm / 最大 278 mm — 女性レースは A ポーズ、男性は T ポーズで生成されるので袖が腕軸ごと回る）、UMA スロット化して
+コンビニ店員（男性）に着せた。姿勢付きのクリップフレームでは 3/4 袖が肘の下まで届き、静止レンダでも同じ。
+プロファイルのレース差（女性 A ポーズ・男性 T ポーズ）は UMA の生成ポーズそのままにした: 取り込み時に骨を回すと、バインド空間へ
+戻す計算が生成ポーズ前提なので袖が崩れた（一度やって戻した）。フィッターは腕軸ごとに写像するのでポーズ差は問題にならない。
+合成テストでは、トーソ半径 0.15 → 0.20 のマネキン間で 3 cm のゆとりが 0.23 の半径として保たれ、同一プロファイル間の移動は 0。
+
+**副産物として見つかった検証レンダの不具合**: UMA が付ける Animator が有効なままだと、スキンメッシュは骸骨の変換ではなく
+Animator が保持する人型の既定ポーズ（T ポーズ）で描かれる。これまでの全レンダは骸骨の実姿勢（女性は A ポーズ、`adj:*` や
+`pos:arm_spread` の効果、スロットのスキニング結果）を映していなかった（計測は `BakeMesh` で骸骨から直接取るので正しい）。
+`VerificationRenderer` でレンダ中だけ Animator を無効化し、`forceMatrixRecalculationPerRender` を立て、全ボーンをワールド座標の
+setter で touch（`localRotation` の自己代入では更新されない）して解決。以後のレンダは生成ポーズ（女性 A / 男性 T）になる。
+手持ち付属品の位置も骸骨基準なので、女性のレンダで初めて正しい位置に見える。このコミット以前の `build/` のコンタクトシートは
+Animator の T ポーズで描かれている（寸法・残差は `BakeMesh` 由来で影響なし）。次の全体再ビルドで揃う。
+
+**残り**: MakeHuman CC0 衣装での実証（MH 基本メッシュ + 関節位置 JSON → `profile-from-mesh` → `fit-garment` → `import-slot`）、
+プロファイルの首・頭部（帽子・襟）、手（手袋）の部位追加、凹みに沿う服のための非凸輪郭。
 
 ### 18.9 衣装調達の調査（2026-09-23）
 

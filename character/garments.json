@@ -14,6 +14,24 @@
       "color": "#F4F2EC",
       "material_from_recipe": "colors_top_Recipe",
       "catalog_id": "shirt_three_quarter_01"
+    },
+    {
+      "name": "white_shirt_m",
+      "asset": "assets/wardrobe/white_shirt.py",
+      "parameters": {
+        "profile": "character/profiles/human_female.json",
+        "sleeve_length": 0.75
+      },
+      "fit": {
+        "from": "character/profiles/human_female.json",
+        "to": "character/profiles/human_male.json"
+      },
+      "race": "human_male",
+      "wardrobe_slot": "TopUnderlayer",
+      "color": "#F4F2EC",
+      "material_from_recipe": "male_tshirt_white_Recipe",
+      "catalog_id": "dress_shirt_01",
+      "note": "the same female-cut shirt moved onto the male neutral body by fit-garment (docs/03 18.13)"
     }
   ]
 }

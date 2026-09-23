@@ -410,6 +410,37 @@ def cmd_character_prompt(args) -> int:
     return 0
 
 
+def cmd_character_fit_garment(args) -> int:
+    """Move a garment cut for one body onto another body's neutral profile (fit.py) and write a GLB for import-slot."""
+    from . import fit as fit_module
+
+    try:
+        report = fit_module.fit_garment(args.garment, args.source, args.target, args.out, mirror_x=args.mirror_x)
+    except (ModelingError, OSError) as exc:
+        print(f"error:    {exc}", file=sys.stderr)
+        return 2
+    print(f"fitted:   {report['out']}  ({report['vertices']} vertices; moved mean {report['moved_m']['mean'] * 1000:.1f} mm, max {report['moved_m']['max'] * 1000:.1f} mm)")
+    print(f"bounds:   {report['bounds_min']} .. {report['bounds_max']}")
+    return 0
+
+
+def cmd_character_profile_from_mesh(args) -> int:
+    """A race-profile document for an external body mesh (OBJ/GLB) from a landmarks JSON, for fit-garment --from."""
+    from . import fit as fit_module
+
+    try:
+        mesh = fit_module.read_mesh(args.mesh)
+        landmarks = json.loads(Path(args.landmarks).read_text(encoding="utf-8"))
+        profile = fit_module.profile_from_mesh(mesh, landmarks, race=args.race)
+    except (ModelingError, OSError, KeyError) as exc:
+        print(f"error:    {exc}", file=sys.stderr)
+        return 2
+    write_json(Path(args.out), profile)
+    print(f"profile:  {args.out}  height {profile['height']:.3f} m, {len(profile['torso_slices'])} torso slices, "
+          f"{sum(len(a['slices']) for a in profile['arms'].values())} arm slices, {sum(len(l['slices']) for l in profile['legs'].values())} leg slices")
+    return 0
+
+
 def cmd_character_profile(args) -> int:
     """Export the neutral body profile of a UMA race for garment generators (character/profiles/<race>.json)."""
     try:
@@ -669,6 +700,21 @@ def add_parsers(sub) -> None:
     profile.add_argument("--out", help="Output path (default character/profiles/<race>.json).")
     profile.add_argument("--verbose", action="store_true")
     profile.set_defaults(func=cmd_character_profile)
+
+    fitp = csub.add_parser("fit-garment", help="Move a garment cut for one body (its profile) onto another body's profile; writes a GLB for import-slot (docs/03 18.13).")
+    fitp.add_argument("garment", help="Garment mesh (.glb or .obj) authored on the source body.")
+    fitp.add_argument("--source", required=True, help="Profile of the body the garment was cut for (character/profiles/<race>.json or profile-from-mesh output).")
+    fitp.add_argument("--target", required=True, help="Profile of the body to fit onto.")
+    fitp.add_argument("--out", required=True, help="Fitted GLB path.")
+    fitp.add_argument("--mirror-x", action="store_true", help="Mirror X before and after fitting (for meshes whose handedness differs from the profiles).")
+    fitp.set_defaults(func=cmd_character_fit_garment)
+
+    pfm = csub.add_parser("profile-from-mesh", help="Race-profile document for an external body mesh from joint landmarks (for fit-garment --source).")
+    pfm.add_argument("mesh", help="Body mesh (.glb or .obj), metres, Y up, facing +Z.")
+    pfm.add_argument("--landmarks", required=True, help="JSON {Hips, Neck, Head, LeftArm, LeftHand, RightArm, RightHand, LeftUpLeg, LeftFoot, RightUpLeg, RightFoot: [x, y, z]}.")
+    pfm.add_argument("--race", default="external", help="Label stored in the profile.")
+    pfm.add_argument("--out", required=True)
+    pfm.set_defaults(func=cmd_character_profile_from_mesh)
 
     slot = csub.add_parser("import-slot", help="Convert a promodeler garment GLB into a UMA slot, overlay and wardrobe recipe.")
     slot.add_argument("glb", nargs="?", help="Built garment (build/<asset>/<hash>/model.glb), authored on the race profile.")

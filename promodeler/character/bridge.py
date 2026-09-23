@@ -295,11 +295,24 @@ def import_garment_manifest(manifest: str | Path = GARMENTS_MANIFEST, force: boo
             reports.append({"ok": False, "name": name, "error": result.report.get("error"), "stage": "asset"})
             continue
         glb = result.report.get("export", {}).get("path")
+        fitted = None
+        if garment.get("fit"):
+            # The garment was cut on another body: move it onto the target race's neutral body first (fit.py).
+            from . import fit as fit_module
+
+            spec = garment["fit"]
+            out = PROJECT_ROOT / "build" / "wardrobe" / name / "fitted.glb"
+            fitted = fit_module.fit_garment(glb, PROJECT_ROOT / spec["from"], PROJECT_ROOT / spec["to"], out, mirror_x=bool(spec.get("mirror_x", False)))
+            if log:
+                log(f"garment {name}: fitted {spec['from']} -> {spec['to']}, moved mean {fitted['moved_m']['mean'] * 1000:.1f} mm, max {fitted['moved_m']['max'] * 1000:.1f} mm")
+            glb = str(out)
         report = import_wardrobe_slot(glb, garment["race"], name, garment["wardrobe_slot"], color=garment.get("color"),
                                       material_from_recipe=garment.get("material_from_recipe"), material=garment.get("material"),
                                       project=project, log=log)
         report["asset"] = garment["asset"]
         report["catalog_id"] = garment.get("catalog_id")
+        if fitted:
+            report["fit"] = fitted
         reports.append(report)
     return reports
 
