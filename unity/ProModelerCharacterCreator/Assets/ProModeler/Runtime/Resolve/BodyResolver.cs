@@ -174,6 +174,17 @@ namespace ProModeler.Resolve
                     return Measure();
                 };
                 var lengthTargets = new[] { "barefoot_height", "inseam", "shoulder_width", "foot_length", "head_height" };
+                if (System.Environment.GetEnvironmentVariable("PROMODELER_SWEEP") is string sweepName && initial.ContainsKey(sweepName))
+                {
+                    // Diagnostic: one parameter swept in small steps while the others stay at their initial values.
+                    var baseline = new Dictionary<string, float>(initial);
+                    for (var v = 0.30f; v <= 0.701f; v += 0.02f)
+                    {
+                        baseline[sweepName] = v;
+                        var m = evaluate(baseline);
+                        Debug.Log($"[ProModeler] sweep {sweepName}={v:F2}: " + string.Join(" ", new[] { "chest", "bust", "waist", "hip", "barefoot_height" }.Where(m.ContainsKey).Select(k => $"{k} {m[k] * 1000f:0}")));
+                    }
+                }
                 var lengthParameters = new[] { "height", "legsSize", "feetSize", "shoulderWidth", "adj:shoulder_length", "pos:arm_spread", "adj:head_height" };
                 var current = new Dictionary<string, float>(initial);
                 var stages = new[]

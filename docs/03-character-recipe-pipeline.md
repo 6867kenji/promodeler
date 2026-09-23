@@ -433,8 +433,10 @@ python -m promodeler character validate <recipe.json|id> [--mhr]      # スキ�
 python -m promodeler character build <id> [--outfit <outfit-id>] [--force] [--views front,side,back,face] [--no-render] [--formats fbx,glb]
 python -m promodeler character check <id> [--build <dir>]             # 設計書 × Recipe × build.json の照合表
 python -m promodeler character diff <id>                              # Recipe と設計書再生成との差分
-python -m promodeler character random --preset jp_adult_female --count 20 --seed 100 --out character/recipes/generated/
-python -m promodeler character prompt "20代女性冒険者。小柄で細身。肩までの黒髪。" --preset jp_adult_female --out character/recipes/adventurer.json
+python -m promodeler character random --seed 100 --count 20 [--sex female] [--style business] [--out build/random]   # 18.10 節（presets は character/presets/anthropometry.json）
+python -m promodeler character prompt "20代女性冒険者。小柄で細身。肩までの黒髪。" --out character/recipes/adventurer.json   # M13 残り
+python -m promodeler character profile human_female                   # レース中立体のプロファイル（衣服生成用、18.8 節）
+python -m promodeler character import-slot --manifest character/garments.json   # promodeler 製衣服 → UMA スロット（18.8 節）
 python -m promodeler character edit <id>                              # Unity Editor を GUI で起動し Recipe を開く（原案 §14）
 python -m promodeler character catalog list [--category wardrobe --slot upper --race human_male]
 ```
@@ -711,7 +713,7 @@ Unity は GLB を読み（UnityGLTF）、`socket` の Humanoid ボーン相対�
 | **M10 Unity MVP（1 体、原案 §31）** 完了 2026-09-23（18.1・18.2 節） | Unity プロジェクト作成、HDRP と UMA 導入、Intel iGPU でのバッチレンダ実測、`RecipeLoader`、`BodyMeasurer`、`DnaCalibrationTool`、`BodyResolver`、UMA 同梱資産だけで `businessman`（男性・スーツに最も近い既定衣装）を組み、`build.json` + front/side/back レンダ + FBX/GLB、`bridge.build`、`character check` | `promodeler character build businessman` が一発で通り、身長 ±2 mm、周長の残差が表に出る。対応パラメータは原案 §31 の 15–20 項目 |
 | **M11 寸法精度と全員** 寸法部分は完了 2026-09-23（18.3・18.4 節）。GarmentMeasurer・顔 DNA の検証は M12 へ | 独自 DNA（肩幅・胴長・頭高）の追加と校正、顔 DNA 表、靴による接地補正、`GarmentMeasurer`、15 体すべてのビルドと照合表、コンタクトシート、`.claude/skills` の更新 | 15 体で身長 ±2 mm、周長 ±1 cm 以内（UMA の限界は残差として明記）。全員のコンタクトシートが並ぶ |
 | **M12 カタログと装備・衣装** 装備・衣装・GUI は完了 2026-09-23（18.5 節）。ネクタイ・帯はプロップ衣服として解決（18.7 節）。GLB → UMA スロット変換は 1 着で疎通（18.8 節）。カタログ実資産の制作は残り | `tools/uma_slot_from_glb.py`、MakeHuman CC0 資産の変換と登録（髪 10、上衣 10、下衣 8、靴 6、眉・まつ毛・髭）、肌・眼球テクスチャ、`assets/props/` の装備品 8 点とソケット装着、Outfit 36・37、Addressables、`character edit` GUI（Face/Body/Hair/Skin/Wardrobe、Save は Recipe のみ） | 設計書の衣装語彙の 8 割が `catalog_id` で解決され、`wardrobe.missing` 警告が例外になる。GUI 保存 → `character diff` で差分追跡できる |
-| **M13 生成モード** | `presets`（性別・年齢別の人体計測事前分布）、`character random`、`character prompt`（LLM → Recipe、スキーマ制約、カタログ ID の実在検証）、クリップ動画記録、`physics_settings` 書き出し | 1,000 体を seed 決定的に生成して全件 `validate` を通す。プロンプト 1 文から `build` まで人手なし |
+| **M13 生成モード** `random` は完了 2026-09-23（18.10 節）。`prompt`・クリップ動画・物理書き出しは残り | `presets`（性別・年齢別の人体計測事前分布）、`character random`、`character prompt`（LLM → Recipe、スキーマ制約、カタログ ID の実在検証）、クリップ動画記録、`physics_settings` 書き出し | 1,000 体を seed 決定的に生成して全件 `validate` を通す。プロンプト 1 文から `build` まで人手なし |
 
 M10 の最初に **HDRP のヘッドレスレンダが Intel iGPU で動くか** と **UMA の HDRP シェーダの入手** を確認し、駄目なら検証レンダ用 URP プロジェクトに分ける判断をここで下す。
 
@@ -997,6 +999,22 @@ M10 の最初に **HDRP のヘッドレスレンダが Intel iGPU で動くか**
   RenderTexture。表示には影響なし。書き出しテクスチャの焼き込みは M13 以降）。
 - カフェ店員の髪（`Hair_Bun_Recipe` スタンドイン）は今回のスパイク前から白い。UMA 3 サンプルの一部の髪はシェーダ色を
   読まない（18.5 節の `_BaseColor` 経路が効かない）ので別件。
+
+### 18.10 M13 その 1: `character random`（2026-09-23）
+
+`character/presets/anthropometry.json`（日本人成人 20–59 歳の近似事前分布: 身長の平均・SD、身長比の股下・肩幅・足長・頭高、
+体脂肪 Beta 分布、周長 = 平均 + 身長勾配 + 体脂肪勾配 + 残差、髪色・虹彩・肌の重み、様式 business/casual/uniform/sport ごとの
+カタログ ID と色）から `promodeler/character/sampler.py` が 1 つの `random.Random(seed)` で Recipe を組む。比率は
+`consistency` の成人範囲の内側にクランプし、周長は腰 < 尻・胸の順序を保つ。断面は高さと周長のみ（幅・奥行きは作らない）。
+`source` に presets の sha256 とカタログ版を記録し、同じ seed は同じ Recipe になる。
+
+- 受入: 1,000 体を `--dry-run` で生成 → 全件 `validate` 通過、寸法警告 0（クランプ前は 12 体が分布の裾で範囲外だった）。生成は 300 体 0.07 秒。
+- 1 体（`random-000003e9`、男性 1.726 m、胸 0.96 腰 0.87 尻 0.92）を Unity でビルドしたところ、周長段階が 1 歩も進めず +79/+86/−76 mm。
+  原因は **調整ボーンを 0.5 のとき「触らない」最適化**: UMA 骸骨の `SetScale` は倍率 1.0 でも生成結果を 15 mm 動かす（骨に触れると
+  `accessedFrame` が更新され UMA の復元経路が変わる）ため、全調整 0.5 の初期体だけが応答曲線から外れ、有限差分ヤコビアンが指す
+  方向がすべて悪化に見えた。0.5 でも常に適用するよう変更し、`PROMODELER_SWEEP=<param>` で 1 パラメータ掃引を記録する診断と、
+  却下ステップの計測値ログ（`MeasurementSolver.Verbose`）を足した。修正後は同じ体が 4 反復で全項目 ≤3 mm。
+- 全 15 体を再ビルドして残差表を更新（`docs/character-residuals.md`）: 14 体は全項目 ±0 mm のまま、春香は肩幅 −8 → −3、バスト −7 → −2、股下 −5 → −2 に改善したが頭高が −17 → −22 mm（`adj:head_height` の重み 0.7 では身長・肩と引き合う。設計書 05 だけが頭高を指定する）。
 
 ### 18.9 衣装調達の調査（2026-09-23）
 

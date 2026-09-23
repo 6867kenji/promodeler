@@ -12,7 +12,7 @@ from dataclasses import replace
 from pathlib import Path
 
 from ..core import ModelingError
-from . import bridge, check, consistency, schema
+from . import bridge, check, consistency, sampler, schema
 from .catalog import Catalog
 from .from_blueprint import character_from_blueprint, load_blueprint, outfit_from_blueprint
 from .recipe import OUTFIT_SCHEMA, RACES, SCHEMA, CharacterRecipe, OutfitRecipe, RecipeWarning
@@ -314,6 +314,49 @@ def cmd_character_setup(args) -> int:
     return 0 if status.get("Ok") else 1
 
 
+def cmd_character_random(args) -> int:
+    """Seed-deterministic recipes from the anthropometric priors; writes <out>/<id>.json and validates each."""
+    catalog = Catalog()
+    try:
+        presets = sampler.load_presets(args.presets) if args.presets else sampler.load_presets()
+    except (ModelingError, OSError) as exc:
+        print(f"error:    {exc}", file=sys.stderr)
+        return 2
+    out_dir = Path(args.out)
+    failures = 0
+    rows = []
+    for i in range(args.count):
+        seed = args.seed + i
+        try:
+            recipe, warnings = sampler.sample_character(seed, catalog, presets, sex=args.sex, style=args.style,
+                                                        recipe_id=args.id if args.count == 1 and args.id else None)
+            warnings += recipe.validate(catalog)
+        except ModelingError as exc:
+            failures += 1
+            print(f"seed {seed}: error {exc.code}: {exc}", file=sys.stderr)
+            continue
+        hard = [w for w in warnings if w.code.startswith("measurements.")]
+        if hard:
+            failures += 1
+        path = out_dir / f"{recipe.id}.json"
+        if path.exists() and not args.force:
+            print(f"seed {seed}: {path} exists (use --force)", file=sys.stderr)
+            failures += 1
+            continue
+        if not args.dry_run:
+            write_json(path, recipe.to_json())
+        m = recipe.body.measurements_m
+        rows.append((recipe.id, recipe.identity.sex, recipe.identity.age, m.barefoot_height, m.circumferences, len(recipe.wardrobe), len(recipe.accessories),
+                     [w.code for w in warnings if not w.code.startswith("catalog.placeholder")]))
+    if args.count <= 20 or args.verbose:
+        for recipe_id, sex, age, height, girths, garments, accessories, codes in rows:
+            girth_text = " ".join(f"{k} {v:.2f}" for k, v in girths.items())
+            print(f"{recipe_id:18s} {sex:6s} {age:3d}  h {height:.3f}  {girth_text}  garments {garments} accessories {accessories}"
+                  + (f"  warnings {codes}" if codes else ""))
+    print(f"generated {len(rows)} recipes into {out_dir} ({'not written, dry run' if args.dry_run else 'written'}); {failures} failed validation or measurement checks")
+    return 1 if failures else 0
+
+
 def cmd_character_profile(args) -> int:
     """Export the neutral body profile of a UMA race for garment generators (character/profiles/<race>.json)."""
     try:
@@ -536,6 +579,19 @@ def add_parsers(sub) -> None:
     edit = csub.add_parser("edit", help="Open the Unity character editor (sliders, preview, Save writes the recipe JSON).")
     edit.add_argument("target", help="Character recipe id or path.")
     edit.set_defaults(func=cmd_character_edit)
+
+    rnd = csub.add_parser("random", help="Seed-deterministic recipes from character/presets/anthropometry.json (docs/03 M13).")
+    rnd.add_argument("--seed", type=int, default=1, help="First seed; recipe ids are random-<seed as 8 hex digits>.")
+    rnd.add_argument("--count", type=int, default=1, help="How many recipes (seeds seed, seed+1, ...).")
+    rnd.add_argument("--sex", choices=("male", "female"), help="Fix the sex instead of drawing it.")
+    rnd.add_argument("--style", help="Fix the wardrobe style (business, casual, uniform, sport) instead of drawing it.")
+    rnd.add_argument("--id", help="Recipe id for a single recipe (default random-<seed>).")
+    rnd.add_argument("--presets", help="Alternative anthropometry presets JSON.")
+    rnd.add_argument("--out", default="build/random", help="Output directory (default build/random; use character/recipes to keep one).")
+    rnd.add_argument("--force", action="store_true", help="Overwrite existing files.")
+    rnd.add_argument("--dry-run", action="store_true", help="Generate and validate without writing.")
+    rnd.add_argument("--verbose", action="store_true", help="Print every recipe row even for large counts.")
+    rnd.set_defaults(func=cmd_character_random)
 
     profile = csub.add_parser("profile", help="Export the neutral body of a UMA race (outlines, arm sections, bones) for garment generators.")
     profile.add_argument("race", choices=sorted(RACES), help="Recipe race id (human_female, human_male).")

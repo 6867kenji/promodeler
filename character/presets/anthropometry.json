@@ -1,0 +1,102 @@
+{
+  "schema": "promodeler-anthropometry/1.0",
+  "version": "2026.09",
+  "note": "Priors for `promodeler character random`: Japanese adults (20-59). Means are rounded from published summaries (e-Stat 国民健康・栄養調査 height/waist, AIST 人体寸法データベース 1991-92 / 2004-06 for stature ratios) and are APPROXIMATE; residual spreads are our own. Replace with a measured table when one is licensed (docs/03 chapter 19). Ratios are fractions of barefoot height; girths in metres are modelled as mean + height_slope * (height - mean height) + fat_slope * (body_fat - 0.45) + N(0, residual_sd).",
+  "populations": {
+    "male": {
+      "race": "human_male",
+      "age": {"min": 20, "max": 59},
+      "height": {"mean": 1.710, "sd": 0.056, "min": 1.55, "max": 1.90},
+      "ratios": {
+        "inseam": {"mean": 0.452, "sd": 0.011},
+        "shoulder_width": {"mean": 0.232, "sd": 0.008},
+        "foot_length": {"mean": 0.150, "sd": 0.005},
+        "head_height": {"mean": 0.135, "sd": 0.004}
+      },
+      "body_fat": {"alpha": 4.0, "beta": 5.0},
+      "muscle": {"mean": 0.48, "sd": 0.12, "min": 0.2, "max": 0.85},
+      "girths": {
+        "chest": {"mean": 0.905, "height_slope": 0.45, "fat_slope": 0.22, "residual_sd": 0.030},
+        "waist": {"mean": 0.835, "height_slope": 0.30, "fat_slope": 0.42, "residual_sd": 0.030},
+        "hip": {"mean": 0.920, "height_slope": 0.45, "fat_slope": 0.24, "residual_sd": 0.025}
+      },
+      "girth_order": [["waist", "hip", 0.03], ["waist", "chest", 0.02]],
+      "landmark_fractions": {"chest": 0.781, "waist": 0.662, "hip": 0.594},
+      "facial_hair_probability": 0.15
+    },
+    "female": {
+      "race": "human_female",
+      "age": {"min": 20, "max": 59},
+      "height": {"mean": 1.580, "sd": 0.053, "min": 1.45, "max": 1.76},
+      "ratios": {
+        "inseam": {"mean": 0.454, "sd": 0.011},
+        "shoulder_width": {"mean": 0.229, "sd": 0.008},
+        "foot_length": {"mean": 0.148, "sd": 0.005},
+        "head_height": {"mean": 0.138, "sd": 0.004}
+      },
+      "body_fat": {"alpha": 4.5, "beta": 5.0},
+      "muscle": {"mean": 0.36, "sd": 0.10, "min": 0.15, "max": 0.7},
+      "girths": {
+        "bust": {"mean": 0.850, "height_slope": 0.40, "fat_slope": 0.26, "residual_sd": 0.035},
+        "waist": {"mean": 0.715, "height_slope": 0.30, "fat_slope": 0.40, "residual_sd": 0.030},
+        "hip": {"mean": 0.905, "height_slope": 0.45, "fat_slope": 0.26, "residual_sd": 0.025}
+      },
+      "girth_order": [["waist", "hip", 0.08], ["waist", "bust", 0.05]],
+      "landmark_fractions": {"chest": 0.781, "waist": 0.662, "hip": 0.594},
+      "facial_hair_probability": 0.0
+    }
+  },
+  "face_shape_sd": 0.09,
+  "hair_colors": [
+    {"srgb": "#1E1A18", "weight": 4, "name": "黒"},
+    {"srgb": "#28201D", "weight": 4, "name": "黒褐"},
+    {"srgb": "#3A2A20", "weight": 3, "name": "濃い茶"},
+    {"srgb": "#4A3524", "weight": 2, "name": "茶"},
+    {"srgb": "#6B4A2E", "weight": 1, "name": "明るい茶（染髪）"},
+    {"srgb": "#8A8683", "weight": 0.5, "name": "白髪混じり"}
+  ],
+  "iris_colors": [
+    {"srgb": "#3E2C22", "weight": 3, "catalog_id": "eye_dark_brown_01"},
+    {"srgb": "#574335", "weight": 2, "catalog_id": "eye_brown_01"}
+  ],
+  "skin_weights": {"skin_jp_light_01": 2, "skin_jp_light_02": 3, "skin_jp_medium_01": 3, "skin_jp_medium_02": 2, "skin_jp_tan_01": 1},
+  "hair_tags": {"male": ["short", "side_part"], "female": ["short", "medium", "tied", "long"]},
+  "styles": {
+    "business": {
+      "weight": 3,
+      "wardrobe": {
+        "male": {"upper": ["suit_jacket_2button_01"], "inner": ["dress_shirt_01"], "lower": ["slacks_01"], "neck": ["necktie_01", null], "footwear": ["oxford_lace_01"]},
+        "female": {"upper": ["pantsuit_jacket_01", "cardigan_01"], "inner": ["blouse_01", "dress_shirt_01"], "lower": ["slacks_01", "skirt_long_01"], "footwear": ["pumps_low_01", "flat_shoe_01"]}
+      },
+      "colors": {"upper": ["#1F2637", "#2B2B30", "#3A3F4A", "#4B4E57"], "inner": ["#F4F2EC", "#DCE6F2", "#EDE7DA"], "lower": ["#1F2637", "#2B2B30", "#3A3F4A"], "neck": ["#244839", "#5A1F2A", "#1E3A66", "#6B6B70"], "footwear": ["#1A1614", "#3B2A1E"]},
+      "accessories": [{"id": "briefcase", "socket": "hand_r", "probability": 0.5}, {"id": "glasses", "socket": "face", "probability": 0.25}, {"id": "tote", "socket": "shoulder_l", "probability": 0.2, "sex": "female"}]
+    },
+    "casual": {
+      "weight": 4,
+      "wardrobe": {
+        "male": {"upper": ["hoodie_01", "overshirt_01", "jacket_light_01", null], "inner": ["tshirt_01", "shirt_short_sleeve_01", "polo_shirt_01"], "lower": ["chinos_01", "jeans_straight_01", "cargo_pants_01", "pants_wide_01"], "footwear": ["sneaker_low_01", "walking_shoe_01", "loafer_01"]},
+        "female": {"upper": ["cardigan_01", "jacket_light_01", "hoodie_01", null], "inner": ["tshirt_01", "blouse_01", "shirt_three_quarter_01"], "lower": ["jeans_straight_01", "pants_wide_01", "skirt_long_01", "chinos_01"], "footwear": ["sneaker_low_01", "flat_shoe_01", "boots_short_leather_01"]}
+      },
+      "colors": {"upper": ["#8A8F98", "#4E6E58", "#C9B99A", "#2F3A4A", "#7A5C4A"], "inner": ["#F4F2EC", "#3C3C40", "#8FA3B8", "#C75B4A", "#EDE7DA"], "lower": ["#2E3A5A", "#4A4A4F", "#C9B99A", "#6E7B8B"], "footwear": ["#F2F2F0", "#1A1614", "#6E5A48"]},
+      "accessories": [{"id": "backpack", "socket": "back", "probability": 0.3}, {"id": "tote", "socket": "shoulder_l", "probability": 0.25, "sex": "female"}, {"id": "shoulder-bag", "socket": "shoulder_l", "probability": 0.2}, {"id": "phone", "socket": "hand_l", "probability": 0.3}, {"id": "glasses", "socket": "face", "probability": 0.2}, {"id": "watch", "socket": "wrist_l", "probability": 0.3}]
+    },
+    "uniform": {
+      "weight": 1,
+      "wardrobe": {
+        "male": {"upper": ["polo_shirt_01"], "lower": ["pants_tapered_01", "chinos_01"], "waist": ["apron_bib_01", null], "footwear": ["work_shoe_01"]},
+        "female": {"inner": ["shirt_three_quarter_01", "polo_shirt_01"], "lower": ["pants_tapered_01"], "waist": ["apron_bib_01", null], "footwear": ["work_shoe_01"]}
+      },
+      "colors": {"upper": ["#2F4A6B", "#F4F2EC"], "inner": ["#F4F2EC", "#DCE6F2"], "lower": ["#2B2B30", "#3A3F4A"], "waist": ["#737A65", "#3A3F4A"], "footwear": ["#1A1614"]},
+      "accessories": [{"id": "badge", "socket": "chest", "probability": 0.7}]
+    },
+    "sport": {
+      "weight": 1,
+      "wardrobe": {
+        "male": {"inner": ["tshirt_athletic_01"], "lower": ["joggers_01"], "footwear": ["running_shoe_01"]},
+        "female": {"inner": ["tshirt_athletic_01", "sports_inner_01"], "lower": ["joggers_01"], "footwear": ["running_shoe_01"]}
+      },
+      "colors": {"inner": ["#F4F2EC", "#3C3C40", "#2F6B8A", "#C75B4A"], "lower": ["#2B2B30", "#3C3C40"], "footwear": ["#F2F2F0", "#2B2B30"]},
+      "accessories": [{"id": "sports-watch", "socket": "wrist_l", "probability": 0.5}]
+    }
+  }
+}

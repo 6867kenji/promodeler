@@ -30,6 +30,7 @@ namespace ProModeler.Resolve
         public int MaxIterations = 14;
         public int MaxDampingRetries = 4;
         public int MaxStepRefinements = 2;   // on a stall, halve the finite-difference step and rebuild the Jacobian
+        public static bool Verbose = true;   // log rejected steps (why a stage stalls) into the build log
 
         public Result Solve(
             IReadOnlyDictionary<string, float> initial,
@@ -113,8 +114,21 @@ namespace ProModeler.Resolve
                         nextMeasured = Evaluate(evaluate, names, next, result);
                         nextR = Residuals(nextMeasured, targets, measureNames, weights);
                         improved = Norm(nextR) < Norm(r);
+                        if (!improved && Verbose)
+                            result.Log.Add($"iteration {iteration + 1}: rejected step (lambda {lambda:F3}, fraction {fraction:F2}, |dx|max {largest * scale * fraction:F3}): norm {Norm(r):F4} -> {Norm(nextR):F4}; "
+                                           + string.Join(" ", measureNames.Where(k => measured.ContainsKey(k) && nextMeasured.ContainsKey(k)).Select(k => $"{k} {(measured[k] * 1000f):0}->{(nextMeasured[k] * 1000f):0}"))
+                                           + " | " + string.Join(" ", names.Select((nm, j) => $"{nm}{(dx[j] * scale * fraction):+0.00}")));
                     }
                     if (!improved) lambda *= 4f;
+                }
+                if (!improved && Verbose)
+                {
+                    // Is the baseline itself reproducible? Re-evaluate at x and compare with r.
+                    var again = Evaluate(evaluate, names, x, result);
+                    var rAgain = Residuals(again, targets, measureNames, weights);
+                    result.Log.Add($"iteration {iteration + 1}: baseline re-evaluated: norm {Norm(r):F4} -> {Norm(rAgain):F4}; "
+                                   + string.Join(" ", measureNames.Where(k => measured.ContainsKey(k) && again.ContainsKey(k))
+                                                                  .Select(k => $"{k} {(measured[k] * 1000f):0}->{(again[k] * 1000f):0}")));
                 }
                 if (!improved)
                 {

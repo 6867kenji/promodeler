@@ -198,6 +198,9 @@ python -m promodeler character build --all                            # 15 体�
 python -m promodeler character build <id> --probe                     # 各パラメータを 0/1 にした計測差分 calibration.json（校正表）
 python -m promodeler character report [--write docs/x.md]             # 最新ビルドの残差を 1 表に（mm、* は許容超え）
 python -m promodeler character edit <id>                              # Unity の GUI エディタ（スライダー・プレビュー・Save は Recipe のみ）
+python -m promodeler character random --seed 100 --count 20 [--sex male] [--style casual] [--out build/random]
+                                                                      # 人体計測の事前分布（character/presets/anthropometry.json）から seed 決定的に Recipe を生成
+python -m promodeler character build build/random/random-00000064.json  # 生成した Recipe はパスでもビルドできる
 ```
 
 布の衣服は `assets/wardrobe/<name>.py` を **レースプロファイル**（`promodeler character profile human_female` →

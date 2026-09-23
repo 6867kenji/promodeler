@@ -294,7 +294,9 @@ namespace ProModeler.Runtime
             _baseScales.Clear();
             foreach (var adjust in Adjusts)
             {
-                if (!_adjustValues.TryGetValue(adjust.Name, out var value) || Mathf.Abs(value - 0.5f) < 1e-4f) continue;
+                // Always apply, even at the neutral 0.5: touching a bone through the UMA skeleton (SetScale marks it accessed) changes
+                // the generated body slightly, so skipping the neutral value put a 15 mm step into the girths right at the start.
+                if (!_adjustValues.TryGetValue(adjust.Name, out var value)) value = 0.5f;
                 for (var b = 0; b < adjust.Bones.Length; b++)
                 {
                     var bone = adjust.Bones[b];
