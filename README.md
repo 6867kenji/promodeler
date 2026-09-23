@@ -196,6 +196,8 @@ python -m promodeler character setup [--no-unity]                     # external
 python -m promodeler character build <id> [--outfit <id>] [--views front,side] [--no-render]   # Unity + UMA バッチビルド → build/character/<id>/<hash>/build.json
 python -m promodeler character build --all                            # 15 体を順にビルド（Unity はプロジェクトを排他ロックするため逐次）
 python -m promodeler character build <id> --probe                     # 各パラメータを 0/1 にした計測差分 calibration.json（校正表）
+python -m promodeler character build <id> --clips [idle,walk] [--clip-fps 12] [--clip-seconds 3]
+                                                                      # animation.clips を手続き姿勢で PNG 連番 + MP4（ffmpeg）/ GIF（Pillow）に記録。physics.json は毎回書く
 python -m promodeler character report [--write docs/x.md]             # 最新ビルドの残差を 1 表に（mm、* は許容超え）
 python -m promodeler character edit <id>                              # Unity の GUI エディタ（スライダー・プレビュー・Save は Recipe のみ）
 python -m promodeler character random --seed 100 --count 20 [--sex male] [--style casual] [--out build/random]

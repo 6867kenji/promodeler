@@ -431,6 +431,7 @@ python -m promodeler generate blueprints/japan-realistic-v1/22-businessman/bluep
 python -m promodeler character recipe <blueprint.json> [--out character/recipes/<id>.json] [--force] [--seed N]
 python -m promodeler character validate <recipe.json|id> [--mhr]      # スキーマ、カタログ、ライセンス、寸法整合性
 python -m promodeler character build <id> [--outfit <outfit-id>] [--force] [--views front,side,back,face] [--no-render] [--formats fbx,glb]
+python -m promodeler character build <id> --clips [idle,walk,...] [--clip-fps 12] [--clip-seconds 3]   # 手続きクリップを PNG 連番 + MP4/GIF に（18.12 節）。physics.json は常に書く
 python -m promodeler character check <id> [--build <dir>]             # 設計書 × Recipe × build.json の照合表
 python -m promodeler character diff <id>                              # Recipe と設計書再生成との差分
 python -m promodeler character random --seed 100 --count 20 [--sex female] [--style business] [--out build/random]   # 18.10 節（presets は character/presets/anthropometry.json）
@@ -713,7 +714,7 @@ Unity は GLB を読み（UnityGLTF）、`socket` の Humanoid ボーン相対�
 | **M10 Unity MVP（1 体、原案 §31）** 完了 2026-09-23（18.1・18.2 節） | Unity プロジェクト作成、HDRP と UMA 導入、Intel iGPU でのバッチレンダ実測、`RecipeLoader`、`BodyMeasurer`、`DnaCalibrationTool`、`BodyResolver`、UMA 同梱資産だけで `businessman`（男性・スーツに最も近い既定衣装）を組み、`build.json` + front/side/back レンダ + FBX/GLB、`bridge.build`、`character check` | `promodeler character build businessman` が一発で通り、身長 ±2 mm、周長の残差が表に出る。対応パラメータは原案 §31 の 15–20 項目 |
 | **M11 寸法精度と全員** 寸法部分は完了 2026-09-23（18.3・18.4 節）。GarmentMeasurer・顔 DNA の検証は M12 へ | 独自 DNA（肩幅・胴長・頭高）の追加と校正、顔 DNA 表、靴による接地補正、`GarmentMeasurer`、15 体すべてのビルドと照合表、コンタクトシート、`.claude/skills` の更新 | 15 体で身長 ±2 mm、周長 ±1 cm 以内（UMA の限界は残差として明記）。全員のコンタクトシートが並ぶ |
 | **M12 カタログと装備・衣装** 装備・衣装・GUI は完了 2026-09-23（18.5 節）。ネクタイ・帯はプロップ衣服として解決（18.7 節）。GLB → UMA スロット変換は 1 着で疎通（18.8 節）。カタログ実資産の制作は残り | `tools/uma_slot_from_glb.py`、MakeHuman CC0 資産の変換と登録（髪 10、上衣 10、下衣 8、靴 6、眉・まつ毛・髭）、肌・眼球テクスチャ、`assets/props/` の装備品 8 点とソケット装着、Outfit 36・37、Addressables、`character edit` GUI（Face/Body/Hair/Skin/Wardrobe、Save は Recipe のみ） | 設計書の衣装語彙の 8 割が `catalog_id` で解決され、`wardrobe.missing` 警告が例外になる。GUI 保存 → `character diff` で差分追跡できる |
-| **M13 生成モード** `random`（18.10 節）と `prompt`（18.11 節）は完了 2026-09-23。クリップ動画・物理書き出しは残り | `presets`（性別・年齢別の人体計測事前分布）、`character random`、`character prompt`（LLM → Recipe、スキーマ制約、カタログ ID の実在検証）、クリップ動画記録、`physics_settings` 書き出し | 1,000 体を seed 決定的に生成して全件 `validate` を通す。プロンプト 1 文から `build` まで人手なし |
+| **M13 生成モード** 完了 2026-09-23（`random` 18.10、`prompt` 18.11、クリップ・physics.json 18.12 節） | `presets`（性別・年齢別の人体計測事前分布）、`character random`、`character prompt`（LLM → Recipe、スキーマ制約、カタログ ID の実在検証）、クリップ動画記録、`physics_settings` 書き出し | 1,000 体を seed 決定的に生成して全件 `validate` を通す。プロンプト 1 文から `build` まで人手なし |
 
 M10 の最初に **HDRP のヘッドレスレンダが Intel iGPU で動くか** と **UMA の HDRP シェーダの入手** を確認し、駄目なら検証レンダ用 URP プロジェクトに分ける判断をここで下す。
 
@@ -1031,6 +1032,31 @@ API キーなしで動く（このマシンには `ANTHROPIC_API_KEY` がなく�
 - 同じ文は同じ Recipe（`source.kind = prompt`, `sha256` = 文のハッシュ、`identity.descriptors[1] = "prompt:<文>"`）。
 - 衣服は 1 スロットにつき最長一致の断片を採用（「七分袖シャツ」が「シャツ」に勝つ）。ワンピース指定時は上下を外す。
 - 残り: 英語語彙の拡充、`garment_colors`（「紺のスーツ」）の色語、`--llm` の実機確認、クリップ動画記録と物理設定書き出し（M13 その 3）。
+
+### 18.12 M13 その 3: クリップ記録と物理設定の書き出し（2026-09-23）
+
+**クリップ**: UMA 3 にはモーションデータが同梱されないので、`Editor/Clips/ClipRecorder.cs` が Recipe の `animation.clips` を
+**手続き姿勢**で記録する（idle = 呼吸と首の揺れ、walk = その場で脚と腕を振り腰が上下、turn = ルート 180°、sit = 股・膝 90° で
+座面 0.43 m + 靴底へ降ろす、raise-arms = `limits_deg.shoulder_raise` まで挙上して戻す、physics-settle = idle → walk → idle、
+device = 右前腕を胸元へ上げ頭を下げる）。姿勢は静止ポーズからワールド軸で骨を回すだけなので、UMA の骨のローカル軸を知らなくてよい。
+毎クリップの冒頭で腕を 12° に下ろした自然な立ち姿勢に置く（UMA の静止ポーズは T/A ポーズ）。`--clips` は `-nographics` では記録しない。
+Unity は `clips/<id>/f_0000.png …` を書き、Python 側（`bridge.encode_clip`）が ffmpeg があれば MP4、なければ Pillow で GIF にする
+（このマシンは ffmpeg なし → GIF）。`build.json` の `clips[]` に frames / fps / video / video_format。
+
+判明したこと: **手動レンダ（`SubmitRenderRequest`）はスキニング行列を更新しない**。骨を回しても最後のエディタ tick の姿勢で描かれ、
+親子付けした鞄だけが動いた。`SkinnedMeshRenderer.forceMatrixRecalculationPerRender = true` を記録中だけ立てて解決。これは
+検証レンダにも当てはまる（今のレンダは生成直後の姿勢を写しているので問題は出ていない）。
+
+businessman で 6 クリップ（2 秒・10 fps・384 px）を約 130 秒で記録。座り・歩き・端末操作の姿勢は目視で妥当。ブリーフケースは手に
+付いたまま持ち上がる（右手ソケットの剛体付属品としては正しい。座位で膝に置くのは設計書どおり別アニメ）。
+
+**physics.json**（`Editor/Export/PhysicsExporter.cs`、毎ビルド `exports.physics_settings`）: 設計書の `physics` ブロックをそのまま、
+`rig.limits_deg` と静止ポーズ、実測周長から半径を出した胴のカプセル（胸・腰・尻）と骨長からの四肢カプセル、装着済み付属品の
+実測境界ボックスと質量（Recipe の `physics.mass_kg` がなければ 250 kg/m³ の見積りと明記）、衣服の変形区分（クロス対象か）。
+バッチではシミュレーションしない（`settings.common.execution` の方針どおり）契約ファイル。
+
+残り: 実モーション（Mecanim クリップ）への差し替え口、MP4 の既定化（imageio-ffmpeg 同梱か ffmpeg 導入）、クリップの検証レンダへの
+コンタクトシート化。M13 の受入基準（1,000 体の決定的生成、プロンプト 1 文から build）は満たした。
 
 ### 18.9 衣装調達の調査（2026-09-23）
 

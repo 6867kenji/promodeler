@@ -38,6 +38,19 @@ namespace ProModeler.Build
         public bool Attached;
     }
 
+    public class ClipEntry
+    {
+        public string Id;
+        public string Directory;     // PNG frames f_0000.png ... (the bridge encodes them)
+        public int Frames;
+        public int Fps;
+        public float DurationS;
+        public bool Loop;
+        public string Description;
+        public bool Written;
+        public float Seconds;
+    }
+
     public class RenderEntry
     {
         public string View;
@@ -75,6 +88,7 @@ namespace ProModeler.Build
         public List<WardrobeEntry> Wardrobe = new List<WardrobeEntry>();
         public List<AccessoryEntry> Accessories = new List<AccessoryEntry>();
         public List<RenderEntry> Renders = new List<RenderEntry>();
+        public List<ClipEntry> Clips = new List<ClipEntry>();
         public JObject ContactSheet;
         public Dictionary<string, object> Exports = new Dictionary<string, object>();
         public List<Warning> Warnings = new List<Warning>();

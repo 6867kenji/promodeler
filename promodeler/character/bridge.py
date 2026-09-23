@@ -487,7 +487,8 @@ def _read_json(path: Path) -> dict | None:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def batch_command(unity: str, staged: Staged, views, passes, formats, render: bool, project: Path = UNITY_PROJECT, probe: bool = False) -> list[str]:
+def batch_command(unity: str, staged: Staged, views, passes, formats, render: bool, project: Path = UNITY_PROJECT, probe: bool = False,
+                  clips: tuple[str, ...] | None = None, clip_fps: int = 12, clip_seconds: float = 3.0, clip_resolution: int = 384) -> list[str]:
     command = [unity, "-batchmode", "-projectPath", str(project), "-executeMethod", BATCH_METHOD,
                "-recipe", str(staged.recipe_path), "-out", str(staged.out_dir),
                "-views", ",".join(views), "-passes", ",".join(passes), "-formats", ",".join(formats),
@@ -498,12 +499,15 @@ def batch_command(unity: str, staged: Staged, views, passes, formats, render: bo
         command.insert(1, "-nographics")
     if probe:
         command.append("-probe")
+    if clips is not None:
+        command += ["-clips", ",".join(clips) if clips else "all", "-clip-fps", str(clip_fps), "-clip-seconds", str(clip_seconds), "-clip-resolution", str(clip_resolution)]
     return command
 
 
 def build(recipe: CharacterRecipe, outfit: OutfitRecipe | None = None, catalog: Catalog | None = None,
           out_root: str | Path = "build/character", force: bool = False, views=None, passes=None, formats=None,
-          render: bool = True, timeout: float = 1800.0, log=None, project: Path = UNITY_PROJECT, probe: bool = False) -> CharacterBuildResult:
+          render: bool = True, timeout: float = 1800.0, log=None, project: Path = UNITY_PROJECT, probe: bool = False,
+          clips: tuple[str, ...] | None = None, clip_fps: int = 12, clip_seconds: float = 3.0, clip_resolution: int = 384) -> CharacterBuildResult:
     """Stage the recipe, run the Unity batch build and return its ``build.json`` (cached when the hash already built)."""
     catalog = catalog or Catalog()
     views = tuple(views or DEFAULT_VIEWS)
@@ -527,7 +531,8 @@ def build(recipe: CharacterRecipe, outfit: OutfitRecipe | None = None, catalog: 
             stale.unlink()
     if (staged.out_dir / "renders").exists():
         shutil.rmtree(staged.out_dir / "renders")
-    command = batch_command(unity, staged, views, passes, formats, render, project, probe=probe)
+    command = batch_command(unity, staged, views, passes, formats, render, project, probe=probe,
+                            clips=clips, clip_fps=clip_fps, clip_seconds=clip_seconds, clip_resolution=clip_resolution)
     if log:
         log("unity: " + " ".join(command))
     started = time.perf_counter()
@@ -551,5 +556,51 @@ def build(recipe: CharacterRecipe, outfit: OutfitRecipe | None = None, catalog: 
         except Exception as exc:  # noqa: BLE001 - a broken PNG must not turn a finished build into a crash
             result["contact_sheet"] = None
             result.setdefault("warnings", []).append({"code": "contactSheet.failed", "message": f"{type(exc).__name__}: {exc}"})
+    if result.get("status") == "ok" and result.get("clips"):
+        for clip in result["clips"]:
+            try:
+                clip.update(encode_clip(clip))
+            except Exception as exc:  # noqa: BLE001 - a failed encode leaves the frames in place
+                clip["video"] = None
+                result.setdefault("warnings", []).append({"code": "clips.encode", "message": f"{clip.get('id')}: {type(exc).__name__}: {exc}"})
     build_path.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return CharacterBuildResult(out_dir=staged.out_dir, build=result, cached=False, hash=staged.hash)
+
+
+# --- clips ---------------------------------------------------------------------------------------
+
+def find_ffmpeg() -> str | None:
+    """ffmpeg on PATH, or the binary bundled with imageio-ffmpeg when that package is installed."""
+    path = shutil.which("ffmpeg")
+    if path:
+        return path
+    try:
+        import imageio_ffmpeg  # type: ignore
+
+        return imageio_ffmpeg.get_ffmpeg_exe()
+    except Exception:  # noqa: BLE001 - optional dependency
+        return None
+
+
+def encode_clip(clip: dict) -> dict:
+    """PNG frames -> <clips dir>/<id>.mp4 with ffmpeg when available, else an animated GIF with Pillow. Returns the fields to add."""
+    directory = Path(clip["directory"])
+    frames = sorted(directory.glob("f_*.png"))
+    if not frames:
+        return {"video": None, "video_format": None}
+    fps = int(clip.get("fps") or 12)
+    ffmpeg = find_ffmpeg()
+    if ffmpeg:
+        target = directory.parent / f"{clip['id']}.mp4"
+        command = [ffmpeg, "-y", "-loglevel", "error", "-framerate", str(fps), "-i", str(directory / "f_%04d.png"),
+                   "-c:v", "libx264", "-pix_fmt", "yuv420p", "-vf", "pad=ceil(iw/2)*2:ceil(ih/2)*2", str(target)]
+        completed = subprocess.run(command, capture_output=True, text=True, check=False)
+        if completed.returncode == 0 and target.is_file():
+            return {"video": str(target), "video_format": "mp4", "encoder": "ffmpeg"}
+        raise RuntimeError(f"ffmpeg exited {completed.returncode}: {completed.stderr.strip()[:200]}")
+    from PIL import Image
+
+    target = directory.parent / f"{clip['id']}.gif"
+    images = [Image.open(f).convert("RGB").quantize(colors=128, method=Image.Quantize.MEDIANCUT) for f in frames]
+    images[0].save(target, save_all=True, append_images=images[1:], duration=int(round(1000 / fps)), loop=0 if clip.get("loop", True) else 1, optimize=False)
+    return {"video": str(target), "video_format": "gif", "encoder": "pillow"}

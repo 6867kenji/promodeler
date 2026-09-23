@@ -242,6 +242,10 @@ def print_build(result: bridge.CharacterBuildResult) -> None:
         print(f"wardrobe: {entry['slot']:9s} {entry.get('catalog_id')}  {state}")
     for render in build.get("renders", []):
         print(f"render:   {render.get('pass', 'shaded')}/{render['view']:<14} {'written' if render.get('written') else 'MISSING'}  {render['path']}")
+    for clip in build.get("clips", []):
+        video = clip.get("video")
+        print(f"clip:     {clip['id']:<15} {clip.get('frames')} frames @ {clip.get('fps')} fps ({clip.get('duration_s', 0):.1f} s)  "
+              f"{(clip.get('video_format') or 'frames only').upper():<11} {video or clip.get('directory')}")
     if build.get("contact_sheet"):
         print(f"sheet:    {build['contact_sheet']['path']}")
     for fmt, export in (build.get("exports") or {}).items():
@@ -252,6 +256,15 @@ def print_build(result: bridge.CharacterBuildResult) -> None:
     for warning in build.get("warnings", []):
         print(f"warning:  {warning['code']}: {warning['message']}")
     print(f"seconds:  {build.get('wall_seconds', build.get('seconds'))}")
+
+
+def _clip_list(value):
+    """--clips omitted -> no clips; --clips (bare) or --clips all -> every clip of the recipe; --clips a,b -> those."""
+    if value is None:
+        return None
+    if value in ("", "all"):
+        return ()
+    return tuple(c.strip() for c in value.split(",") if c.strip())
 
 
 def cmd_character_build(args) -> int:
@@ -276,6 +289,8 @@ def cmd_character_build(args) -> int:
             views=tuple(args.views.split(",")) if args.views else None, passes=tuple(args.passes.split(",")) if args.passes else None,
             formats=tuple(args.formats.split(",")) if args.formats else None, render=not args.no_render,
             log=print if args.verbose else None, probe=getattr(args, "probe", False),
+            clips=_clip_list(getattr(args, "clips", None)), clip_fps=getattr(args, "clip_fps", 12),
+            clip_seconds=getattr(args, "clip_seconds", 3.0), clip_resolution=getattr(args, "clip_resolution", 384),
         )
     except bridge.UnityNotFound as exc:
         print(f"error:    {exc}", file=sys.stderr)
@@ -611,6 +626,10 @@ def add_parsers(sub) -> None:
     build.add_argument("--formats", default=None, help="Comma-separated: fbx,glb")
     build.add_argument("--no-render", action="store_true", help="Skip verification renders (runs Unity with -nographics).")
     build.add_argument("--probe", action="store_true", help="Also write calibration.json: each body parameter at 0 and 1 against every target.")
+    build.add_argument("--clips", nargs="?", const="all", help="Record animation.clips as frame sequences + MP4/GIF: --clips (all) or --clips idle,walk.")
+    build.add_argument("--clip-fps", type=int, default=12)
+    build.add_argument("--clip-seconds", type=float, default=3.0, help="Cap per clip (the recipe's duration_s otherwise).")
+    build.add_argument("--clip-resolution", type=int, default=384)
     build.add_argument("--verbose", "-v", action="store_true")
     build.set_defaults(func=cmd_character_build)
 

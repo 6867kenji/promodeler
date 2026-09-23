@@ -44,8 +44,13 @@ namespace ProModeler.Editor
                 var resolution = int.TryParse(args.Get("-resolution"), out var r) ? r : 768;
                 var render = !args.Has("-nographics");
                 var probe = args.Has("-probe");
+                var clips = args.Has("-clips") ? (args.Get("-clips") ?? "").Split(',').Select(c => c.Trim()).Where(c => c.Length > 0 && c != "all").ToList() : null;   // "all" = every recipe clip
+                var clipFps = int.TryParse(args.Get("-clip-fps"), out var cf) ? cf : 12;
+                var clipSeconds = float.TryParse(args.Get("-clip-seconds"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var cs) ? cs : 3f;
+                var clipResolution = int.TryParse(args.Get("-clip-resolution"), out var cr) ? cr : 384;
 
-                BuildCharacter(recipePath, outfitPath, outDir, views, passes, formats, resolution, render, report, probe);
+                BuildCharacter(recipePath, outfitPath, outDir, views, passes, formats, resolution, render, report, probe,
+                               clips, clipFps, clipSeconds, clipResolution);
                 code = report.Status == "ok" ? 0 : 1;
             }
             catch (Exception exc)
@@ -77,7 +82,8 @@ namespace ProModeler.Editor
         }
 
         public static void BuildCharacter(string recipePath, string outfitPath, string outDir, List<string> views, List<string> passes,
-                                          List<string> formats, int resolution, bool render, BuildReport report, bool probe = false)
+                                          List<string> formats, int resolution, bool render, BuildReport report, bool probe = false,
+                                          List<string> clips = null, int clipFps = 12, float clipSeconds = 3f, int clipResolution = 384)
         {
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
@@ -174,7 +180,22 @@ namespace ProModeler.Editor
                 }
                 else report.Warn("render.skipped", "renders skipped (-nographics)");
 
+                // Clips: -clips (empty = every clip of animation.clips, or a list of ids) as PNG frame sequences; needs graphics.
+                if (clips != null)
+                {
+                    if (render) report.Clips = ClipRecorder.Record(runtime, dressed, clips, Path.Combine(outDir, "clips"), clipFps, clipSeconds, clipResolution, report);
+                    else report.Warn("clips.skipped", "clips skipped (-nographics)");
+                }
+
                 report.Exports = CharacterExporter.Export(runtime, outDir, formats, report);
+                try
+                {
+                    report.Exports["physics_settings"] = PhysicsExporter.Export(runtime, dressed, report, outDir);
+                }
+                catch (Exception exc)
+                {
+                    report.Warn("physics.export", $"{exc.GetType().Name}: {exc.Message}");
+                }
                 report.Status = "ok";
             }
         }

@@ -88,7 +88,7 @@ namespace ProModeler.Editor
             return bounds;
         }
 
-        static Camera CreateCamera()
+        internal static Camera CreateCamera()
         {
             var go = new GameObject("ProModelerCamera");
             var camera = go.AddComponent<Camera>();
@@ -104,7 +104,7 @@ namespace ProModeler.Editor
             return camera;
         }
 
-        static List<GameObject> CreateEnvironment()
+        internal static List<GameObject> CreateEnvironment()
         {
             var objects = new List<GameObject>();
             var lightGo = new GameObject("ProModelerKey");
@@ -151,7 +151,7 @@ namespace ProModeler.Editor
             return objects;
         }
 
-        static void Frame(Camera camera, string view, Bounds bounds, ICharacterRuntime runtime)
+        internal static void Frame(Camera camera, string view, Bounds bounds, ICharacterRuntime runtime)
         {
             var center = bounds.center;
             var height = Mathf.Max(bounds.size.y, 0.5f);
@@ -187,7 +187,7 @@ namespace ProModeler.Editor
             camera.transform.LookAt(target, Vector3.up);
         }
 
-        static bool RenderToPng(Camera camera, int resolution, string path)
+        internal static bool RenderToPng(Camera camera, int resolution, string path)
         {
             var rt = new RenderTexture(resolution, resolution, 24, RenderTextureFormat.ARGB32) { antiAliasing = 1 };
             rt.Create();
