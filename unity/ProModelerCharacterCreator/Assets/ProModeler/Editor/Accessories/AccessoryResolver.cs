@@ -38,7 +38,7 @@ namespace ProModeler.Editor
             { "waist", new Socket("Hips", new Vector3(0.12f, 0f, 0f)) },
             { "head", new Socket("Head", new Vector3(0f, 0.12f, 0f)) },
             { "face", new Socket("Head", new Vector3(0f, 0.065f, 0.105f)) },
-            { "chest", new Socket("Spine1", new Vector3(-0.08f, 0.10f, 0.11f)) },
+            { "chest", new Socket("Spine1", new Vector3(-0.08f, 0.10f, 0.15f)) },   // outside a shirt on the wearer's left
         };
 
         public static List<AccessoryEntry> Attach(UMACharacterRuntime runtime, CharacterRecipe recipe, JObject assets, BuildReport report)
@@ -71,7 +71,8 @@ namespace ProModeler.Editor
                 {
                     var instance = Import(glb, accessory.Id, report);
                     if (instance == null) continue;
-                    Place(instance, bone, socket, info?["socket"] as JObject, runtime.Root.transform);
+                    var anchorOverride = accessory.Socket == "face" ? EyeAnchor(runtime) : (Vector3?)null;
+                    Place(instance, bone, socket, info?["socket"] as JObject, anchorOverride);
                     entry.Attached = true;
                 }
                 catch (Exception exc)
@@ -99,7 +100,17 @@ namespace ProModeler.Editor
             return instance;
         }
 
-        static void Place(GameObject instance, Transform bone, Socket socket, JObject socketExtras, Transform root)
+        /// <summary>Glasses sit on the nose between the eyes: the eye bones give that point directly when the race has them.</summary>
+        static Vector3? EyeAnchor(UMACharacterRuntime runtime)
+        {
+            var left = runtime.Bone("LeftEye");
+            var right = runtime.Bone("RightEye");
+            if (left == null || right == null) return null;
+            var between = (left.position + right.position) * 0.5f;
+            return between + new Vector3(0f, -0.005f, 0.028f);   // just in front of the eyeballs (the character faces +Z)
+        }
+
+        static void Place(GameObject instance, Transform bone, Socket socket, JObject socketExtras, Vector3? anchorOverride)
         {
             var grip = Vector3.zero;
             var orientation = "world_up";
@@ -113,10 +124,18 @@ namespace ProModeler.Editor
             // X mirrors while Y and Z carry over.
             var gripUnity = new Vector3(-grip.x, grip.y, grip.z);
             instance.transform.SetParent(bone, false);
-            var rotation = orientation == "follow_bone" ? bone.rotation : Quaternion.identity;
-            var anchor = bone.position + bone.rotation * socket.Offset;
+            // Both orientations place the object world-aligned in the rest pose (UMA bone axes run along the bone, so
+            // copying bone.rotation turned glasses 90 degrees); "follow_bone" differs only in that the object then moves
+            // with the bone when animated, which parenting already provides.
+            var rotation = Quaternion.identity;
+            var anchor = anchorOverride ?? (bone.position + bone.rotation * socket.Offset);
             instance.transform.rotation = rotation;
             instance.transform.position = anchor - rotation * gripUnity;
+            var bounds = new Bounds(instance.transform.position, Vector3.zero);
+            var first = true;
+            foreach (var r in instance.GetComponentsInChildren<Renderer>()) { if (first) { bounds = r.bounds; first = false; } else bounds.Encapsulate(r.bounds); }
+            var children = string.Join(", ", System.Linq.Enumerable.Select(instance.GetComponentsInChildren<Transform>(), t => $"{t.name}@{t.localEulerAngles}"));
+            Debug.Log($"[ProModeler] accessory {instance.name}: bounds size {bounds.size:F3} centre {bounds.center:F3}; nodes {children}");
         }
     }
 }

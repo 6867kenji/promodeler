@@ -853,6 +853,9 @@ M10 の最初に **HDRP のヘッドレスレンダが Intel iGPU で動くか**
   にする。保存後は Python 側の `character validate` / `character diff` で追跡する。
 - **解法の修正**: 春香の衣装ビルドで `upperMuscle` 1.0・`breastSize` 0 の解（筋肉質で胸のない体）が出た。筋肉スライダーは
   `body.shape.muscle` の意味値で固定し解法から外した。アンダーバストは UMA の乳房が平面を割るため報告のみ（重み 0）にした。
+- **装着の向き**: UMA の骨は骨軸に沿ったローカル軸を持つため `bone.rotation` を写すと眼鏡が 90° 回る。休止姿勢では常に世界座標で
+  水平に置き、骨への親子付けだけで追従させる。眼鏡は `LeftEye`/`RightEye` 骨の中点の 28 mm 前に掛ける（Head 骨からの固定
+  オフセットでは頭の中に入った）。レンズは不透明の代替色。
 - **未着手**: カタログ実資産（MakeHuman CC0 → UMA スロット変換 `tools/uma_slot_from_glb.py`、ネクタイ・帯・インナー）、
   Addressables、付属品と身体の貫通確認、`follow_bone` 装備（眼鏡・時計・名札）の向きの目視確認。
 
