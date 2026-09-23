@@ -79,7 +79,7 @@ namespace ProModeler.Runtime
             public readonly bool IsOffset;
             public SkeletonAdjust(string name, string[] bones, Axis axis, bool isOffset) { Name = name; Bones = bones; Axis = axis; IsOffset = isOffset; }
             public static float Scale(float v) => Mathf.Lerp(0.65f, 1.45f, Mathf.Clamp01(v));   // 0.6-1.5 stepped the silhouette, 0.7-1.4 lost 2-3 cm of chest girth; compromise at the bone's weight boundary
-            public static float Offset(float v) => (Mathf.Clamp01(v) - 0.5f) * 0.16f;   // +-8 cm outward at the extremes
+            public static float Offset(float v) => (Mathf.Clamp01(v) - 0.5f) * 0.24f;   // +-12 cm outward: the female race has no shoulderWidth DNA and otherwise buys shoulders with height
         }
 
         private readonly Dictionary<string, float> _adjustValues = new Dictionary<string, float>();

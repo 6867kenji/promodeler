@@ -54,7 +54,7 @@ namespace ProModeler.Resolve
 
         public static Dictionary<string, float> Weights(CharacterRecipe recipe)
         {
-            var weights = new Dictionary<string, float> { { "barefoot_height", 3f }, { "inseam", 1.5f }, { "shoulder_width", 1.5f }, { "head_height", 0.7f },
+            var weights = new Dictionary<string, float> { { "barefoot_height", 3f }, { "inseam", 2f }, { "shoulder_width", 1f }, { "head_height", 0.7f },
                                                           { "chest", 1.5f }, { "bust", 1.5f },  // the girth UMA misses most gets the most say
                                                           { "underbust", 0f } };  // measured and reported only: UMA's breasts cross the underbust plane, and chasing it drove breastSize to 0
             foreach (var section in recipe.Body.MeasurementsM.CrossSections)
@@ -178,6 +178,9 @@ namespace ProModeler.Resolve
                     // Shape parameters also move lengths (lowerMuscle shifts the inseam by 13 cm over its range), so the
                     // girth stage keeps every target in view and only restricts which parameters may move.
                     ("girths", initial.Keys.Except(lengthParameters).ToArray(), (Func<string, bool>)(t => true), 8),
+                    // Shape parameters drag the inseam and shoulders along; a second length pass puts them back before
+                    // the joint refinement (the MHR fit alternates the same way, docs/01 8.5).
+                    ("lengths2", lengthParameters, (Func<string, bool>)(t => Array.IndexOf(lengthTargets, t) >= 0), 4),
                     ("all", initial.Keys.ToArray(), (Func<string, bool>)(t => true), maxIterations),
                 };
                 result = null;
