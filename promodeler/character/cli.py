@@ -15,7 +15,7 @@ from ..core import ModelingError
 from . import bridge, check, consistency, schema
 from .catalog import Catalog
 from .from_blueprint import character_from_blueprint, load_blueprint, outfit_from_blueprint
-from .recipe import OUTFIT_SCHEMA, SCHEMA, CharacterRecipe, OutfitRecipe, RecipeWarning
+from .recipe import OUTFIT_SCHEMA, RACES, SCHEMA, CharacterRecipe, OutfitRecipe, RecipeWarning
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 RECIPES_DIR = PROJECT_ROOT / "character" / "recipes"
@@ -314,6 +314,63 @@ def cmd_character_setup(args) -> int:
     return 0 if status.get("Ok") else 1
 
 
+def cmd_character_profile(args) -> int:
+    """Export the neutral body profile of a UMA race for garment generators (character/profiles/<race>.json)."""
+    try:
+        profile = bridge.export_race_profile(args.race, args.out, log=print if args.verbose else None)
+    except (bridge.UnityNotFound, ModelingError) as exc:
+        print(f"error:    {exc}", file=sys.stderr)
+        return 3
+    print(f"profile:  {profile['path']}")
+    print(f"race:     {profile.get('uma_race')} height {profile.get('height', 0):.3f} m, {len(profile.get('torso_slices', []))} torso slices, "
+          f"{sum(len(a.get('slices', [])) for a in profile.get('arms', {}).values())} arm slices")
+    return 0
+
+
+def _print_import_report(report: dict) -> None:
+    print(f"status:   ok ({report.get('seconds', 0):.1f} s)")
+    print(f"slot:     {report.get('slot')} ({report.get('slot_vertices')} vertices, {report.get('fallback_vertices')} fallback-weighted)")
+    print(f"overlay:  {report.get('overlay')} material {report.get('material')}")
+    print(f"recipe:   {report.get('uma_wardrobe_recipe')} -> UMA slot {report.get('wardrobe_slot')} for {report.get('uma_race')}")
+
+
+def cmd_character_import_slot(args) -> int:
+    """GLB -> UMA slot/overlay/wardrobe recipe in the Unity project (tools/uma_slot_from_glb.py does the same)."""
+    if args.manifest:
+        try:
+            reports = bridge.import_garment_manifest(args.manifest, force=args.force, only=args.name, log=print if args.verbose else None)
+        except (bridge.UnityNotFound, ModelingError) as exc:
+            print(f"error:    {exc}", file=sys.stderr)
+            return 3
+        failed = 0
+        for report in reports:
+            print(f"== {report.get('name')} ({report.get('asset')}) -> catalog {report.get('catalog_id')}")
+            if report.get("ok"):
+                _print_import_report(report)
+            else:
+                failed += 1
+                error = report.get("error") or {}
+                print(f"status:   failed ({error.get('code')}: {error.get('message')})", file=sys.stderr)
+        return 1 if failed else 0
+    if not args.glb or not args.race or not args.name or not args.slot:
+        print("error:    give <glb> --race --name --slot, or --manifest character/garments.json", file=sys.stderr)
+        return 2
+    try:
+        report = bridge.import_wardrobe_slot(args.glb, args.race, args.name, args.slot, color=args.color,
+                                             material_from_recipe=args.material_from_recipe, material=args.material,
+                                             log=print if args.verbose else None)
+    except (bridge.UnityNotFound, ModelingError) as exc:
+        print(f"error:    {exc}", file=sys.stderr)
+        return 3
+    if not report.get("ok"):
+        error = report.get("error") or {}
+        print(f"status:   failed ({error.get('code')}: {error.get('message')}); log {report.get('log')}", file=sys.stderr)
+        return 1
+    _print_import_report(report)
+    print("catalog:  put the recipe name into runtime.uma_wardrobe_recipe_by_race of the catalog entry, then rebuild the character.")
+    return 0
+
+
 def _build_all(args) -> int:
     """Build every character recipe in turn (Unity locks the project, so builds are sequential)."""
     failures = 0
@@ -479,6 +536,25 @@ def add_parsers(sub) -> None:
     edit = csub.add_parser("edit", help="Open the Unity character editor (sliders, preview, Save writes the recipe JSON).")
     edit.add_argument("target", help="Character recipe id or path.")
     edit.set_defaults(func=cmd_character_edit)
+
+    profile = csub.add_parser("profile", help="Export the neutral body of a UMA race (outlines, arm sections, bones) for garment generators.")
+    profile.add_argument("race", choices=sorted(RACES), help="Recipe race id (human_female, human_male).")
+    profile.add_argument("--out", help="Output path (default character/profiles/<race>.json).")
+    profile.add_argument("--verbose", action="store_true")
+    profile.set_defaults(func=cmd_character_profile)
+
+    slot = csub.add_parser("import-slot", help="Convert a promodeler garment GLB into a UMA slot, overlay and wardrobe recipe.")
+    slot.add_argument("glb", nargs="?", help="Built garment (build/<asset>/<hash>/model.glb), authored on the race profile.")
+    slot.add_argument("--manifest", nargs="?", const=str(bridge.GARMENTS_MANIFEST), help="Build and import every garment of character/garments.json (or the given manifest); --name limits it to one.")
+    slot.add_argument("--race", choices=sorted(RACES))
+    slot.add_argument("--name", help="Asset name; the recipe becomes <name>_Wardrobe.")
+    slot.add_argument("--slot", choices=bridge.WARDROBE_SLOTS, help="UMA wardrobe slot (Chest, TopUnderlayer, Legs ...).")
+    slot.add_argument("--force", action="store_true", help="Rebuild the garment assets even when cached (with --manifest).")
+    slot.add_argument("--color", help="Flat diffuse color #RRGGBB (default white).")
+    slot.add_argument("--material-from-recipe", help="Reuse the UMAMaterial of this UMA wardrobe recipe (default: the race's sample top).")
+    slot.add_argument("--material", help="UMAMaterial asset name when no recipe material is available.")
+    slot.add_argument("--verbose", action="store_true")
+    slot.set_defaults(func=cmd_character_import_slot)
 
     report = csub.add_parser("report", help="Residual table over the newest builds (mm; * marks values outside tolerance).")
     report.add_argument("ids", nargs="*", help="Recipe ids (default: all recipes).")

@@ -200,6 +200,10 @@ python -m promodeler character report [--write docs/x.md]             # 最新�
 python -m promodeler character edit <id>                              # Unity の GUI エディタ（スライダー・プレビュー・Save は Recipe のみ）
 ```
 
+布の衣服は `assets/wardrobe/<name>.py` を **レースプロファイル**（`promodeler character profile human_female` →
+`character/profiles/human_female.json`）上で裁断し、`promodeler character import-slot --manifest character/garments.json`
+（または `tools/uma_slot_from_glb.py`）で UMA スロット + オーバーレイ + Wardrobe レシピに変換してカタログから参照する
+（`assets/wardrobe/white_shirt.py` が 1 着目）。
 ネクタイ・帯のような剛体で足りる衣服は、カタログ項目の `runtime.promodeler_asset` / `socket` / `parameters` で promodeler プロップとして
 解決できる（Recipe の `wardrobe[]` はそのまま。`assets/props/necktie.py`, `assets/props/obi_belt.py`）。
 装備品は `assets/props/*.py`（`promodeler.props` の部品で組む通常の Blender アセット）。Recipe の `accessories[].size_xyz_m` が

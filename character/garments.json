@@ -1,0 +1,19 @@
+{
+  "schema": "promodeler-garments/1.0",
+  "note": "Garments promodeler cuts on a race profile (character/profiles/<race>.json) and converts into UMA wardrobe content. The generated Unity assets (Assets/ProModeler/Generated/Wardrobe) are build products: regenerate them with `promodeler character import-slot --manifest character/garments.json` after cloning or after changing an asset.",
+  "garments": [
+    {
+      "name": "white_shirt_f",
+      "asset": "assets/wardrobe/white_shirt.py",
+      "parameters": {
+        "profile": "character/profiles/human_female.json",
+        "sleeve_length": 0.75
+      },
+      "race": "human_female",
+      "wardrobe_slot": "TopUnderlayer",
+      "color": "#F4F2EC",
+      "material_from_recipe": "colors_top_Recipe",
+      "catalog_id": "shirt_three_quarter_01"
+    }
+  ]
+}

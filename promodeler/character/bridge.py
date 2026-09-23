@@ -209,6 +209,101 @@ def run_setup(project: Path = UNITY_PROJECT, timeout: float = 1800.0, log=None) 
     return status
 
 
+PROFILE_METHOD = "ProModeler.Editor.RaceProfileExporter.Export"
+IMPORT_METHOD = "ProModeler.Editor.WardrobeSlotImporter.Import"
+PROFILES_DIR = PROJECT_ROOT / "character" / "profiles"
+WARDROBE_SLOTS = ("Chest", "Legs", "Feet", "Hands", "Hair", "Eyebrows", "Beard", "TopUnderlayer", "BottomUnderlayer", "Helmet", "Neck", "Waist")
+
+
+def _run_editor_method(method: str, arguments: list[str], log_path: Path, project: Path, timeout: float, log=None, graphics: bool = False) -> int:
+    """Run one -executeMethod entry of the character creator and return the exit code (the method writes its own report)."""
+    unity = find_unity(project)
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    command = [unity, "-batchmode", "-projectPath", str(project), "-executeMethod", method, *arguments, "-logFile", str(log_path)]
+    if not graphics:
+        command.insert(1, "-nographics")
+    if log:
+        log("unity: " + " ".join(command))
+    completed = subprocess.run(command, capture_output=True, text=True, timeout=timeout, check=False, encoding="utf-8", errors="replace", cwd=str(project))
+    return completed.returncode
+
+
+def export_race_profile(race: str, out: str | Path | None = None, project: Path = UNITY_PROJECT, timeout: float = 900.0, log=None) -> dict:
+    """Write the neutral body profile of a race (torso outlines, arm sections, bones) that garment generators build against."""
+    out_path = Path(out) if out else PROFILES_DIR / f"{race}.json"
+    log_path = project / "Logs" / f"promodeler-profile-{race}.log"
+    code = _run_editor_method(PROFILE_METHOD, ["-race", race, "-out", str(out_path.resolve())], log_path, project, timeout, log)
+    profile = _read_json(out_path) if out_path.is_file() else None
+    if profile is None:
+        raise ModelingError("profile.failed", f"Unity wrote no profile for {race} (exit {code}); see {log_path}")
+    profile["path"] = str(out_path)
+    profile["unity_exit_code"] = code
+    return profile
+
+
+def import_wardrobe_slot(glb: str | Path, race: str, name: str, wardrobe_slot: str, color: str | None = None,
+                         material_from_recipe: str | None = None, material: str | None = None,
+                         project: Path = UNITY_PROJECT, timeout: float = 1800.0, log=None) -> dict:
+    """Convert a promodeler garment GLB into a UMA slot + overlay + wardrobe recipe inside the Unity project."""
+    if wardrobe_slot not in WARDROBE_SLOTS:
+        raise ModelingError("slot.wardrobeSlot", f"{wardrobe_slot!r} is not a UMA wardrobe slot {WARDROBE_SLOTS}.")
+    glb_path = Path(glb).resolve()
+    if not glb_path.is_file():
+        raise ModelingError("slot.glb", f"GLB not found: {glb_path}")
+    report_path = PROJECT_ROOT / "build" / "wardrobe" / name / "import.json"
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    arguments = ["-glb", str(glb_path), "-race", race, "-name", name, "-wardrobe-slot", wardrobe_slot,
+                 "-out", f"Assets/ProModeler/Generated/Wardrobe/{name}", "-report", str(report_path)]
+    if color:
+        arguments += ["-color", color]
+    if material_from_recipe:
+        arguments += ["-material-from-recipe", material_from_recipe]
+    if material:
+        arguments += ["-material", material]
+    log_path = report_path.parent / "unity.log"
+    code = _run_editor_method(IMPORT_METHOD, arguments, log_path, project, timeout, log)
+    report = _read_json(report_path) or {"ok": False, "error": {"code": "unity.noReport", "message": f"Unity exited {code} without import.json"}}
+    report["unity_exit_code"] = code
+    report["log"] = str(log_path)
+    report["glb"] = str(glb_path)
+    return report
+
+
+GARMENTS_MANIFEST = PROJECT_ROOT / "character" / "garments.json"
+
+
+def import_garment_manifest(manifest: str | Path = GARMENTS_MANIFEST, force: bool = False, only: str | None = None,
+                            project: Path = UNITY_PROJECT, log=None) -> list[dict]:
+    """Build every garment asset of character/garments.json with Blender and convert each into UMA wardrobe content."""
+    from .. import build as asset_build
+
+    path = Path(manifest)
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if data.get("schema") != "promodeler-garments/1.0":
+        raise ModelingError("garments.schema", f"{path} is not a promodeler-garments/1.0 manifest.")
+    reports: list[dict] = []
+    for garment in data.get("garments", []):
+        name = garment["name"]
+        if only and name != only:
+            continue
+        if log:
+            log(f"garment {name}: building {garment['asset']} with Blender")
+        result = asset_build.build(str(PROJECT_ROOT / garment["asset"]), force=force,
+                                   render={"views": ("perspective",), "passes": ("shaded",), "resolution": 384},
+                                   parameter_overrides=garment.get("parameters") or None)
+        if not result.ok:
+            reports.append({"ok": False, "name": name, "error": result.report.get("error"), "stage": "asset"})
+            continue
+        glb = result.report.get("export", {}).get("path")
+        report = import_wardrobe_slot(glb, garment["race"], name, garment["wardrobe_slot"], color=garment.get("color"),
+                                      material_from_recipe=garment.get("material_from_recipe"), material=garment.get("material"),
+                                      project=project, log=log)
+        report["asset"] = garment["asset"]
+        report["catalog_id"] = garment.get("catalog_id")
+        reports.append(report)
+    return reports
+
+
 # --- staging -------------------------------------------------------------------------------------
 
 @dataclass

@@ -628,6 +628,7 @@ Unity.exe -batchmode -projectPath unity/ProModelerCharacterCreator
 | --- | --- | --- |
 | 鞄・バックパック・トート・メッセンジャー・ブリーフケース、眼鏡、時計、スマホ、名札、ヘルメット、武器 | `assets/props/<name>.py`（従来の code-first。実寸・PBR・剛体） | `accessories[].source = {"kind": "promodeler_asset", "path": ...}` |
 | 身体・顔・髪・衣服・靴・眉・まつ毛・歯 | カタログ + UMA | `appearance.*`, `wardrobe[]` |
+| promodeler で裁断する衣服（シャツ、T シャツなど布の単純な形） | `assets/wardrobe/<name>.py` を **レースプロファイル**（`character/profiles/<race>.json`）上で生成 → `promodeler character import-slot` で UMA スロット化（18.8 節） | `wardrobe[]`（カタログの `uma_wardrobe_recipe_by_race` が生成レシピ名を指す） |
 
 衣服のうち剛体で十分なもの（ネクタイ、帯、ベルト、名札）は **カタログ側で promodeler プロップとして実現** できる:
 カタログ項目の `runtime.promodeler_asset`（`assets/props/necktie.py` など）、`runtime.socket`（`neck` / `waist` ...）、
@@ -709,7 +710,7 @@ Unity は GLB を読み（UnityGLTF）、`socket` の Humanoid ボーン相対�
 | **M9 Recipe 層（Python のみ）** 完了 2026-09-22 | `promodeler/character/{recipe,schema,from_blueprint,catalog,consistency,check}`、`schemas/*.json`、CLI `character recipe/validate/diff/catalog`、`generate` の振り分け、カタログ雛形（ID とライセンス欄だけ、実体なし）、15 体 + 2 衣装の Recipe 生成、整合性検査結果の一覧、単体テスト（Unity 不要） | `character/recipes/*.json` 17 件がスキーマ検証を通り、`validate --mhr` が設計書間の矛盾を表として出す |
 | **M10 Unity MVP（1 体、原案 §31）** 完了 2026-09-23（18.1・18.2 節） | Unity プロジェクト作成、HDRP と UMA 導入、Intel iGPU でのバッチレンダ実測、`RecipeLoader`、`BodyMeasurer`、`DnaCalibrationTool`、`BodyResolver`、UMA 同梱資産だけで `businessman`（男性・スーツに最も近い既定衣装）を組み、`build.json` + front/side/back レンダ + FBX/GLB、`bridge.build`、`character check` | `promodeler character build businessman` が一発で通り、身長 ±2 mm、周長の残差が表に出る。対応パラメータは原案 §31 の 15–20 項目 |
 | **M11 寸法精度と全員** 寸法部分は完了 2026-09-23（18.3・18.4 節）。GarmentMeasurer・顔 DNA の検証は M12 へ | 独自 DNA（肩幅・胴長・頭高）の追加と校正、顔 DNA 表、靴による接地補正、`GarmentMeasurer`、15 体すべてのビルドと照合表、コンタクトシート、`.claude/skills` の更新 | 15 体で身長 ±2 mm、周長 ±1 cm 以内（UMA の限界は残差として明記）。全員のコンタクトシートが並ぶ |
-| **M12 カタログと装備・衣装** 装備・衣装・GUI は完了 2026-09-23（18.5 節）。ネクタイ・帯はプロップ衣服として解決（18.7 節）。カタログ実資産の制作は残り | `tools/uma_slot_from_glb.py`、MakeHuman CC0 資産の変換と登録（髪 10、上衣 10、下衣 8、靴 6、眉・まつ毛・髭）、肌・眼球テクスチャ、`assets/props/` の装備品 8 点とソケット装着、Outfit 36・37、Addressables、`character edit` GUI（Face/Body/Hair/Skin/Wardrobe、Save は Recipe のみ） | 設計書の衣装語彙の 8 割が `catalog_id` で解決され、`wardrobe.missing` 警告が例外になる。GUI 保存 → `character diff` で差分追跡できる |
+| **M12 カタログと装備・衣装** 装備・衣装・GUI は完了 2026-09-23（18.5 節）。ネクタイ・帯はプロップ衣服として解決（18.7 節）。GLB → UMA スロット変換は 1 着で疎通（18.8 節）。カタログ実資産の制作は残り | `tools/uma_slot_from_glb.py`、MakeHuman CC0 資産の変換と登録（髪 10、上衣 10、下衣 8、靴 6、眉・まつ毛・髭）、肌・眼球テクスチャ、`assets/props/` の装備品 8 点とソケット装着、Outfit 36・37、Addressables、`character edit` GUI（Face/Body/Hair/Skin/Wardrobe、Save は Recipe のみ） | 設計書の衣装語彙の 8 割が `catalog_id` で解決され、`wardrobe.missing` 警告が例外になる。GUI 保存 → `character diff` で差分追跡できる |
 | **M13 生成モード** | `presets`（性別・年齢別の人体計測事前分布）、`character random`、`character prompt`（LLM → Recipe、スキーマ制約、カタログ ID の実在検証）、クリップ動画記録、`physics_settings` 書き出し | 1,000 体を seed 決定的に生成して全件 `validate` を通す。プロンプト 1 文から `build` まで人手なし |
 
 M10 の最初に **HDRP のヘッドレスレンダが Intel iGPU で動くか** と **UMA の HDRP シェーダの入手** を確認し、駄目なら検証レンダ用 URP プロジェクトに分ける判断をここで下す。
@@ -954,6 +955,48 @@ M10 の最初に **HDRP のヘッドレスレンダが Intel iGPU で動くか**
 - 副作用: 鎖骨 1.45 倍で肩の輪郭が角張る（空手門下生のクレイ前面）。実資産の袖で隠れる範囲だが、範囲拡大の前に見た目の上限を決める。
 - 1 体 105〜141 秒、15 体で約 30 分（後退線形探索で評価回数は増えたが、反復が早く収束する）。
 
+
+### 18.8 GLB → UMA スロット変換の 1 着スパイク（2026-09-23）
+
+承認済み計画の (a)。promodeler で裁断した白シャツを UMA 3 の衣装（スロット + オーバーレイ + Wardrobe レシピ）に変換し、
+カフェ店員（女性、`inner` = `shirt_three_quarter_01`）が着るまでを通した。
+
+**経路**
+
+1. `promodeler character profile human_female` → Unity バッチ `RaceProfileExporter` がレースの中立体（全 DNA 0.5、裸、
+   静止ポーズ）を組み、`character/profiles/human_female.json` に胴の輪郭（2 cm 刻みの凸包 48 枚）、腕の断面（肩→手首軸に
+   垂直な面、3 cm 刻み 19 枚 × 2）、主要ボーン位置を書く。17 秒。判明したこと: **UMA 3 の静止ポーズは腕が約 45° 下がった
+   A ポーズ**（レンダはアニメータの T ポーズ）、女性中立体の身長は **1.99 m**（DNA 0.5 は実寸ではない。スロットは骸骨に
+   追従するので実寸の体には DNA で縮む）。
+2. `assets/wardrobe/white_shirt.py`: 胴は裾（身長比 0.50）から襟（Neck ボーン −1.5 cm）までの輪郭に ease 2.5 cm を足し
+   48 点に再標本化した `Loft`、袖は腕断面に ease 1.8 cm を足した `Loft` を軸方向の `Transform(rotation=(0,0,angle_z))`
+   で並べる。袖丈は肩→手首の 0.75。Blender ビルド 3 秒、2,507 頂点。
+3. `promodeler character import-slot <glb> --race human_female --name white_shirt_f --slot TopUnderlayer --material-from-recipe colors_top_Recipe`
+   → Unity バッチ `WardrobeSlotImporter`: UnityGLTF で GLB を読み、UV のない promodeler メッシュに `Unwrapping.GenerateSecondaryUVSet`
+   で UV を張り（頂点 2,507 → 3,005 に分割。ウェイト転写の **前** にやらないと `ManagedBonesPerVertex` 不一致で失敗）、
+   中立体の最近接三角形の重心補間でボーンウェイトを転写（UMA 同梱 `SceneMeshSlotBuilderWindow` と同じ方式、4 影響まで）、
+   現在ポーズのスキニング行列の逆でバインド空間へ戻し、`SlotDataAsset.UpdateMeshData` → スロット、`colors_top_Recipe` の
+   UMAMaterial（`UMAMaterial_UMA_SRP_DiffuseNormalSpecular`、3 チャンネル）に 16×16 の平坦テクスチャ（白 / 法線 / マスク）を
+   充てたオーバーレイ、`UMAWardrobeRecipe`（`wardrobeSlot = TopUnderlayer`, `compatibleRaces = [Human Female 3.0]`）を作り
+   `UMAAssetIndexer.EvilAddAsset` + `ForceSave` で登録。15 秒。フォールバック頂点 0。
+4. カタログ `shirt_three_quarter_01.runtime.uma_wardrobe_recipe_by_race.human_female = "white_shirt_f_Wardrobe"`、status ready。
+   `character build cafe-clerk` で `inner` が `fitted`、シャツは体型（中立体より 30 cm 低い 1.60 m）に追従して着られ、
+   着衣バストは 0.905 m（素体 0.85 + ease）。
+
+**1 着あたりのコスト**: 生成器 140 行（プロファイル → Loft）、Blender 3 秒、変換 15 秒、レースごとにプロファイル 1 回。
+男性用は `character profile human_male` と `garments.json` に行を足すだけ。
+
+**制限・次**
+
+- 単一面のメッシュ（裏面なし）、襟・カフス・ボタンなし、袖は胴に突き刺す（内側は隠れる）。実資産の代わりにはならないが
+  「意味 → 布の形」を確かめる下地としては足りる。
+- オーバーレイは平坦色のみ。Recipe の `material.base_color_srgb` を `--color` に渡す経路は `garments.json` に持たせた。
+- 生成された Unity 資産（`Assets/ProModeler/Generated/Wardrobe/`）と UMA インデックスの登録は **ビルド生成物**（gitignore）。
+  クローン後は `promodeler character import-slot --manifest character/garments.json` で再生成する。
+- FBX 書き出しが `Can't export a RenderTexture normal texture in material ...white_shirt_f_overlay` と警告する（UMA のアトラスは
+  RenderTexture。表示には影響なし。書き出しテクスチャの焼き込みは M13 以降）。
+- カフェ店員の髪（`Hair_Bun_Recipe` スタンドイン）は今回のスパイク前から白い。UMA 3 サンプルの一部の髪はシェーダ色を
+  読まない（18.5 節の `_BaseColor` 経路が効かない）ので別件。
 
 ## 19. 未決事項（実装フェーズで決める）
 
