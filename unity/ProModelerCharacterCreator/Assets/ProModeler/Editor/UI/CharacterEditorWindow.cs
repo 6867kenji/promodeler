@@ -35,22 +35,37 @@ namespace ProModeler.Editor
         [MenuItem("ProModeler/Character Editor")]
         public static void ShowWindow()
         {
-            GetWindow<CharacterEditorWindow>("ProModeler Character");
+            Show(null, null);
         }
 
-        /// <summary>-executeMethod entry: opens the window on the recipe given by -recipe (and -catalog).</summary>
-        public static void Open()
+        /// <summary>A floating (utility) window in front of the main editor window, sized so the sliders are visible.</summary>
+        static CharacterEditorWindow Show(string recipe, string catalog)
         {
-            var args = CharacterBatchBuilder.Args.Parse(Environment.GetCommandLineArgs());
-            var window = GetWindow<CharacterEditorWindow>("ProModeler Character");
-            var recipe = args.Get("-recipe");
-            var catalog = args.Get("-catalog");
+            var window = GetWindow<CharacterEditorWindow>(utility: true, title: "ProModeler Character", focus: true);
+            if (window.position.width < 200f || window.position.height < 200f)
+                window.position = new Rect(120f, 120f, 560f, 860f);
+            window.minSize = new Vector2(420f, 400f);
             if (!string.IsNullOrEmpty(catalog)) window._catalogRoot = catalog;
             if (!string.IsNullOrEmpty(recipe))
             {
                 window._recipePath = recipe;
                 window.Load();
             }
+            window.Show();
+            window.Focus();
+            Debug.Log($"[ProModeler] character editor window open (recipe {(string.IsNullOrEmpty(recipe) ? "none" : recipe)})");
+            return window;
+        }
+
+        /// <summary>-executeMethod entry: opens the window on the recipe given by -recipe (and -catalog). The editor restores
+        /// its window layout after start-up methods run and would discard a window made here, so the window is opened on the
+        /// next editor update instead.</summary>
+        public static void Open()
+        {
+            var args = CharacterBatchBuilder.Args.Parse(Environment.GetCommandLineArgs());
+            var recipe = args.Get("-recipe");
+            var catalog = args.Get("-catalog");
+            EditorApplication.delayCall += () => EditorApplication.delayCall += () => Show(recipe, catalog);
         }
 
         void OnGUI()
@@ -117,9 +132,10 @@ namespace ProModeler.Editor
             _solveOnRebuild = EditorGUILayout.Toggle("solve body measurements on rebuild", _solveOnRebuild);
             using (new EditorGUILayout.HorizontalScope())
             {
-                if (GUILayout.Button("Rebuild preview")) Rebuild();
-                if (GUILayout.Button("Clear preview")) ClearPreview();
+                if (GUILayout.Button(_solveOnRebuild ? "Rebuild preview (solve measurements, 30-90 s)" : "Rebuild preview (race defaults, a few seconds)")) Rebuild();
+                if (GUILayout.Button("Clear preview", GUILayout.Width(110))) ClearPreview();
             }
+            EditorGUILayout.HelpBox("The body appears in the Scene view (Window > General > Scene if it is closed). Load builds a quick preview; the solve toggle fits the measurements.", MessageType.None);
             if (_measured != null)
             {
                 EditorGUILayout.LabelField("Measured (naked, m)", EditorStyles.boldLabel);
@@ -161,12 +177,17 @@ namespace ProModeler.Editor
                 _catalog = AssetCatalog.Load(_catalogRoot);
                 _status = $"loaded {_recipePath} ({_catalog.Entries.Count} catalog entries)";
                 _log.Clear();
+                Debug.Log($"[ProModeler] editor: loaded {_recipePath}");
             }
             catch (Exception exc)
             {
                 _status = "load failed: " + exc.Message;
+                Debug.LogException(exc);
+                Repaint();
+                return;
             }
-            Repaint();
+            // Show the body right away (race defaults, dressed); the measurement solve is a separate, slower step.
+            Rebuild(solve: false);
         }
 
         void Save()
@@ -183,7 +204,9 @@ namespace ProModeler.Editor
             }
         }
 
-        void Rebuild()
+        void Rebuild() => Rebuild(_solveOnRebuild);
+
+        void Rebuild(bool solve)
         {
             try
             {
@@ -196,7 +219,7 @@ namespace ProModeler.Editor
                 if (!_runtime.Rebuild(120f)) throw new RecipeException("uma.build", "UMA did not produce a body mesh");
                 var measurer = BodyMeasurer.ForRecipe(_recipe);
                 var resolver = new BodyResolver(_runtime, measurer, _recipe);
-                if (_solveOnRebuild)
+                if (solve)
                 {
                     var resolved = resolver.Solve(report, 8);
                     _log.Add($"solved in {resolved.Iterations} iterations, root scale {resolved.RootScale:F4}");
@@ -205,10 +228,22 @@ namespace ProModeler.Editor
                 _measured = resolver.Measure();
                 _runtime.Dress();
                 if (!_runtime.Rebuild(120f)) throw new RecipeException("uma.build", "rebuild after dressing failed");
+                // Show the skeleton's own pose, not the Animator's cached T-pose (see VerificationRenderer).
+                var animator = _runtime.Root.GetComponentInChildren<Animator>();
+                if (animator != null) animator.enabled = false;
                 foreach (var w in report.Warnings) _log.Add(w.Code + ": " + w.Message);
-                _status = "preview rebuilt";
+                _status = solve
+                    ? "preview rebuilt with the measurement solve"
+                    : "preview rebuilt at the race defaults (measurements not solved yet); tick the solve toggle and press Rebuild preview to fit the body";
                 Selection.activeGameObject = _runtime.Root;
-                SceneView.lastActiveSceneView?.FrameSelected();
+                var view = SceneView.lastActiveSceneView ?? GetWindow<SceneView>(typeof(CharacterEditorWindow));
+                if (view != null)
+                {
+                    view.Show();
+                    view.FrameSelected();
+                    view.Repaint();
+                }
+                Debug.Log($"[ProModeler] editor: preview {_recipe.Id} rebuilt (solve {solve}); root {_runtime.Root.name} with {_runtime.AllRenderers.Count()} renderers");
             }
             catch (Exception exc)
             {
