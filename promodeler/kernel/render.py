@@ -276,7 +276,7 @@ def setup_engine(settings: dict) -> None:
             eevee.taa_render_samples = settings["samples"]
         if eevee is not None and hasattr(eevee, "use_shadows"):
             eevee.use_shadows = True
-    scene.render.resolution_x = settings["resolution"]
+    scene.render.resolution_x = round(settings["resolution"] * settings.get("aspect_ratio", 1.0))
     scene.render.resolution_y = settings["resolution"]
     scene.render.resolution_percentage = 100
     scene.render.image_settings.file_format = "PNG"

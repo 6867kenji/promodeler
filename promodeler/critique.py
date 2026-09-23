@@ -73,6 +73,7 @@ def report_summary(report: dict) -> dict:
         "bounds": report.get("bounds"),
         "parts": parts,
         "warnings": report.get("warnings", []),
+        "blueprint_qa": {k: v for k, v in report.get("blueprint_qa", {}).items() if k != "reference_image"},
     }
 
 
@@ -92,7 +93,8 @@ def build_messages(images: list[Path], summary: dict, goal: str | None, referenc
     text = ["Verification renders of the generated asset are above."]
     if reference is not None:
         content.append(_image_block(reference))
-        text.append("The last image is a reference photograph of what the asset should look like; compare against it.")
+        text.append("The last image is a visual reference, possibly concept art. Compare its intended appearance, "
+                    "but use the numerical blueprint checks for dimensions and part counts.")
     if goal:
         text.append(f"The author's intent: {goal}")
     text.append("Numerical QA summary (JSON):\n" + json.dumps(summary, ensure_ascii=False, indent=1))
@@ -121,6 +123,10 @@ def critique_build(out_dir: str | Path, reference: str | None = None, goal: str 
     if not images:
         raise RuntimeError("The build has no renders to review.")
     reference_path = Path(reference) if reference else None
+    if reference_path is None:
+        linked_reference = report.get("blueprint_qa", {}).get("reference_image")
+        if linked_reference and Path(linked_reference).is_file():
+            reference_path = Path(linked_reference)
     if reference_path is not None and not reference_path.is_file():
         raise FileNotFoundError(f"Reference image not found: {reference_path}")
     messages = build_messages(images, report_summary(report), goal, reference_path)

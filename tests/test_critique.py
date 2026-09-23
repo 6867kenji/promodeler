@@ -32,7 +32,7 @@ class CritiqueTests(unittest.TestCase):
             self.assertEqual([c["type"] for c in content], ["image", "image", "text"])
             self.assertEqual(content[0]["source"]["media_type"], "image/png")
             self.assertEqual(content[1]["source"]["media_type"], "image/jpeg")
-            self.assertIn("reference photograph", content[2]["text"])
+            self.assertIn("visual reference", content[2]["text"])
             self.assertIn("a rusty can", content[2]["text"])
         self.assertEqual(CRITIQUE_SCHEMA["required"], ["score", "verdict", "strengths", "issues", "next_steps"])
 

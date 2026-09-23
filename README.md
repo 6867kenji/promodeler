@@ -29,6 +29,10 @@ python -m promodeler clean --keep 2            # 古いビルドを削除
 | `model.glb` | モディファイア適用済み、Y-up、ノード名 = パーツ ID、メッシュ名 = `mesh:<id>` |
 | `blender.log` | Blender の標準出力 |
 
+Blenderで `model.glb` を読む場合は **［ファイル → インポート → glTF 2.0 (.glb/.gltf)］** を使う。
+［ファイルを開く］は `.blend` 用で、GLBを直接指定する操作ではない。
+非人体モデルの配布一覧には、GLBをBlender 5.2でインポートして保存した `model.blend` も併記する。
+
 キャッシュ鍵は 2 段階。形状・マテリアル・品質のハッシュがディレクトリ名になり、レンダ設定（ビュー・パス・環境・エンジン）は
 `renders/` のサブフォルダ名になる。レンダ設定だけを変えた再ビルドはベイク済みテクスチャを再利用する。`--force` で全て作り直す。
 
@@ -38,6 +42,70 @@ python -m promodeler clean --keep 2            # 古いビルドを削除
 API 早見表、無駄なビルドを避ける規則、検証と報告の契約をまとめている。Claude Code では `.claude/skills/promodeler/`
 から自動で参照される。`promodeler critique` は `anthropic` パッケージと API 認証があるときに使え、
 コンタクトシートと QA 要約（任意で参照写真）を Claude に渡して構造化された批評（点数、問題点、次の一手）を返す。
+
+## 非人体モデルの設計書 QA
+
+`assets/room.py` のようにアセットモジュールで `blueprint = "../blueprints/.../blueprint.json"` を定義すると、
+ビルド後に `report.json` の `blueprint_qa` へ設計寸法、部品包絡、材質ID、可動支点・開度、三角形予算、
+主要テクスチャの密度を照合した結果を保存する。複数メッシュで一つの設計部品を構成する場合は
+`blueprint_part_map`、ジョイント名が異なる場合は `blueprint_motion_map` を宣言できる。
+`blueprint_required_parts` は設計本文にある細部の欠落を検出し、`blueprint_texel_parts` は密度を
+評価する可視面を指定する。設計書の内容ハッシュをレシピに含めるため、設計改訂後はキャッシュを再利用しない。
+
+```sh
+python -m promodeler build assets/room.py --strict-blueprint
+```
+
+寸法や部品欠落などのエラーは通常ビルドでも終了コード 1、テクスチャ密度などの警告は
+`--strict-blueprint` を指定した場合に終了コード 1 になる。`status: ok` は Blender 処理成功、
+`blueprint_qa.status: pass` は設計の数値 QA 合格を表す。設計参考画像がある場合、
+`promodeler critique` は `--reference` 未指定時にその画像を使用する。参考画像は寸法検証の根拠にはしない。
+
+部品ごとに `Part(texture_resolution=2048)` のようにベイク解像度を選べる。
+CLI の `--texture-resolution` は反復用に全部品の設定を上書きする。
+設計参考が横長の場合、`RenderSettings(aspect_ratio=1.6)` で検証レンダを横長にできる。
+`resolution` は画像の高さとして使う（既定の比率 1.0 では従来どおり正方形）。
+
+### 汐見町の空間生成
+
+`assets/city.py` は `01-city/blueprint.json` の道路と64棟の配置を読み、
+マンション・コンビニ・オフィスの反復部材、屋内の床・固定設備、歩道、区画線、横断歩道、植栽、街灯を生成する。
+3種類の建物設計書の内容ハッシュもレシピに記録する。配置が道路や他建物と交差すると生成前に停止する。
+
+```sh
+python -m promodeler build assets/city.py --strict-blueprint
+```
+
+検証カメラは俯瞰・平面・幹線道路の3方向。街区の出力は単一GLBで、
+チャンクストリーミング、衝突設定、屋内カリングはUnity側で構成する。
+
+### その他の非人体モデル
+
+`assets/02-apartment.py` から `assets/21-karate-dojo.py` まで、人物と `06-room` を除く18件を
+個別のGLBとして生成できる。02–04は街と共通の建築テンプレート、07–16は家具・家電、
+17–19は地下鉄の入口・コンコース・ホーム、20–21はカフェと道場である。
+各ファイルは同番号の `blueprint.json` を参照し、設計部材の寸法・材質・可動支点を検証する。
+駅には歩行者視点、カフェと道場には屋根を一時的に隠す検証カメラを追加している。
+この表示設定はGLB本体の形状に影響しない。
+
+```sh
+python -m promodeler build assets/07-bed.py --out build/models
+python -m promodeler build assets/20-cafe.py --out build/models --views perspective,front
+```
+
+小物は布・木目・樹脂の BaseColor / Roughness / Normal を部品単位でベイクする。
+布張りや天板など見える面に解像度を集中させ、隠れる骨組みは小さいマップまたは定数PBR材を使う。
+カフェの天板と道場の代表的なマットにも固有の表面マップを設け、駅の長い床・壁は
+部品ごとの巨大なテクスチャを避けて材質色と反復形状で表現する。
+`report.json` の `blueprint_qa` と `parts.*.uv.texel_density_px_per_m` で実測値を確認できる。
+一括生成後は `build-logs/` に各ビルドの標準出力を保存し、
+`python -m promodeler.gallery build/models` でGLB・確認画像・QA結果の一覧
+（`index.html` と `manifest.json`）を作れる。
+
+07–14の設計はテクスチャ上限2Kかつ目標1024px/mである。ベッドのマットレスなど
+約2mの面は単一UVの2Kマップでは目標密度に届かず、検証結果は警告になる。
+また21の道場は設計部材の床下端から屋根上端までが4.0mだが、全体寸法欄は3.8mである。
+道場の照合では個別部材の寸法を優先し、設計部材から計算した包絡を確認する。
 
 ## アセットファイルの書き方
 

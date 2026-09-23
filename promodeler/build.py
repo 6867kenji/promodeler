@@ -10,6 +10,7 @@ render settings therefore never repeats a bake.
 from __future__ import annotations
 
 import glob
+import hashlib
 import importlib.util
 import json
 import os
@@ -22,6 +23,7 @@ from pathlib import Path
 
 from . import KERNEL_VERSION
 from .contact_sheet import make_contact_sheet
+from .blueprint_qa import check_blueprint
 from .video import encode_frames
 from .core import Asset, AssetGenerator, ExportSettings, ModelingError, RenderSettings, build_recipe, dump_recipe, recipe_hash
 
@@ -77,6 +79,14 @@ class LoadedAsset:
     asset: Asset
     recipe: dict
     name: str
+    blueprint: dict | None = None
+    blueprint_path: Path | None = None
+    blueprint_part_map: dict | None = None
+    blueprint_motion_map: dict | None = None
+    blueprint_required_parts: tuple[str, ...] = ()
+    blueprint_texel_parts: tuple[str, ...] | None = None
+    blueprint_envelope_mode: str = "exact"
+    blueprint_prototype_parts: tuple[str, ...] = ()
 
 
 def load_asset_module(path: str):
@@ -128,7 +138,40 @@ def load_asset(path: str, render=None, quality_overrides: dict | None = None, fo
         recipe = build_recipe(asset, None, render, export=export)
     else:
         raise ModelingError("asset.module", f"{path} must define `asset` as an AssetGenerator or Asset.")
-    return LoadedAsset(asset=asset, recipe=recipe, name=asset.name)
+    if quality_overrides and "texture_resolution" in quality_overrides:
+        for part in recipe["asset"]["parts"]:
+            if part.get("texture_resolution") is not None:
+                part["texture_resolution"] = quality_overrides["texture_resolution"]
+    blueprint = None
+    blueprint_path = None
+    blueprint_ref = getattr(module, "blueprint", None)
+    if blueprint_ref is not None:
+        blueprint_path = (Path(path).resolve().parent / blueprint_ref).resolve()
+        if not blueprint_path.is_file():
+            raise ModelingError("blueprint.file", f"Blueprint file not found: {blueprint_path}")
+        raw = blueprint_path.read_bytes()
+        blueprint = json.loads(raw)
+        if blueprint.get("kind") in ("humanoid", "wearable"):
+            raise ModelingError("blueprint.kind", "The non-character blueprint QA cannot validate a humanoid or wearable.")
+        recipe["blueprint"] = {"id": blueprint.get("id"), "sha256": hashlib.sha256(raw).hexdigest()}
+        dependencies = getattr(module, "blueprint_dependencies", ())
+        recipe["blueprint"]["dependencies"] = []
+        for dependency in dependencies:
+            dependency_path = (Path(path).resolve().parent / dependency).resolve()
+            if not dependency_path.is_file():
+                raise ModelingError("blueprint.file", f"Blueprint dependency not found: {dependency_path}")
+            recipe["blueprint"]["dependencies"].append({
+                "path": dependency, "sha256": hashlib.sha256(dependency_path.read_bytes()).hexdigest(),
+            })
+    return LoadedAsset(
+        asset=asset, recipe=recipe, name=asset.name, blueprint=blueprint, blueprint_path=blueprint_path,
+        blueprint_part_map=getattr(module, "blueprint_part_map", None),
+        blueprint_motion_map=getattr(module, "blueprint_motion_map", None),
+        blueprint_required_parts=tuple(getattr(module, "blueprint_required_parts", ())),
+        blueprint_texel_parts=getattr(module, "blueprint_texel_parts", None),
+        blueprint_envelope_mode=getattr(module, "blueprint_envelope_mode", "exact"),
+        blueprint_prototype_parts=tuple(getattr(module, "blueprint_prototype_parts", ())),
+    )
 
 
 def slugify(name: str) -> str:
@@ -157,6 +200,11 @@ class BuildResult:
     @property
     def ok(self) -> bool:
         return self.report.get("status") == "ok"
+
+    @property
+    def design_ok(self) -> bool:
+        check = self.report.get("blueprint_qa")
+        return self.ok and (check is None or check.get("status") == "pass")
 
 
 def _read_json(path: Path) -> dict | None:
@@ -212,6 +260,21 @@ def build(path: str, out_root: str = "build", force: bool = False, render=None,
     report["blender_exit_code"] = completed.returncode
     report["wall_seconds"] = round(time.perf_counter() - started, 3)
     if report.get("status") == "ok":
+        if loaded.blueprint is not None:
+            report["blueprint_qa"] = check_blueprint(
+                loaded.blueprint, loaded.recipe, report,
+                part_map=loaded.blueprint_part_map,
+                motion_map=loaded.blueprint_motion_map,
+                required_parts=loaded.blueprint_required_parts,
+                texel_parts=loaded.blueprint_texel_parts,
+                envelope_mode=loaded.blueprint_envelope_mode,
+                prototype_parts=loaded.blueprint_prototype_parts,
+            )
+            reference = (loaded.blueprint.get("image_generation") or {}).get("reference_sheet")
+            if reference and loaded.blueprint_path is not None:
+                reference_path = loaded.blueprint_path.parent / reference
+                if reference_path.is_file():
+                    report["blueprint_qa"]["reference_image"] = str(reference_path)
         for entry in report.get("renders", []):
             if entry.get("video") and entry.get("frames_dir"):
                 encoded = encode_frames(entry["frames_dir"], entry.get("fps", 24), Path(entry["frames_dir"]))

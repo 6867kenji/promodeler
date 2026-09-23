@@ -135,6 +135,7 @@ class RenderSettings:
     lights: tuple[Light, ...] = ()
     clip: str | None = None  # render this clip as a video (one .mp4 per view/camera, shaded pass) instead of stills
     clip_fps: int = 24
+    aspect_ratio: float = 1.0  # output width / height; resolution is the height
 
     def validate(self) -> None:
         if self.pose is not None and (not isinstance(self.pose, str) or not self.pose):
@@ -159,6 +160,8 @@ class RenderSettings:
             raise ModelingError("render.environment", f"render.environment must be one of {RENDER_ENVIRONMENTS} or an .hdr/.exr path.")
         if not isinstance(self.resolution, int) or not 64 <= self.resolution <= 4096:
             raise ModelingError("render.resolution", "render.resolution must be an integer in 64...4096.")
+        if not is_finite(self.aspect_ratio) or not 0.5 <= self.aspect_ratio <= 3.0:
+            raise ModelingError("render.aspectRatio", "render.aspect_ratio must be within 0.5...3.0.")
         if self.engine not in RENDER_ENGINES:
             raise ModelingError("render.engine", f"render.engine must be one of {RENDER_ENGINES}.")
         if any(v not in RENDER_VIEWS for v in self.views):
@@ -171,6 +174,7 @@ class RenderSettings:
     def to_recipe(self) -> dict:
         return {
             "resolution": self.resolution,
+            "aspect_ratio": float(self.aspect_ratio),
             "engine": self.engine,
             "views": list(self.views),
             "passes": list(self.passes),
@@ -236,6 +240,7 @@ class Part:
     skinned: bool = False
     parent_joint: str | None = None
     lods: tuple[LOD, ...] = ()
+    texture_resolution: int | None = None
 
     def validate(self) -> None:
         if self.skinned and self.parent_joint is not None:
@@ -248,6 +253,12 @@ class Part:
             last = lod.distance
         if self.lods and self.shape.kind in GENERATED_KINDS:
             raise ModelingError("lod.generated", f"part[{self.id!r}]: generated parts cannot have LODs.")
+        if self.texture_resolution is not None and (
+            not isinstance(self.texture_resolution, int) or isinstance(self.texture_resolution, bool)
+            or self.texture_resolution < 16 or self.texture_resolution > 8192
+            or self.texture_resolution & (self.texture_resolution - 1)
+        ):
+            raise ModelingError("part.textureResolution", f"part[{self.id!r}].texture_resolution must be a power of two from 16 to 8192.")
         label = f"part[{self.id!r}]"
         if not isinstance(self.id, str) or not self.id or any(c.isspace() for c in self.id):
             raise ModelingError("part.id", f"{label}.id must be a nonempty string without whitespace.")
@@ -273,6 +284,7 @@ class Part:
             "skinned": bool(self.skinned),
             "parent_joint": self.parent_joint,
             "lods": [lod.to_recipe() for lod in self.lods],
+            "texture_resolution": self.texture_resolution,
         }
 
 

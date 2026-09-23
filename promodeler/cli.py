@@ -175,6 +175,11 @@ def print_report(result) -> None:
             print(f"lod:     {part_id} level {lod['level']} at {lod['distance']} m: {lod.get('triangles')} tris")
     for warning in report.get("warnings", []):
         print(f"warning: {warning['code']}: {warning['message']}")
+    blueprint = report.get("blueprint_qa")
+    if blueprint:
+        print(f"blueprint: {blueprint['status']} ({blueprint['id']})")
+        for issue in blueprint["issues"]:
+            print(f"  {issue['severity']}: {issue['code']}: {issue['message']}")
     print(f"seconds: {report.get('wall_seconds', report.get('seconds'))}")
 
 
@@ -189,6 +194,11 @@ def cmd_build(args) -> int:
         if args.verbose and error.get("traceback"):
             print(error["traceback"])
         print(f"log:     {result.out_dir / 'blender.log'}")
+        return 1
+    blueprint = result.report.get("blueprint_qa") or {}
+    if any(issue["severity"] == "error" for issue in blueprint.get("issues", [])):
+        return 1
+    if args.strict_blueprint and not result.design_ok:
         return 1
     return 0
 
@@ -263,6 +273,8 @@ def main(argv: list[str] | None = None) -> int:
     sub.choices["build"].add_argument("--out", default="build")
     sub.choices["build"].add_argument("--force", action="store_true", help="Ignore the cache, including baked textures.")
     sub.choices["build"].add_argument("--verbose", "-v", action="store_true")
+    sub.choices["build"].add_argument("--strict-blueprint", action="store_true",
+                                      help="Exit nonzero when a linked non-character blueprint has unresolved QA issues.")
 
     critique = sub.add_parser("critique", help="Ask Claude to review the latest build of an asset (needs the anthropic package).")
     critique.add_argument("target", help="Asset .py file (uses its newest build) or a build directory.")

@@ -61,6 +61,12 @@ class ValidationTests(unittest.TestCase):
             Bevel(segments=0).validate("b")
         Bevel(width=0.01, segments=4, angle_limit=math.radians(30)).validate("b")
 
+    def test_part_texture_resolution(self):
+        simple_asset(texture_resolution=2048).validate()
+        with self.assertRaises(ModelingError) as ctx:
+            simple_asset(texture_resolution=3000).validate()
+        self.assertEqual(ctx.exception.code, "part.textureResolution")
+
     def test_cylinder_segments(self):
         with self.assertRaises(ModelingError):
             Cylinder(segments=2).validate("c")
@@ -73,7 +79,10 @@ class ValidationTests(unittest.TestCase):
             RenderSettings(passes=("xray",)).validate()
         with self.assertRaises(ModelingError):
             RenderSettings(environment="night").validate()
+        with self.assertRaises(ModelingError):
+            RenderSettings(aspect_ratio=0.2).validate()
         RenderSettings(passes=("shaded", "clay"), environment="sunny").validate()
+        self.assertEqual(RenderSettings(aspect_ratio=1.6).to_recipe()["aspect_ratio"], 1.6)
         RenderSettings(environment="C:/somewhere/sky.hdr").validate()
 
     def test_cameras_and_lights(self):

@@ -28,18 +28,21 @@ def finish(scene: CompiledScene, recipe: dict, out_dir: str, reuse_textures: boo
     for obj in decorations:
         obj.hide_render = True
     for part_id, obj in scene.parts.items():
-        material_id = part_specs[part_id]["material"]
+        part_spec = part_specs[part_id]
+        material_id = part_spec["material"]
         proc = scene.procedural.get(material_id)
         if proc is None:
             continue
+        part_quality = dict(quality)
+        part_quality["texture_resolution"] = part_spec.get("texture_resolution") or quality["texture_resolution"]
         uv.unwrap(obj)
-        scene.uv_stats[part_id] = uv.uv_statistics(obj.data, quality["texture_resolution"])
+        scene.uv_stats[part_id] = uv.uv_statistics(obj.data, part_quality["texture_resolution"])
         spec = material_specs[material_id]
         textures = None
         if reuse_textures:
-            textures = materials.load_textures(spec, proc, quality, textures_dir, part_id)
+            textures = materials.load_textures(spec, proc, part_quality, textures_dir, part_id)
         if textures is None:
-            textures = materials.bake_part(obj, spec, proc, quality, textures_dir, part_id)
+            textures = materials.bake_part(obj, spec, proc, part_quality, textures_dir, part_id)
         scene.textures[part_id] = textures
         obj.data.materials[0] = materials.build_baked_material(spec, textures, part_id)
     for obj in decorations:
