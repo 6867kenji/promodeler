@@ -90,12 +90,15 @@ def load_asset_module(path: str):
     return module
 
 
-def load_asset(path: str, render=None, quality_overrides: dict | None = None, formats=None) -> LoadedAsset:
+def load_asset(path: str, render=None, quality_overrides: dict | None = None, formats=None,
+               parameter_overrides: dict | None = None) -> LoadedAsset:
     """An asset file exposes ``asset`` as an ``AssetGenerator`` or an ``Asset``; ``render`` and ``export`` are optional.
 
     ``quality_overrides`` replaces fields of the generator's quality profile,
     for example a lower texture resolution for a quick iteration. ``formats``
-    overrides the export formats.
+    overrides the export formats. ``parameter_overrides`` replaces fields of
+    the generator's parameter dataclass (unknown names are an error), which is
+    how a character recipe sizes its accessories.
     """
     module = load_asset_module(path)
     target = getattr(module, "asset", None)
@@ -106,7 +109,13 @@ def load_asset(path: str, render=None, quality_overrides: dict | None = None, fo
         export = ExportSettings(formats=tuple(formats))
     if isinstance(target, AssetGenerator):
         quality = replace(target.quality, **quality_overrides) if quality_overrides else None
-        input = target.make_input(quality=quality)
+        parameters = None
+        if parameter_overrides:
+            unknown = [k for k in parameter_overrides if not hasattr(target.parameters, k)]
+            if unknown:
+                raise ModelingError("generator.parameters", f"{path}: parameters have no field(s) {unknown}.")
+            parameters = replace(target.parameters, **parameter_overrides)
+        input = target.make_input(parameters=parameters, quality=quality)
         asset = target.generate(input)
         recipe = build_recipe(
             asset, input, render,
@@ -158,8 +167,9 @@ def _read_json(path: Path) -> dict | None:
 
 
 def build(path: str, out_root: str = "build", force: bool = False, render=None,
-          timeout: float = 1800.0, quality_overrides: dict | None = None, formats=None) -> BuildResult:
-    loaded = load_asset(path, render, quality_overrides, formats)
+          timeout: float = 1800.0, quality_overrides: dict | None = None, formats=None,
+          parameter_overrides: dict | None = None) -> BuildResult:
+    loaded = load_asset(path, render, quality_overrides, formats, parameter_overrides)
     blender = find_blender()
     version = blender_version(blender)
     digest = asset_key(loaded.recipe, version)

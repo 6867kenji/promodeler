@@ -142,9 +142,23 @@ namespace ProModeler.Editor
                     Resolved = AssetCatalog.UmaRecipeFor(catalog.Get(g.CatalogId), dressed.Base.Race),
                     Fitted = runtime.Avatar.GetWardrobeItem(UMACharacterRuntime.SlotNames.TryGetValue(g.Slot, out var s) ? s : "") != null,
                 }).ToList();
-                foreach (var accessory in dressed.Accessories)
-                    report.Accessories.Add(new AccessoryEntry { Id = accessory.Id, Source = accessory.Source?.Path, Socket = accessory.Socket, Attached = false });
-                if (dressed.Accessories.Count > 0) report.Warn("accessory.notAttached", "accessory attachment arrives with M12; accessories are listed but not attached");
+                report.Accessories = AccessoryResolver.Attach(runtime, dressed, assets, report);
+                CountGeometry(runtime, report);  // recount with the accessories attached
+
+                // Garment measurements: the dressed body's girths at the garment's planes, compared with the blueprint's
+                // finished measurements by `character check` (docs/03 chapter 14).
+                var garments = new JObject();
+                foreach (var garment in dressed.Wardrobe)
+                {
+                    var g = new JObject();
+                    string chestKey = dressedMeasured.ContainsKey("bust") ? "bust" : "chest";
+                    if ((garment.Slot == "upper" || garment.Slot == "inner" || garment.Slot == "dress" || garment.Slot == "outer") && dressedMeasured.TryGetValue(chestKey, out var c))
+                        g[chestKey + "_circumference"] = c;
+                    if ((garment.Slot == "lower" || garment.Slot == "dress") && dressedMeasured.TryGetValue("waist", out var wv)) g["waist_circumference"] = wv;
+                    if ((garment.Slot == "lower" || garment.Slot == "dress") && dressedMeasured.TryGetValue("hip", out var hv)) g["hip_circumference"] = hv;
+                    if (g.Count > 0) garments[garment.Slot] = g;
+                }
+                if (garments.Count > 0) report.MeasuredM["garments"] = garments;
 
                 if (render)
                 {

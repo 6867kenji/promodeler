@@ -360,6 +360,28 @@ def cmd_character_report(args) -> int:
     return 0
 
 
+def cmd_character_edit(args) -> int:
+    """Open the Unity character editor window on a recipe (interactive; returns as soon as the editor starts)."""
+    import subprocess
+
+    path = resolve_recipe_path(args.target)
+    ready, reason = bridge.project_ready()
+    if not ready:
+        print(f"error:    {reason}", file=sys.stderr)
+        return 3
+    try:
+        unity = bridge.find_unity()
+    except bridge.UnityNotFound as exc:
+        print(f"error:    {exc}", file=sys.stderr)
+        return 3
+    command = [unity, "-projectPath", str(bridge.UNITY_PROJECT), "-executeMethod", "ProModeler.Editor.CharacterEditorWindow.Open",
+               "-recipe", str(path.resolve()), "-catalog", str(Catalog().root)]
+    subprocess.Popen(command, cwd=str(bridge.UNITY_PROJECT))
+    print(f"unity:    editor started on {path}")
+    print("save in the window writes the recipe JSON only; then run `promodeler character validate` and `character diff`.")
+    return 0
+
+
 def cmd_generate(args) -> int:
     """Dispatch a blueprint by kind: characters go through the recipe layer, everything else is a hand-written asset."""
     blueprint = load_blueprint(args.blueprint)
@@ -451,6 +473,10 @@ def add_parsers(sub) -> None:
     build.add_argument("--probe", action="store_true", help="Also write calibration.json: each body parameter at 0 and 1 against every target.")
     build.add_argument("--verbose", "-v", action="store_true")
     build.set_defaults(func=cmd_character_build)
+
+    edit = csub.add_parser("edit", help="Open the Unity character editor (sliders, preview, Save writes the recipe JSON).")
+    edit.add_argument("target", help="Character recipe id or path.")
+    edit.set_defaults(func=cmd_character_edit)
 
     report = csub.add_parser("report", help="Residual table over the newest builds (mm; * marks values outside tolerance).")
     report.add_argument("ids", nargs="*", help="Recipe ids (default: all recipes).")

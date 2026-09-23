@@ -693,7 +693,7 @@ Unity は GLB を読み（UnityGLTF）、`socket` の Humanoid ボーン相対�
 | **M9 Recipe 層（Python のみ）** 完了 2026-09-22 | `promodeler/character/{recipe,schema,from_blueprint,catalog,consistency,check}`、`schemas/*.json`、CLI `character recipe/validate/diff/catalog`、`generate` の振り分け、カタログ雛形（ID とライセンス欄だけ、実体なし）、15 体 + 2 衣装の Recipe 生成、整合性検査結果の一覧、単体テスト（Unity 不要） | `character/recipes/*.json` 17 件がスキーマ検証を通り、`validate --mhr` が設計書間の矛盾を表として出す |
 | **M10 Unity MVP（1 体、原案 §31）** 完了 2026-09-23（18.1・18.2 節） | Unity プロジェクト作成、HDRP と UMA 導入、Intel iGPU でのバッチレンダ実測、`RecipeLoader`、`BodyMeasurer`、`DnaCalibrationTool`、`BodyResolver`、UMA 同梱資産だけで `businessman`（男性・スーツに最も近い既定衣装）を組み、`build.json` + front/side/back レンダ + FBX/GLB、`bridge.build`、`character check` | `promodeler character build businessman` が一発で通り、身長 ±2 mm、周長の残差が表に出る。対応パラメータは原案 §31 の 15–20 項目 |
 | **M11 寸法精度と全員** 寸法部分は完了 2026-09-23（18.3・18.4 節）。GarmentMeasurer・顔 DNA の検証は M12 へ | 独自 DNA（肩幅・胴長・頭高）の追加と校正、顔 DNA 表、靴による接地補正、`GarmentMeasurer`、15 体すべてのビルドと照合表、コンタクトシート、`.claude/skills` の更新 | 15 体で身長 ±2 mm、周長 ±1 cm 以内（UMA の限界は残差として明記）。全員のコンタクトシートが並ぶ |
-| **M12 カタログと装備・衣装** | `tools/uma_slot_from_glb.py`、MakeHuman CC0 資産の変換と登録（髪 10、上衣 10、下衣 8、靴 6、眉・まつ毛・髭）、肌・眼球テクスチャ、`assets/props/` の装備品 8 点とソケット装着、Outfit 36・37、Addressables、`character edit` GUI（Face/Body/Hair/Skin/Wardrobe、Save は Recipe のみ） | 設計書の衣装語彙の 8 割が `catalog_id` で解決され、`wardrobe.missing` 警告が例外になる。GUI 保存 → `character diff` で差分追跡できる |
+| **M12 カタログと装備・衣装** 装備・衣装・GUI は完了 2026-09-23（18.5 節）。カタログ実資産の制作は残り | `tools/uma_slot_from_glb.py`、MakeHuman CC0 資産の変換と登録（髪 10、上衣 10、下衣 8、靴 6、眉・まつ毛・髭）、肌・眼球テクスチャ、`assets/props/` の装備品 8 点とソケット装着、Outfit 36・37、Addressables、`character edit` GUI（Face/Body/Hair/Skin/Wardrobe、Save は Recipe のみ） | 設計書の衣装語彙の 8 割が `catalog_id` で解決され、`wardrobe.missing` 警告が例外になる。GUI 保存 → `character diff` で差分追跡できる |
 | **M13 生成モード** | `presets`（性別・年齢別の人体計測事前分布）、`character random`、`character prompt`（LLM → Recipe、スキーマ制約、カタログ ID の実在検証）、クリップ動画記録、`physics_settings` 書き出し | 1,000 体を seed 決定的に生成して全件 `validate` を通す。プロンプト 1 文から `build` まで人手なし |
 
 M10 の最初に **HDRP のヘッドレスレンダが Intel iGPU で動くか** と **UMA の HDRP シェーダの入手** を確認し、駄目なら検証レンダ用 URP プロジェクトに分ける判断をここで下す。
@@ -829,6 +829,32 @@ M10 の最初に **HDRP のヘッドレスレンダが Intel iGPU で動くか**
 - 補助骨スケールによる側面シルエットの段差は残る（18.3）。滑らかにするには複数骨への分散か UMA の DNA コンバータ化が必要。
 - 髪・眉・髭の色は `SetRawColor` で解決（`SetColor` はプロパティブロックを捨てる）。全員の髪が設計書の色で描かれる。
 - 未着手: `GarmentMeasurer`（着衣後の完成寸法）、顔 DNA 表の妥当性確認、接地補正の検証、`.claude/skills` の同期（Skill/SKILL.md は更新済み）。
+
+### 18.5 M12 の進捗（2026-09-23）
+
+- **装備品**: 設計書の付属品 11 種を `assets/props/*.py`（briefcase, tote, eco_bag, backpack, shoulder_bag, messenger, glasses, watch,
+  sports_watch, phone, badge）として実装。定数マテリアルなのでベイクなしで 1 個 10–20 秒。共通部品は `promodeler/props.py`
+  （丸めた箱、ストラップ、コード、アーチ、`socket_extras`）。閉じたリングは閉じた `Sweep` だと端が重なって自己交差するため、
+  閉じたプロファイルの `Revolve`（トーラス）で作る。`Asset.extras.promodeler_socket` に把持点 `grip_offset_m` と姿勢
+  （`world_up` = 吊り下げ、`follow_bone` = 骨に追従）を書く。
+- **寸法の受け渡し**: `promodeler.build.load_asset(parameter_overrides=...)` を追加し、Recipe の `accessories[].size_xyz_m` が
+  アセットの `size` を上書きする（同じ `tote` でも人物ごとの寸法で生成される）。ブリッジが GLB のパス・ハッシュ・把持点を
+  `assets.json` に書く。
+- **装着（Unity）**: `AccessoryResolver` が GLB を `Assets/ProModeler/Generated/Accessories/` へ複製し UnityGLTF のインポータで読み、
+  ソケット表（`hand_r`→RightHand … `face`→Head+(0, 0.065, 0.105) など）の骨に親子付け。把持点が骨の位置＋オフセットに一致する
+  よう配置し、`world_up` なら鉛直に吊る。glTF 読込で X が反転するため把持点の X を反転する。ビジネスマンのブリーフケースは
+  右手の位置に取っ手が来て鉛直に吊れた。`build.json` の `accessories[].attached` と三角形数に反映。
+- **衣服の完成寸法（GarmentMeasurer 相当）**: 着衣後の胴断面の周長をスロット別に `measured_m.garments` へ（upper/inner/dress → 胸、
+  lower/dress → 腰・ヒップ）。ビジネスマンの上着は設計書 1.08 m に対し 1.09 m。
+- **衣装（Outfit）**: `character build woman --outfit haruka-karate-uniform` が通る（衣装置換、裸足、編み込みの髪）。空手着・帯は
+  代替資産（パーカー・スウェットパンツ）で帯は空。
+- **GUI**: `CharacterEditorWindow`（メニュー ProModeler → Character Editor、または `promodeler character edit <id>`）。寸法・体型・
+  顔・色・衣装 ID を編集し、同じ `UMACharacterRuntime` でプレビューを再生成、Save は Recipe JSON だけを書き `source.kind = gui`
+  にする。保存後は Python 側の `character validate` / `character diff` で追跡する。
+- **解法の修正**: 春香の衣装ビルドで `upperMuscle` 1.0・`breastSize` 0 の解（筋肉質で胸のない体）が出た。筋肉スライダーは
+  `body.shape.muscle` の意味値で固定し解法から外した。アンダーバストは UMA の乳房が平面を割るため報告のみ（重み 0）にした。
+- **未着手**: カタログ実資産（MakeHuman CC0 → UMA スロット変換 `tools/uma_slot_from_glb.py`、ネクタイ・帯・インナー）、
+  Addressables、付属品と身体の貫通確認、`follow_bone` 装備（眼鏡・時計・名札）の向きの目視確認。
 
 ## 19. 未決事項（実装フェーズで決める）
 

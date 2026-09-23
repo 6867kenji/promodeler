@@ -32,8 +32,22 @@ namespace ProModeler.Runtime
         public static readonly string[] PreferredBodyDna =
         {
             "height", "legsSize", "shoulderWidth", "feetSize", "chestSize", "breastSize", "breastPosition", "breastWidth", "upperWeight",
-            "upperMuscle", "waist", "belly", "gluteusSize", "lowerWeight", "lowerMuscle",
+            "waist", "belly", "gluteusSize", "lowerWeight",
         };
+
+        /// <summary>Semantic-only DNA: set once from body.shape and never solved (a slim woman must not become a bodybuilder to hit a girth).</summary>
+        public static readonly Dictionary<string, string> SemanticDna = new Dictionary<string, string>
+        {
+            { "upperMuscle", "muscle" }, { "lowerMuscle", "muscle" },
+        };
+
+        /// <summary>Apply body.shape sliders that have a direct DNA meaning.</summary>
+        public void ApplySemanticShape(IReadOnlyDictionary<string, float> shape)
+        {
+            var dna = Avatar.GetDNA();
+            foreach (var kv in SemanticDna)
+                if (shape.TryGetValue(kv.Value, out var v) && dna.TryGetValue(kv.Key, out var setter)) setter.Set(Mathf.Lerp(0.2f, 0.8f, Mathf.Clamp01(v)));
+        }
 
         /// <summary>
         /// Shape freedoms UMA's DNA lacks, realised as scales/offsets on UMA's leaf "Adjust" bones after every

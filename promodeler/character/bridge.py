@@ -235,9 +235,18 @@ def _build_accessories(recipe: CharacterRecipe, force: bool, log=None) -> dict:
             continue
         if log:
             log(f"accessory {accessory.id}: building {source.path} with Blender")
-        result = asset_build.build(str(path), force=force, render={"views": ("perspective",), "passes": ("shaded",), "resolution": 256})
+        overrides = {"size": tuple(accessory.size_xyz_m)} if accessory.size_xyz_m else None
+        try:
+            result = asset_build.build(str(path), force=force, render={"views": ("perspective",), "passes": ("shaded",), "resolution": 256},
+                                       parameter_overrides=overrides)
+        except ModelingError as exc:
+            if exc.code != "generator.parameters":
+                raise
+            result = asset_build.build(str(path), force=force, render={"views": ("perspective",), "passes": ("shaded",), "resolution": 256})
         glb = result.report.get("export", {}).get("path") if result.ok else None
-        assets[accessory.id] = {"glb": glb, "hash": result.hash[:12], "ok": result.ok}
+        extras = _read_json(result.out_dir / "extras.json") or {}
+        assets[accessory.id] = {"glb": glb, "hash": result.hash[:12], "ok": result.ok, "socket": extras.get("promodeler_socket"),
+                                "error": None if result.ok else result.report.get("error")}
     return assets
 
 

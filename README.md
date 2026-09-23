@@ -197,7 +197,11 @@ python -m promodeler character build <id> [--outfit <id>] [--views front,side] [
 python -m promodeler character build --all                            # 15 体を順にビルド（Unity はプロジェクトを排他ロックするため逐次）
 python -m promodeler character build <id> --probe                     # 各パラメータを 0/1 にした計測差分 calibration.json（校正表）
 python -m promodeler character report [--write docs/x.md]             # 最新ビルドの残差を 1 表に（mm、* は許容超え）
+python -m promodeler character edit <id>                              # Unity の GUI エディタ（スライダー・プレビュー・Save は Recipe のみ）
 ```
+
+装備品は `assets/props/*.py`（`promodeler.props` の部品で組む通常の Blender アセット）。Recipe の `accessories[].size_xyz_m` が
+`size` を上書きして生成され、`extras.promodeler_socket` の把持点で Unity 側のソケットに装着される。
 
 Unity 側は `unity/ProModelerCharacterCreator/`（Unity 6000.3.21f1、HDRP 17.3、UMA 3.05 を `external/uma` から接続）。エディタのライセンスが
 有効でないと `build` は `unity.license` で失敗する。M10 の状況は docs/03 の 18.1 節。

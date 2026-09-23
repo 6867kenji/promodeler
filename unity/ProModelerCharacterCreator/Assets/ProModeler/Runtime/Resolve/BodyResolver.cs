@@ -55,7 +55,8 @@ namespace ProModeler.Resolve
         public static Dictionary<string, float> Weights(CharacterRecipe recipe)
         {
             var weights = new Dictionary<string, float> { { "barefoot_height", 3f }, { "inseam", 1.5f }, { "shoulder_width", 1.5f }, { "head_height", 0.7f },
-                                                          { "chest", 1.5f }, { "bust", 1.5f } };  // the girth UMA misses most gets the most say
+                                                          { "chest", 1.5f }, { "bust", 1.5f },  // the girth UMA misses most gets the most say
+                                                          { "underbust", 0f } };  // measured and reported only: UMA's breasts cross the underbust plane, and chasing it drove breastSize to 0
             foreach (var section in recipe.Body.MeasurementsM.CrossSections)
             {
                 // Circumferences lead (blueprint priority); UMA's boxy torso sections cannot hold girth, width and depth at
@@ -94,11 +95,6 @@ namespace ProModeler.Resolve
             {
                 foreach (var name in new[] { "upperWeight", "lowerWeight", "belly" })
                     if (initial.ContainsKey(name)) initial[name] = Mathf.Lerp(0.3f, 0.8f, fat);
-            }
-            if (shape.TryGetValue("muscle", out var muscle))
-            {
-                foreach (var name in new[] { "upperMuscle", "lowerMuscle" })
-                    if (initial.ContainsKey(name)) initial[name] = Mathf.Lerp(0.2f, 0.8f, muscle);
             }
             return initial;
         }
@@ -145,6 +141,11 @@ namespace ProModeler.Resolve
             var initial = InitialParameters();
             var weights = Weights(_recipe);
 
+            if (_runtime is UMACharacterRuntime uma)
+            {
+                uma.ApplySemanticShape(_recipe.Body.Shape);  // muscle stays what the blueprint says
+                if (!uma.Rebuild(60f)) throw new RecipeException("uma.rebuild", "character rebuild failed applying body.shape");
+            }
             // Only solve for targets the measurer can produce on this body.
             var probe = Measure();
             var solvable = targets.Where(kv => probe.ContainsKey(kv.Key)).ToDictionary(kv => kv.Key, kv => kv.Value);
