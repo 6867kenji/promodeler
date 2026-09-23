@@ -434,7 +434,7 @@ python -m promodeler character build <id> [--outfit <outfit-id>] [--force] [--vi
 python -m promodeler character check <id> [--build <dir>]             # 設計書 × Recipe × build.json の照合表
 python -m promodeler character diff <id>                              # Recipe と設計書再生成との差分
 python -m promodeler character random --seed 100 --count 20 [--sex female] [--style business] [--out build/random]   # 18.10 節（presets は character/presets/anthropometry.json）
-python -m promodeler character prompt "20代女性冒険者。小柄で細身。肩までの黒髪。" --out character/recipes/adventurer.json   # M13 残り
+python -m promodeler character prompt "20代女性。小柄で細身、丸顔。黒髪のボブ。カフェ店員で七分袖シャツにエプロン。" [--llm anthropic] [--build]   # 18.11 節
 python -m promodeler character profile human_female                   # レース中立体のプロファイル（衣服生成用、18.8 節）
 python -m promodeler character import-slot --manifest character/garments.json   # promodeler 製衣服 → UMA スロット（18.8 節）
 python -m promodeler character edit <id>                              # Unity Editor を GUI で起動し Recipe を開く（原案 §14）
@@ -713,7 +713,7 @@ Unity は GLB を読み（UnityGLTF）、`socket` の Humanoid ボーン相対�
 | **M10 Unity MVP（1 体、原案 §31）** 完了 2026-09-23（18.1・18.2 節） | Unity プロジェクト作成、HDRP と UMA 導入、Intel iGPU でのバッチレンダ実測、`RecipeLoader`、`BodyMeasurer`、`DnaCalibrationTool`、`BodyResolver`、UMA 同梱資産だけで `businessman`（男性・スーツに最も近い既定衣装）を組み、`build.json` + front/side/back レンダ + FBX/GLB、`bridge.build`、`character check` | `promodeler character build businessman` が一発で通り、身長 ±2 mm、周長の残差が表に出る。対応パラメータは原案 §31 の 15–20 項目 |
 | **M11 寸法精度と全員** 寸法部分は完了 2026-09-23（18.3・18.4 節）。GarmentMeasurer・顔 DNA の検証は M12 へ | 独自 DNA（肩幅・胴長・頭高）の追加と校正、顔 DNA 表、靴による接地補正、`GarmentMeasurer`、15 体すべてのビルドと照合表、コンタクトシート、`.claude/skills` の更新 | 15 体で身長 ±2 mm、周長 ±1 cm 以内（UMA の限界は残差として明記）。全員のコンタクトシートが並ぶ |
 | **M12 カタログと装備・衣装** 装備・衣装・GUI は完了 2026-09-23（18.5 節）。ネクタイ・帯はプロップ衣服として解決（18.7 節）。GLB → UMA スロット変換は 1 着で疎通（18.8 節）。カタログ実資産の制作は残り | `tools/uma_slot_from_glb.py`、MakeHuman CC0 資産の変換と登録（髪 10、上衣 10、下衣 8、靴 6、眉・まつ毛・髭）、肌・眼球テクスチャ、`assets/props/` の装備品 8 点とソケット装着、Outfit 36・37、Addressables、`character edit` GUI（Face/Body/Hair/Skin/Wardrobe、Save は Recipe のみ） | 設計書の衣装語彙の 8 割が `catalog_id` で解決され、`wardrobe.missing` 警告が例外になる。GUI 保存 → `character diff` で差分追跡できる |
-| **M13 生成モード** `random` は完了 2026-09-23（18.10 節）。`prompt`・クリップ動画・物理書き出しは残り | `presets`（性別・年齢別の人体計測事前分布）、`character random`、`character prompt`（LLM → Recipe、スキーマ制約、カタログ ID の実在検証）、クリップ動画記録、`physics_settings` 書き出し | 1,000 体を seed 決定的に生成して全件 `validate` を通す。プロンプト 1 文から `build` まで人手なし |
+| **M13 生成モード** `random`（18.10 節）と `prompt`（18.11 節）は完了 2026-09-23。クリップ動画・物理書き出しは残り | `presets`（性別・年齢別の人体計測事前分布）、`character random`、`character prompt`（LLM → Recipe、スキーマ制約、カタログ ID の実在検証）、クリップ動画記録、`physics_settings` 書き出し | 1,000 体を seed 決定的に生成して全件 `validate` を通す。プロンプト 1 文から `build` まで人手なし |
 
 M10 の最初に **HDRP のヘッドレスレンダが Intel iGPU で動くか** と **UMA の HDRP シェーダの入手** を確認し、駄目なら検証レンダ用 URP プロジェクトに分ける判断をここで下す。
 
@@ -1015,6 +1015,22 @@ M10 の最初に **HDRP のヘッドレスレンダが Intel iGPU で動くか**
   方向がすべて悪化に見えた。0.5 でも常に適用するよう変更し、`PROMODELER_SWEEP=<param>` で 1 パラメータ掃引を記録する診断と、
   却下ステップの計測値ログ（`MeasurementSolver.Verbose`）を足した。修正後は同じ体が 4 反復で全項目 ≤3 mm。
 - 全 15 体を再ビルドして残差表を更新（`docs/character-residuals.md`）: 14 体は全項目 ±0 mm のまま、春香は肩幅 −8 → −3、バスト −7 → −2、股下 −5 → −2 に改善したが頭高が −17 → −22 mm（`adj:head_height` の重み 0.7 では身長・肩と引き合う。設計書 05 だけが頭高を指定する）。
+
+### 18.11 M13 その 2: `character prompt`（2026-09-23）
+
+一文 → `PromptSpec`（性別・年齢・身長・体脂肪/筋肉/姿勢・様式・髪型 ID・髪色・虹彩・肌・ひげ・顔スライダー・衣服カタログ ID・
+色・装備・名前・記述子。`promodeler/character/prompt.py`、JSON Schema は `serialize.schema` から生成）→ `sampler.sample_character`
+に **上書きとして**渡し、文が決めない項目は文のハッシュを seed にして事前分布から引く。LLM は Recipe を直接書かない: `--llm anthropic`
+は Anthropic API の tool use（`emit_prompt_spec`、`input_schema` = PromptSpec スキーマ、`tool_choice` 強制）で Spec だけを返させ、
+system プロンプトにカタログ ID の一覧を渡す。返った Spec は同じ `decode` で検証し、存在しないカタログ ID は警告して seed の値で埋める。
+既定はルールベース解析（日本語語彙: 性別・年齢「30代」・身長「178cm」/「小柄」・体格語・顔語・髪色・様式語・カタログ match 断片・装備語・ひげ）で、
+API キーなしで動く（このマシンには `ANTHROPIC_API_KEY` がなく、LLM 経路は偽クライアントのテストで確認）。
+
+- 例: 「30代の男性会社員。身長178cm、がっしりした体型。黒縁眼鏡にブリーフケース。」→ male 35、1.780 m、body_fat 0.6 / muscle 0.62、
+  business、glasses + briefcase → `--build --no-render` で Unity ビルドまで人手なし（受入基準「プロンプト 1 文から build まで」）。
+- 同じ文は同じ Recipe（`source.kind = prompt`, `sha256` = 文のハッシュ、`identity.descriptors[1] = "prompt:<文>"`）。
+- 衣服は 1 スロットにつき最長一致の断片を採用（「七分袖シャツ」が「シャツ」に勝つ）。ワンピース指定時は上下を外す。
+- 残り: 英語語彙の拡充、`garment_colors`（「紺のスーツ」）の色語、`--llm` の実機確認、クリップ動画記録と物理設定書き出し（M13 その 3）。
 
 ### 18.9 衣装調達の調査（2026-09-23）
 

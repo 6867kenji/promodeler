@@ -201,6 +201,8 @@ python -m promodeler character edit <id>                              # Unity �
 python -m promodeler character random --seed 100 --count 20 [--sex male] [--style casual] [--out build/random]
                                                                       # 人体計測の事前分布（character/presets/anthropometry.json）から seed 決定的に Recipe を生成
 python -m promodeler character build build/random/random-00000064.json  # 生成した Recipe はパスでもビルドできる
+python -m promodeler character prompt "30代の男性会社員。身長178cm、がっしり。黒縁眼鏡にブリーフケース。" [--llm anthropic] [--build]
+                                                                      # 一文 → PromptSpec（ルール解析、または API の tool use でスキーマ制約）→ seed 決定的な Recipe
 ```
 
 布の衣服は `assets/wardrobe/<name>.py` を **レースプロファイル**（`promodeler character profile human_female` →

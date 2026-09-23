@@ -12,7 +12,7 @@ from dataclasses import replace
 from pathlib import Path
 
 from ..core import ModelingError
-from . import bridge, check, consistency, sampler, schema
+from . import bridge, check, consistency, prompt as prompt_module, sampler, schema
 from .catalog import Catalog
 from .from_blueprint import character_from_blueprint, load_blueprint, outfit_from_blueprint
 from .recipe import OUTFIT_SCHEMA, RACES, SCHEMA, CharacterRecipe, OutfitRecipe, RecipeWarning
@@ -357,6 +357,44 @@ def cmd_character_random(args) -> int:
     return 1 if failures else 0
 
 
+def cmd_character_prompt(args) -> int:
+    """One sentence -> PromptSpec (rules, or an LLM constrained to the spec schema) -> seeded recipe -> validate -> write."""
+    catalog = Catalog()
+    text = " ".join(args.text)
+    try:
+        if args.llm == "anthropic":
+            spec, spec_source = prompt_module.spec_from_llm(text, model=args.model), "llm"
+        else:
+            spec, spec_source = prompt_module.parse_prompt(text, catalog), "rules"
+        recipe, warnings = prompt_module.character_from_prompt(text, catalog, spec=spec, seed=args.seed, recipe_id=args.id)
+        warnings += recipe.validate(catalog)
+    except ModelingError as exc:
+        print(f"error:    {exc.code}: {exc}", file=sys.stderr)
+        return 2
+    print(f"spec ({spec_source}): {json.dumps(spec.to_json(), ensure_ascii=False)}")
+    for code_prefix in ("prompt.", "wardrobe.", "appearance.", "accessory.", "measurements."):
+        for w in warnings:
+            if w.code.startswith(code_prefix) and w.code != "catalog.placeholder":
+                print(f"warning:  {w.code}: {w.message}")
+    if args.dry_run:
+        print(json.dumps(recipe.to_json(), ensure_ascii=False, indent=2)[:4000])
+        return 0
+    path = Path(args.out) if args.out else Path("build/prompt") / f"{recipe.id}.json"
+    if path.exists() and not args.force:
+        print(f"error:    {path} exists (use --force or --out)", file=sys.stderr)
+        return 2
+    write_json(path, recipe.to_json())
+    m = recipe.body.measurements_m
+    print(f"recipe:   {path}  ({recipe.identity.sex} {recipe.identity.age}, h {m.barefoot_height:.3f}, " + " ".join(f"{k} {v:.2f}" for k, v in m.circumferences.items())
+          + f", wardrobe {[g.catalog_id for g in recipe.wardrobe]}, accessories {[a.id for a in recipe.accessories]}, hair {recipe.appearance.hair.style})")
+    if args.build:
+        args.target = str(path)
+        args.all = False
+        args.out = "build/character"   # the build's out_root, not the recipe path
+        return cmd_character_build(args)
+    return 0
+
+
 def cmd_character_profile(args) -> int:
     """Export the neutral body profile of a UMA race for garment generators (character/profiles/<race>.json)."""
     try:
@@ -592,6 +630,20 @@ def add_parsers(sub) -> None:
     rnd.add_argument("--dry-run", action="store_true", help="Generate and validate without writing.")
     rnd.add_argument("--verbose", action="store_true", help="Print every recipe row even for large counts.")
     rnd.set_defaults(func=cmd_character_random)
+
+    prm = csub.add_parser("prompt", help="One sentence (Japanese) -> recipe: rule-based parsing, or --llm anthropic for a schema-constrained LLM spec (docs/03 M13).")
+    prm.add_argument("text", nargs="+", help="The description, e.g. 「30代の男性会社員。身長178cm、がっしり。黒縁眼鏡。」")
+    prm.add_argument("--llm", choices=("none", "anthropic"), default="none", help="Spec extraction: rules (default) or the Anthropic API (needs ANTHROPIC_API_KEY).")
+    prm.add_argument("--model", default=prompt_module.DEFAULT_MODEL, help="Model id for --llm anthropic.")
+    prm.add_argument("--seed", type=int, help="Seed for everything the prompt leaves open (default: derived from the text).")
+    prm.add_argument("--id", help="Recipe id (default prompt-<hash>).")
+    prm.add_argument("--out", help="Recipe path (default build/prompt/<id>.json).")
+    prm.add_argument("--force", action="store_true")
+    prm.add_argument("--dry-run", action="store_true", help="Print the spec and the recipe without writing.")
+    prm.add_argument("--build", action="store_true", help="Run `character build` on the written recipe.")
+    prm.add_argument("--outfit"); prm.add_argument("--views"); prm.add_argument("--passes"); prm.add_argument("--formats")
+    prm.add_argument("--no-render", action="store_true"); prm.add_argument("--probe", action="store_true"); prm.add_argument("--verbose", action="store_true")
+    prm.set_defaults(func=cmd_character_prompt)
 
     profile = csub.add_parser("profile", help="Export the neutral body of a UMA race (outlines, arm sections, bones) for garment generators.")
     profile.add_argument("race", choices=sorted(RACES), help="Recipe race id (human_female, human_male).")
