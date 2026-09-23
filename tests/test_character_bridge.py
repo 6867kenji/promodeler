@@ -8,8 +8,11 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from unittest import mock
+
 from promodeler.character import Catalog, CharacterRecipe, bridge
 from promodeler.character.from_blueprint import character_from_blueprint, load_blueprint
+from promodeler.core import ModelingError
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -74,7 +77,18 @@ class BridgeTests(unittest.TestCase):
         os.environ["PROMODELER_UNITY"] = str(self.unity)
         self.catalog = Catalog()
         blueprint = load_blueprint(ROOT / "blueprints" / "japan-realistic-v1" / "27-karate-master" / "blueprint.json")
-        self.recipe, _ = character_from_blueprint(blueprint, self.catalog)  # no accessories: nothing to build with Blender
+        self.recipe, _ = character_from_blueprint(blueprint, self.catalog)  # no accessories, but the belt is a garment prop
+        # Garment props (the karate belt) would run Blender; stand in for the prop builder and keep its bookkeeping.
+        self.built_requests = []
+
+        def fake_build_props(requests, force, log=None):
+            self.built_requests.extend(requests)
+            return {r.id: {"glb": None, "hash": "fake" + r.id[-4:], "ok": True, "socket": {"socket": r.socket, "grip_offset_m": [0, 0.27, 0], "orientation": "follow_bone"},
+                           "error": None, "catalog_id": r.catalog_id, "slot": r.slot, "parameters": r.overrides} for r in requests}
+
+        patcher = mock.patch.object(bridge, "_build_props", fake_build_props)
+        patcher.start()
+        self.addCleanup(patcher.stop)
 
     def tearDown(self):
         os.environ.pop("PROMODELER_UNITY", None)
@@ -92,8 +106,37 @@ class BridgeTests(unittest.TestCase):
         b = bridge.stage(self.recipe, None, self.catalog, out_root=self.tmp / "build", project=self.project)
         self.assertEqual(a.hash, b.hash)
         self.assertTrue(a.recipe_path.is_file())
-        self.assertTrue((a.out_dir / "assets.json").is_file())
+        assets = json.loads((a.out_dir / "assets.json").read_text(encoding="utf-8"))
         self.assertEqual(json.loads(a.recipe_path.read_text(encoding="utf-8"))["id"], "karate-master")
+        # The belt garment is staged as a prop keyed by slot, with the catalog's socket and evaluated parameters.
+        self.assertEqual(list(assets["garments"]), ["waist"])
+        self.assertEqual(assets["garments"]["waist"]["catalog_id"], "karate_belt_01")
+        self.assertEqual(assets["garments"]["waist"]["socket"]["socket"], "waist")
+        self.assertEqual(assets["accessories"], {})
+        self.assertEqual([r.id for r in self.built_requests[:1]], ["garment:waist"])
+
+    def test_prop_requests_evaluate_catalog_parameters(self):
+        requests = bridge.prop_requests(self.recipe, self.catalog)
+        self.assertEqual([r.id for r in requests], ["garment:waist"])
+        belt = requests[0]
+        self.assertEqual(belt.path, "assets/props/obi_belt.py")
+        waist = next(s for s in self.recipe.body.measurements_m.cross_sections if s.landmark == "waist")
+        garment = next(g for g in self.recipe.wardrobe if g.slot == "waist")
+        self.assertAlmostEqual(belt.overrides["size"][0], waist.width + 0.07)
+        self.assertAlmostEqual(belt.overrides["size"][1], garment.finished_measurements_m["width"])
+        self.assertAlmostEqual(belt.overrides["size"][2], waist.depth + 0.07)
+        self.assertEqual(belt.overrides["color"], garment.material.base_color_srgb)
+        # Expressions: numbers, garment and body references, sums; anything else is a catalog error.
+        self.assertEqual(bridge.evaluate_parameter(0.5, garment, self.recipe), 0.5)
+        self.assertEqual(bridge.evaluate_parameter("body.barefoot_height + 0.01", garment, self.recipe), self.recipe.body.measurements_m.barefoot_height + 0.01)
+        self.assertEqual(bridge.evaluate_parameter("body.waist", garment, self.recipe), self.recipe.body.measurements_m.circumferences["waist"])
+        with self.assertRaises(ModelingError) as ctx:
+            bridge.evaluate_parameter("garment.sleeve", garment, self.recipe)
+        self.assertEqual(ctx.exception.code, "catalog.parameters")
+        with self.assertRaises(ModelingError):
+            bridge.evaluate_parameter("garment.material.base_color_srgb + 1", garment, self.recipe)
+        # A recipe without prop garments requests nothing from the catalog.
+        self.assertEqual(bridge.prop_requests(self.recipe, None), [])
 
     def test_build_reads_build_json_and_caches(self):
         result = bridge.build(self.recipe, catalog=self.catalog, out_root=self.tmp / "build", project=self.project, views=("front", "side"), passes=("shaded",))

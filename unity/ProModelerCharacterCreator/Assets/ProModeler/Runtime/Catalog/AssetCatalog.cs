@@ -17,6 +17,8 @@ namespace ProModeler.Catalog
         public string UmaWardrobeRecipe;
         public Dictionary<string, string> UmaWardrobeRecipeByRace = new Dictionary<string, string>();
         public string Addressable;
+        public string PromodelerAsset;   // assets/props/<name>.py: the garment is a promodeler prop attached at Socket, not a UMA recipe
+        public string Socket;
         public string BaseColorSrgb;
         public JObject Raw;
     }
@@ -49,6 +51,8 @@ namespace ProModeler.Catalog
                         Status = (string)raw["runtime"]?["status"] ?? "placeholder",
                         UmaWardrobeRecipe = (string)raw["runtime"]?["uma_wardrobe_recipe"],
                         Addressable = (string)raw["runtime"]?["addressable"],
+                        PromodelerAsset = (string)raw["runtime"]?["promodeler_asset"],
+                        Socket = (string)raw["runtime"]?["socket"],
                         BaseColorSrgb = (string)raw["base_color_srgb"],
                         Raw = raw,
                     };

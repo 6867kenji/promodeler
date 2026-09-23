@@ -36,6 +36,9 @@ class Runtime:
     uma_wardrobe_recipe: str | None = field(default=None, metadata={"description": "UMA wardrobe recipe asset name (race neutral)."})
     uma_wardrobe_recipe_by_race: dict[str, str] = field(default_factory=dict, metadata={"description": "Race -> UMA wardrobe recipe asset name; wins over uma_wardrobe_recipe."})
     addressable: str | None = None
+    promodeler_asset: str | None = field(default=None, metadata={"description": "assets/props/<name>.py: the garment is built by promodeler and attached as a rigid prop at `socket` instead of a UMA wardrobe recipe."})
+    socket: str | None = field(default=None, metadata={"description": "Character socket the prop hangs from (neck, waist, chest ...)."})
+    parameters: dict = field(default_factory=dict, metadata={"description": "Prop parameter -> expression over garment.<finished_measurement>, garment.material.<field>, body.<measurement> and numbers joined by +; a list gives a vector."})
 
 
 @dataclass(frozen=True)

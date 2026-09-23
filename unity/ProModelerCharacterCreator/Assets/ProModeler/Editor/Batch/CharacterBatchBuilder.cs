@@ -136,14 +136,21 @@ namespace ProModeler.Editor
                     report.MeasuredM["standing_shod_height"] = barefoot + sole;
 
                 CountGeometry(runtime, report);
-                report.Wardrobe = dressed.Wardrobe.Select(g => new WardrobeEntry
-                {
-                    Slot = g.Slot, CatalogId = g.CatalogId,
-                    Resolved = AssetCatalog.UmaRecipeFor(catalog.Get(g.CatalogId), dressed.Base.Race),
-                    Fitted = runtime.Avatar.GetWardrobeItem(UMACharacterRuntime.SlotNames.TryGetValue(g.Slot, out var s) ? s : "") != null,
-                }).ToList();
                 report.Accessories = AccessoryResolver.Attach(runtime, dressed, assets, report);
                 CountGeometry(runtime, report);  // recount with the accessories attached
+                report.Wardrobe = dressed.Wardrobe.Select(g =>
+                {
+                    var entry = catalog.Get(g.CatalogId);
+                    var prop = entry != null && !string.IsNullOrEmpty(entry.PromodelerAsset);
+                    return new WardrobeEntry
+                    {
+                        Slot = g.Slot, CatalogId = g.CatalogId,
+                        Resolved = prop ? entry.PromodelerAsset : AssetCatalog.UmaRecipeFor(entry, dressed.Base.Race),
+                        Fitted = prop
+                            ? report.Accessories.Any(a => a.Id == "garment:" + g.Slot && a.Attached)
+                            : runtime.Avatar.GetWardrobeItem(UMACharacterRuntime.SlotNames.TryGetValue(g.Slot, out var s) ? s : "") != null,
+                    };
+                }).ToList();
 
                 // Garment measurements: the dressed body's girths at the garment's planes, compared with the blueprint's
                 // finished measurements by `character check` (docs/03 chapter 14).

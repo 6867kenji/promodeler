@@ -75,6 +75,7 @@ namespace ProModeler.Measure
             public Vector3[] Vertices;        // world space, metres
             public bool[] ArmVertex;
             public List<int[]> TorsoEdges;    // vertex index pairs with neither end on an arm
+            public List<int[]> AllEdges;      // every unique edge
             public float Floor;
             public float Height;
         }
@@ -113,34 +114,36 @@ namespace ProModeler.Measure
 
             var edges = new HashSet<long>();
             var torso = new List<int[]>();
+            var all = new List<int[]>();
             var triangles = shared != null && shared.vertexCount == vertices.Length ? shared.triangles : baked.triangles;
             for (var t = 0; t + 2 < triangles.Length; t += 3)
             {
-                AddEdge(edges, torso, arm, triangles[t], triangles[t + 1]);
-                AddEdge(edges, torso, arm, triangles[t + 1], triangles[t + 2]);
-                AddEdge(edges, torso, arm, triangles[t + 2], triangles[t]);
+                AddEdge(edges, torso, all, arm, triangles[t], triangles[t + 1]);
+                AddEdge(edges, torso, all, arm, triangles[t + 1], triangles[t + 2]);
+                AddEdge(edges, torso, all, arm, triangles[t + 2], triangles[t]);
             }
 
             float minY = float.MaxValue, maxY = float.MinValue;
             foreach (var v in vertices) { if (v.y < minY) minY = v.y; if (v.y > maxY) maxY = v.y; }
             UnityEngine.Object.DestroyImmediate(baked);
-            return new Sample { Vertices = vertices, ArmVertex = arm, TorsoEdges = torso, Floor = minY, Height = maxY - minY };
+            return new Sample { Vertices = vertices, ArmVertex = arm, TorsoEdges = torso, AllEdges = all, Floor = minY, Height = maxY - minY };
         }
 
-        static void AddEdge(HashSet<long> seen, List<int[]> torso, bool[] arm, int a, int b)
+        static void AddEdge(HashSet<long> seen, List<int[]> torso, List<int[]> all, bool[] arm, int a, int b)
         {
             if (a == b) return;
             var lo = Math.Min(a, b);
             var hi = Math.Max(a, b);
             var key = ((long)lo << 32) | (uint)hi;
             if (!seen.Add(key)) return;
+            all.Add(new[] { lo, hi });
             if (!arm[lo] && !arm[hi]) torso.Add(new[] { lo, hi });
         }
 
-        public static List<Vector2> SlicePoints(Sample sample, float y, float xLimit = TorsoHalfWidthLimit)
+        public static List<Vector2> SlicePoints(Sample sample, float y, float xLimit = TorsoHalfWidthLimit, bool includeArms = false)
         {
             var points = new List<Vector2>();
-            foreach (var edge in sample.TorsoEdges)
+            foreach (var edge in includeArms ? sample.AllEdges : sample.TorsoEdges)
             {
                 var a = sample.Vertices[edge[0]];
                 var b = sample.Vertices[edge[1]];
@@ -229,12 +232,23 @@ namespace ProModeler.Measure
             var floor = sample.Floor;
             var height = sample.Height;
 
-            var inseam = float.MaxValue;
             float footMin = float.MaxValue, footMax = float.MinValue;
             foreach (var v in sample.Vertices)
-            {
-                if (Mathf.Abs(v.x) < 0.02f && v.y > floor + 0.4f * height && v.y < floor + 0.65f * height && v.y < inseam) inseam = v.y;
                 if (v.y < floor + 0.04f) { if (v.z < footMin) footMin = v.z; if (v.z > footMax) footMax = v.z; }
+            // Inseam: the crotch is the lowest point of the body's midline between 40 and 65 percent of the height. The
+            // midline is cut from mesh edges crossing the x = 0 plane, so it moves continuously with the parameters
+            // (picking the lowest vertex within |x| < 2 cm flipped by 11 mm between an inner-thigh and a crotch vertex
+            // on a 0.03 percent root scale).
+            var inseam = float.MaxValue;
+            float lo = floor + 0.4f * height, hi = floor + 0.65f * height;
+            foreach (var edge in sample.AllEdges)
+            {
+                var a = sample.Vertices[edge[0]];
+                var b = sample.Vertices[edge[1]];
+                if (a.x * b.x > 0f) continue;
+                var t = Mathf.Abs(b.x - a.x) < 1e-9f ? 0f : -a.x / (b.x - a.x);
+                var y = a.y + t * (b.y - a.y);
+                if (y > lo && y < hi && y < inseam) inseam = y;
             }
             if (inseam < float.MaxValue) out_["inseam"] = inseam - floor;
             if (footMax > footMin) out_["foot_length"] = footMax - footMin;

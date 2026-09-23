@@ -236,10 +236,30 @@
             "null"
           ],
           "default": null
+        },
+        "promodeler_asset": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "assets/props/<name>.py: the garment is built by promodeler and attached as a rigid prop at `socket` instead of a UMA wardrobe recipe.",
+          "default": null
+        },
+        "socket": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Character socket the prop hangs from (neck, waist, chest ...).",
+          "default": null
+        },
+        "parameters": {
+          "type": "object",
+          "description": "Prop parameter -> expression over garment.<finished_measurement>, garment.material.<field>, body.<measurement> and numbers joined by +; a list gives a vector."
         }
       },
       "additionalProperties": false,
-      "description": "Runtime(status: 'str' = 'placeholder', uma_wardrobe_recipe: 'str | None' = None, uma_wardrobe_recipe_by_race: 'dict[str, str]' = <factory>, addressable: 'str | None' = None)"
+      "description": "Runtime(status: 'str' = 'placeholder', uma_wardrobe_recipe: 'str | None' = None, uma_wardrobe_recipe_by_race: 'dict[str, str]' = <factory>, addressable: 'str | None' = None, promodeler_asset: 'str | None' = None, socket: 'str | None' = None, parameters: 'dict' = <factory>)"
     }
   }
 }

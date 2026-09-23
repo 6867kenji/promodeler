@@ -237,7 +237,9 @@ def print_build(result: bridge.CharacterBuildResult) -> None:
     if totals:
         print(f"geometry: {totals.get('triangles')} tris, {totals.get('materials')} materials")
     for entry in build.get("wardrobe", []):
-        print(f"wardrobe: {entry['slot']:9s} {entry.get('catalog_id')}  {'fitted' if entry.get('fitted') else 'MISSING'}")
+        resolved = entry.get("resolved") or ""
+        state = "prop" if entry.get("fitted") and resolved.startswith("assets/") else "fitted" if entry.get("fitted") else "MISSING"
+        print(f"wardrobe: {entry['slot']:9s} {entry.get('catalog_id')}  {state}")
     for render in build.get("renders", []):
         print(f"render:   {render.get('pass', 'shaded')}/{render['view']:<14} {'written' if render.get('written') else 'MISSING'}  {render['path']}")
     if build.get("contact_sheet"):

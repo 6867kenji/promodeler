@@ -1,4 +1,4 @@
-build/
+/build/
 build_env/
 __pycache__/
 *.pyc
@@ -23,6 +23,7 @@ UserSettings/
 obj/
 /Packages/
 /ProjectSettings/
-/Assets/
+# (no root /Assets/ rule: on Windows it also ignores the tracked assets/ directory; Unity's stray root files are covered by assets/**/*.meta)
+assets/**/*.meta
 assets/*.meta
 assets/**/*.meta

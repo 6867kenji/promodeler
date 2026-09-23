@@ -200,6 +200,8 @@ python -m promodeler character report [--write docs/x.md]             # 最新�
 python -m promodeler character edit <id>                              # Unity の GUI エディタ（スライダー・プレビュー・Save は Recipe のみ）
 ```
 
+ネクタイ・帯のような剛体で足りる衣服は、カタログ項目の `runtime.promodeler_asset` / `socket` / `parameters` で promodeler プロップとして
+解決できる（Recipe の `wardrobe[]` はそのまま。`assets/props/necktie.py`, `assets/props/obi_belt.py`）。
 装備品は `assets/props/*.py`（`promodeler.props` の部品で組む通常の Blender アセット）。Recipe の `accessories[].size_xyz_m` が
 `size` を上書きして生成され、`extras.promodeler_socket` の把持点で Unity 側のソケットに装着される。
 

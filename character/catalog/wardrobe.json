@@ -785,13 +785,25 @@
         "hides": []
       },
       "runtime": {
-        "status": "placeholder",
+        "status": "ready",
         "uma_wardrobe_recipe": null,
         "addressable": "character/wardrobe/necktie_01",
-        "uma_wardrobe_recipe_by_race": {}
+        "uma_wardrobe_recipe_by_race": {},
+        "promodeler_asset": "assets/props/necktie.py",
+        "socket": "neck",
+        "parameters": {
+          "size": [
+            "garment.blade_width",
+            "garment.length_visible",
+            "garment.thickness"
+          ],
+          "color": "garment.material.base_color_srgb"
+        }
       },
       "base_color_srgb": null,
-      "materials": {},
+      "materials": {
+        "constant": true
+      },
       "neutral_measurements_m": {},
       "triangles": null,
       "license": {
@@ -801,8 +813,8 @@
         "redistribution": true
       },
       "provenance": {
-        "origin": "placeholder",
-        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+        "origin": "promodeler",
+        "note": "Built from the promodeler asset by the Blender pipeline at character build time and attached as a rigid prop."
       },
       "version": "2026.09",
       "tags": [
@@ -1482,13 +1494,25 @@
         "hides": []
       },
       "runtime": {
-        "status": "placeholder",
+        "status": "ready",
         "uma_wardrobe_recipe": null,
         "addressable": "character/wardrobe/karate_belt_01",
-        "uma_wardrobe_recipe_by_race": {}
+        "uma_wardrobe_recipe_by_race": {},
+        "promodeler_asset": "assets/props/obi_belt.py",
+        "socket": "waist",
+        "parameters": {
+          "size": [
+            "body.waist_width + 0.07",
+            "garment.width",
+            "body.waist_depth + 0.07"
+          ],
+          "color": "garment.material.base_color_srgb"
+        }
       },
       "base_color_srgb": null,
-      "materials": {},
+      "materials": {
+        "constant": true
+      },
       "neutral_measurements_m": {},
       "triangles": null,
       "license": {
@@ -1498,8 +1522,8 @@
         "redistribution": true
       },
       "provenance": {
-        "origin": "placeholder",
-        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12)."
+        "origin": "promodeler",
+        "note": "Built from the promodeler asset by the Blender pipeline at character build time and attached as a rigid prop."
       },
       "version": "2026.09",
       "tags": [

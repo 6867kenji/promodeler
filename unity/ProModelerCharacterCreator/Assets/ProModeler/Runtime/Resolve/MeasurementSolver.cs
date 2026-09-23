@@ -25,7 +25,7 @@ namespace ProModeler.Resolve
         }
 
         public float FiniteDifferenceStep = 0.08f;
-        public float Damping = 0.3f;
+        public float Damping = 0.1f;   // relative to each parameter's own J^T J diagonal (Marquardt scaling), so weakly sensitive parameters are not frozen
         public float MaxStep = 0.35f;
         public int MaxIterations = 14;
         public int MaxDampingRetries = 4;
@@ -71,7 +71,9 @@ namespace ProModeler.Resolve
                     var rp = Residuals(probed, targets, measureNames, weights);
                     for (var i = 0; i < m; i++) J[i, j] = (rp[i] - r[i]) / actual;
                 }
-                // (J^T J + lambda I) dx = -J^T r, with lambda raised while the step does not improve (Levenberg-Marquardt).
+                // (J^T J + lambda diag(J^T J)) dx = -J^T r, with lambda raised while the step does not improve
+                // (Levenberg-Marquardt with Marquardt's diagonal scaling: an identity damping of 0.3 froze legsSize, whose
+                // column norm is ~0.8 against ~30 for height, and the female bodies kept a 10-16 mm inseam residual).
                 var lambda = Damping;
                 float[] next = null;
                 Dictionary<string, float> nextMeasured = null;
@@ -81,13 +83,18 @@ namespace ProModeler.Resolve
                 {
                     var A = new float[n, n];
                     var b = new float[n];
+                    // Diagonal floor: a parameter whose column is only finite-difference noise (chestSize on UMA does
+                    // nothing) would otherwise get a huge step that the MaxStep clamp then pays for with everyone else's.
+                    var meanDiagonal = 0f;
+                    for (var j = 0; j < n; j++) { var s = 0f; for (var i = 0; i < m; i++) s += J[i, j] * J[i, j]; meanDiagonal += s / n; }
+                    var floor = Math.Max(0.05f * meanDiagonal, 1e-6f);
                     for (var j = 0; j < n; j++)
                     {
                         for (var k = 0; k < n; k++)
                         {
                             var s = 0f;
                             for (var i = 0; i < m; i++) s += J[i, j] * J[i, k];
-                            A[j, k] = s + (j == k ? lambda : 0f);
+                            A[j, k] = j == k ? s + lambda * Math.Max(s, floor) : s;
                         }
                         var t = 0f;
                         for (var i = 0; i < m; i++) t += J[i, j] * r[i];
@@ -97,11 +104,16 @@ namespace ProModeler.Resolve
                     var scale = 1f;
                     var largest = dx.Max(v => Math.Abs(v));
                     if (largest > MaxStep) scale = MaxStep / largest;
-                    next = new float[n];
-                    for (var j = 0; j < n; j++) next[j] = Clamp01(x[j] + dx[j] * scale);
-                    nextMeasured = Evaluate(evaluate, names, next, result);
-                    nextR = Residuals(nextMeasured, targets, measureNames, weights);
-                    improved = Norm(nextR) < Norm(r);
+                    // Backtracking along the step (1, 1/2, 1/4) before raising the damping: an overshoot in one nonlinear
+                    // direction should not shrink the whole step for the rest of the solve.
+                    for (var fraction = 1f; fraction > 0.2f && !improved; fraction *= 0.5f)
+                    {
+                        next = new float[n];
+                        for (var j = 0; j < n; j++) next[j] = Clamp01(x[j] + dx[j] * scale * fraction);
+                        nextMeasured = Evaluate(evaluate, names, next, result);
+                        nextR = Residuals(nextMeasured, targets, measureNames, weights);
+                        improved = Norm(nextR) < Norm(r);
+                    }
                     if (!improved) lambda *= 4f;
                 }
                 if (!improved)
@@ -110,7 +122,7 @@ namespace ProModeler.Resolve
                     {
                         refinements++;
                         fdStep *= 0.5f;
-                        Damping = Math.Max(Damping, 0.3f);
+                        Damping = Math.Max(Damping, 0.1f);
                         result.Log.Add($"iteration {iteration + 1}: no improving step; refining the finite-difference step to {fdStep:F3}");
                         continue;
                     }

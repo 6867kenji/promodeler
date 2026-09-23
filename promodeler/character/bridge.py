@@ -22,8 +22,8 @@ from pathlib import Path
 
 from ..contact_sheet import make_contact_sheet
 from ..core.diagnostics import ModelingError
-from .catalog import Catalog
-from .recipe import CharacterRecipe, OutfitRecipe, recipe_hash
+from .catalog import Catalog, CatalogEntry
+from .recipe import CharacterRecipe, Garment, OutfitRecipe, recipe_hash
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 UNITY_PROJECT = PROJECT_ROOT / "unity" / "ProModelerCharacterCreator"
@@ -220,40 +220,134 @@ class Staged:
     assets: dict  # accessory id -> {"glb": path, "hash": asset hash}
 
 
-def _build_accessories(recipe: CharacterRecipe, force: bool, log=None) -> dict:
-    """Build promodeler-authored accessories with the Blender pipeline; returns id -> {glb, hash} for the ones that exist."""
-    from .. import build as asset_build
+@dataclass
+class PropRequest:
+    """One promodeler asset to build for a character: an accessory or a garment the catalog realizes as a prop."""
 
-    assets: dict = {}
+    id: str
+    path: str                       # assets/props/<name>.py relative to the repository
+    overrides: dict | None          # generator parameter overrides (size, color ...)
+    socket: str | None = None       # catalog socket for garment props; accessories carry theirs in the recipe
+    catalog_id: str | None = None
+    slot: str | None = None
+
+
+def _body_value(recipe: CharacterRecipe, key: str) -> float:
+    """``body.<key>``: a measurement, a circumference or a cross-section extent (``waist_width``, ``chest_circumference``)."""
+    m = recipe.body.measurements_m
+    if hasattr(m, key) and isinstance(getattr(m, key), (int, float)):
+        return float(getattr(m, key))
+    if key in m.circumferences:
+        return float(m.circumferences[key])
+    landmark, _, attribute = key.rpartition("_")
+    for section in m.cross_sections:
+        if section.landmark == landmark and attribute in ("width", "depth", "circumference"):
+            value = getattr(section, attribute)
+            if value is not None:
+                return float(value)
+    raise ModelingError("catalog.parameters", f"body.{key} is not available in {recipe.id} (measurements, circumferences or cross-section extents).")
+
+
+def _garment_value(garment: Garment, key: str):
+    if key.startswith("material."):
+        attribute = key[len("material."):]
+        value = getattr(garment.material, attribute, None) if garment.material else None
+        if value is None:
+            raise ModelingError("catalog.parameters", f"garment.material.{attribute} is not set on wardrobe[{garment.slot}].")
+        return value
+    if key in garment.finished_measurements_m:
+        return float(garment.finished_measurements_m[key])
+    raise ModelingError("catalog.parameters", f"garment.{key} is not among wardrobe[{garment.slot}].finished_measurements_m {sorted(garment.finished_measurements_m)}.")
+
+
+def evaluate_parameter(expression, garment: Garment, recipe: CharacterRecipe):
+    """Catalog ``runtime.parameters`` value: a number, ``garment.<key>``, ``body.<key>`` or a ``+`` sum of them; lists map elementwise."""
+    if isinstance(expression, (list, tuple)):
+        return tuple(evaluate_parameter(e, garment, recipe) for e in expression)
+    if isinstance(expression, (int, float)):
+        return float(expression)
+    if not isinstance(expression, str):
+        raise ModelingError("catalog.parameters", f"unsupported parameter expression {expression!r}.")
+    terms = [t.strip() for t in expression.split("+")]
+    values = []
+    for term in terms:
+        if term.startswith("garment."):
+            values.append(_garment_value(garment, term[len("garment."):]))
+        elif term.startswith("body."):
+            values.append(_body_value(recipe, term[len("body."):]))
+        else:
+            try:
+                values.append(float(term))
+            except ValueError:
+                raise ModelingError("catalog.parameters", f"cannot evaluate {term!r} in {expression!r}.") from None
+    if len(values) == 1:
+        return values[0]
+    if not all(isinstance(v, float) for v in values):
+        raise ModelingError("catalog.parameters", f"only numbers can be added in {expression!r}.")
+    return float(sum(values))
+
+
+def prop_requests(recipe: CharacterRecipe, catalog: Catalog | None) -> list[PropRequest]:
+    """Accessories with a promodeler source plus wardrobe garments whose catalog entry names a promodeler asset."""
+    requests: list[PropRequest] = []
     for accessory in recipe.accessories:
         source = accessory.source
         if source.kind != "promodeler_asset" or not source.path:
             continue
-        path = PROJECT_ROOT / source.path
+        overrides = {"size": tuple(accessory.size_xyz_m)} if accessory.size_xyz_m else None
+        requests.append(PropRequest(id=accessory.id, path=source.path, overrides=overrides))
+    if catalog is not None:
+        for garment in recipe.wardrobe:
+            if not garment.catalog_id or garment.catalog_id not in catalog.entries:
+                continue
+            entry: CatalogEntry = catalog.entries[garment.catalog_id]
+            if not entry.runtime.promodeler_asset:
+                continue
+            overrides = {name: evaluate_parameter(expression, garment, recipe) for name, expression in entry.runtime.parameters.items()} or None
+            requests.append(PropRequest(id=f"garment:{garment.slot}", path=entry.runtime.promodeler_asset, overrides=overrides,
+                                        socket=entry.runtime.socket, catalog_id=garment.catalog_id, slot=garment.slot))
+    return requests
+
+
+def _build_props(requests: list[PropRequest], force: bool, log=None) -> dict:
+    """Build the requested promodeler assets with the Blender pipeline; returns id -> {glb, hash, socket ...}."""
+    from .. import build as asset_build
+
+    assets: dict = {}
+    for request in requests:
+        path = PROJECT_ROOT / request.path
         if not path.is_file():
-            assets[accessory.id] = {"glb": None, "hash": None, "missing": str(path)}
+            assets[request.id] = {"glb": None, "hash": None, "missing": str(path)}
             continue
         if log:
-            log(f"accessory {accessory.id}: building {source.path} with Blender")
-        overrides = {"size": tuple(accessory.size_xyz_m)} if accessory.size_xyz_m else None
+            log(f"{request.id}: building {request.path} with Blender")
+        render = {"views": ("perspective",), "passes": ("shaded",), "resolution": 256}
         try:
-            result = asset_build.build(str(path), force=force, render={"views": ("perspective",), "passes": ("shaded",), "resolution": 256},
-                                       parameter_overrides=overrides)
+            result = asset_build.build(str(path), force=force, render=render, parameter_overrides=request.overrides)
         except ModelingError as exc:
-            if exc.code != "generator.parameters":
-                raise
-            result = asset_build.build(str(path), force=force, render={"views": ("perspective",), "passes": ("shaded",), "resolution": 256})
+            if exc.code != "generator.parameters" or request.slot is not None:
+                raise   # garment props must accept the catalog's parameters; accessories may lack `size`
+            result = asset_build.build(str(path), force=force, render=render)
         glb = result.report.get("export", {}).get("path") if result.ok else None
         extras = _read_json(result.out_dir / "extras.json") or {}
-        assets[accessory.id] = {"glb": glb, "hash": result.hash[:12], "ok": result.ok, "socket": extras.get("promodeler_socket"),
-                                "error": None if result.ok else result.report.get("error")}
+        socket = extras.get("promodeler_socket")
+        if request.socket and isinstance(socket, dict):
+            socket = dict(socket, socket=request.socket)
+        assets[request.id] = {"glb": glb, "hash": result.hash[:12], "ok": result.ok, "socket": socket,
+                              "error": None if result.ok else result.report.get("error"),
+                              "catalog_id": request.catalog_id, "slot": request.slot, "parameters": request.overrides}
     return assets
+
+
+def _build_accessories(recipe: CharacterRecipe, force: bool, log=None, catalog: Catalog | None = None) -> dict:
+    """Build promodeler-authored accessories and garment props; returns id -> {glb, hash} for the ones that exist."""
+    return _build_props(prop_requests(recipe, catalog), force, log)
 
 
 def stage(recipe: CharacterRecipe, outfit: OutfitRecipe | None, catalog: Catalog, out_root: str | Path = "build/character",
           force: bool = False, log=None, project: Path = UNITY_PROJECT) -> Staged:
     """Resolve accessories, compute the cache key and write recipe.json / outfit.json / assets.json into the output directory."""
-    assets = _build_accessories(recipe, force, log)
+    assets = _build_accessories(recipe, force, log, catalog)
     environment = {
         "outfit": outfit.to_json() if outfit else None,
         "catalog_version": catalog.version,
@@ -270,7 +364,10 @@ def stage(recipe: CharacterRecipe, outfit: OutfitRecipe | None, catalog: Catalog
     if outfit is not None:
         outfit_path = out_dir / "outfit.json"
         outfit_path.write_text(json.dumps(outfit.to_json(), ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    (out_dir / "assets.json").write_text(json.dumps({"accessories": assets, "catalog_root": str(catalog.root), "catalog_version": catalog.version},
+    accessories = {k: v for k, v in assets.items() if not k.startswith("garment:")}
+    garments = {v["slot"]: v for k, v in assets.items() if k.startswith("garment:")}
+    (out_dir / "assets.json").write_text(json.dumps({"accessories": accessories, "garments": garments,
+                                                     "catalog_root": str(catalog.root), "catalog_version": catalog.version},
                                                     ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return Staged(out_dir=out_dir, hash=digest, recipe_path=recipe_path, outfit_path=outfit_path, assets=assets)
 

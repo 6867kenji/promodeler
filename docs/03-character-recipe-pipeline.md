@@ -544,13 +544,17 @@ Unity.exe -batchmode -projectPath unity/ProModelerCharacterCreator
 3. **独立 DNA がない寸法**（肩幅、胴の長さ、頭高）には UMA の DynamicDNA に **骨スケール修飾子を追加した独自 DNA**
    （`shoulder_width` → 左右 Clavicle の X スケール、`torso_length` → Spine 群の Y スケール、`head_height` → Head の Y）を定義し、
    同じ手順で校正する。これは UMA 標準の拡張手段で C# 変更なしに設定できる。
+   実装では DynamicDNA ではなく `UMACharacterRuntime.Adjusts`（生成後に骸骨へ掛ける骨スケール/オフセット）とし、`character build --probe`
+   で校正表 `calibration.json` を出す。鎖骨は UMA 3 の Shoulder ボーンの **ローカル Y** に沿う（X・Z のスケールは肩幅に無反応、Y は
+   可動域で −49/+70 mm）。子の Arm ボーンに逆数のスケールを掛けて腕の長さを保つ。各調整は主ボーン（指数 1）と隣接ボーン（指数 0.4）に
+   分配し、1 本のウェイト境界で輪郭が段になるのを避ける。
 
 ### 10.2 計測（`BodyMeasurer`、`promodeler/human/mhr.py::MHRModel.measure` と同じ定義）
 
 | 計測 | 定義（両実装で同一にする） |
 | --- | --- |
 | `barefoot_height` | 素体メッシュの y 最大 − y 最小（靴なし、A ポーズ） |
-| `inseam` | 正中線 (|x| < 2 cm) の 40–65% 高さ帯で最も低い頂点の高さ − 床 |
+| `inseam` | 正中面 (x = 0) とメッシュ辺の交点（正中線）のうち 40–65% 高さ帯で最も低い点の高さ − 床（頂点選択ではなく辺の交点なので、パラメータに対して連続。18.7 節） |
 | `shoulder_width` | 肩ランドマーク高さ（身長 × 1.34/1.6）の **腕を除いた胴断面の x 幅**（関節間距離ではない。memory: blueprint-05-woman-conflicts） |
 | `foot_length` | 足首より下の頂点の z 幅 |
 | `chest/bust/underbust/waist/hip` | ランドマーク高さの水平面と胴エッジの交点を角度順に結んだ折れ線長。腕・手のボーンウェイトが支配的な頂点を含むエッジは除外 |
@@ -569,6 +573,10 @@ Unity.exe -batchmode -projectPath unity/ProModelerCharacterCreator
 4. 靴: `footwear.sole_height_m` があれば **身体ごと** 持ち上げ、`standing_shod_height` を報告する。
 5. 断面幅・奥行きは目標に入れず計測のみ（6 章）。
 6. 収束後も許容差を超える残差は `resolve.residual` 警告として残し、**黙って通さない**（既存の「範囲外はエラー、黙って丸めない」の精神）。
+7. 実装の要点（18.7 節で確定）: Levenberg–Marquardt の減衰は単位行列ではなく **Marquardt の対角スケーリング**
+   （`J^T J` の対角に比例、床は対角平均の 5%）。単位減衰では列ノルムの小さい `legsSize` が凍り、女性 4 体の股下 −10〜−17 mm の原因だった。
+   ステップは受理前に 1 → 1/2 → 1/4 の後退線形探索を行い、減衰の増加はその後。目標を持たない調整パラメータ（`head_height` 目標のない
+   Recipe の `adj:head_height`）は解かない（身長を頭で買って 0.65 倍の頭になった）。断面幅・奥行きは重み 0（計測・報告のみ、5 項）。
 
 ### 10.4 顔（`FaceResolver`）
 
@@ -620,6 +628,14 @@ Unity.exe -batchmode -projectPath unity/ProModelerCharacterCreator
 | --- | --- | --- |
 | 鞄・バックパック・トート・メッセンジャー・ブリーフケース、眼鏡、時計、スマホ、名札、ヘルメット、武器 | `assets/props/<name>.py`（従来の code-first。実寸・PBR・剛体） | `accessories[].source = {"kind": "promodeler_asset", "path": ...}` |
 | 身体・顔・髪・衣服・靴・眉・まつ毛・歯 | カタログ + UMA | `appearance.*`, `wardrobe[]` |
+
+衣服のうち剛体で十分なもの（ネクタイ、帯、ベルト、名札）は **カタログ側で promodeler プロップとして実現** できる:
+カタログ項目の `runtime.promodeler_asset`（`assets/props/necktie.py` など）、`runtime.socket`（`neck` / `waist` ...）、
+`runtime.parameters`（プロップのパラメータ ← `garment.<仕上がり寸法>`・`garment.material.<欄>`・`body.<計測>` と数値の `+` 式。
+例: 帯の `size = ["body.waist_width + 0.07", "garment.width", "body.waist_depth + 0.07"]`）。Recipe の `wardrobe[]` は変えず、
+Unity は UMA 衣装の代わりに `AccessoryResolver` でソケットへ装着し、`build.json` の wardrobe 行は `resolved` にアセットパス、CLI は `prop` と表示する。
+`neck` は着衣メッシュの襟前（Neck ボーン高さの輪郭前端）を錨に、胸の接線まで傾けて掛ける。`waist` は Recipe の腰断面高さ（身長比）の
+着衣輪郭中心。プロップは親ボーンの `lossyScale`（UMA の DNA による骨スケール）を打ち消して実寸を保つ。
 
 `character build` は `promodeler_asset` を先に `promodeler.build.build(path)` でビルドし、`model.glb` のパスと `hash` を解決済み `recipe.json` に埋めて Unity に渡す。
 Unity は GLB を読み（UnityGLTF）、`socket` の Humanoid ボーン相対に配置する。装備品の寸法は既に Blender 側の `report.json` で検証済みなので、Unity 側は装着位置と貫通のみ確認する。
@@ -693,7 +709,7 @@ Unity は GLB を読み（UnityGLTF）、`socket` の Humanoid ボーン相対�
 | **M9 Recipe 層（Python のみ）** 完了 2026-09-22 | `promodeler/character/{recipe,schema,from_blueprint,catalog,consistency,check}`、`schemas/*.json`、CLI `character recipe/validate/diff/catalog`、`generate` の振り分け、カタログ雛形（ID とライセンス欄だけ、実体なし）、15 体 + 2 衣装の Recipe 生成、整合性検査結果の一覧、単体テスト（Unity 不要） | `character/recipes/*.json` 17 件がスキーマ検証を通り、`validate --mhr` が設計書間の矛盾を表として出す |
 | **M10 Unity MVP（1 体、原案 §31）** 完了 2026-09-23（18.1・18.2 節） | Unity プロジェクト作成、HDRP と UMA 導入、Intel iGPU でのバッチレンダ実測、`RecipeLoader`、`BodyMeasurer`、`DnaCalibrationTool`、`BodyResolver`、UMA 同梱資産だけで `businessman`（男性・スーツに最も近い既定衣装）を組み、`build.json` + front/side/back レンダ + FBX/GLB、`bridge.build`、`character check` | `promodeler character build businessman` が一発で通り、身長 ±2 mm、周長の残差が表に出る。対応パラメータは原案 §31 の 15–20 項目 |
 | **M11 寸法精度と全員** 寸法部分は完了 2026-09-23（18.3・18.4 節）。GarmentMeasurer・顔 DNA の検証は M12 へ | 独自 DNA（肩幅・胴長・頭高）の追加と校正、顔 DNA 表、靴による接地補正、`GarmentMeasurer`、15 体すべてのビルドと照合表、コンタクトシート、`.claude/skills` の更新 | 15 体で身長 ±2 mm、周長 ±1 cm 以内（UMA の限界は残差として明記）。全員のコンタクトシートが並ぶ |
-| **M12 カタログと装備・衣装** 装備・衣装・GUI は完了 2026-09-23（18.5 節）。カタログ実資産の制作は残り | `tools/uma_slot_from_glb.py`、MakeHuman CC0 資産の変換と登録（髪 10、上衣 10、下衣 8、靴 6、眉・まつ毛・髭）、肌・眼球テクスチャ、`assets/props/` の装備品 8 点とソケット装着、Outfit 36・37、Addressables、`character edit` GUI（Face/Body/Hair/Skin/Wardrobe、Save は Recipe のみ） | 設計書の衣装語彙の 8 割が `catalog_id` で解決され、`wardrobe.missing` 警告が例外になる。GUI 保存 → `character diff` で差分追跡できる |
+| **M12 カタログと装備・衣装** 装備・衣装・GUI は完了 2026-09-23（18.5 節）。ネクタイ・帯はプロップ衣服として解決（18.7 節）。カタログ実資産の制作は残り | `tools/uma_slot_from_glb.py`、MakeHuman CC0 資産の変換と登録（髪 10、上衣 10、下衣 8、靴 6、眉・まつ毛・髭）、肌・眼球テクスチャ、`assets/props/` の装備品 8 点とソケット装着、Outfit 36・37、Addressables、`character edit` GUI（Face/Body/Hair/Skin/Wardrobe、Save は Recipe のみ） | 設計書の衣装語彙の 8 割が `catalog_id` で解決され、`wardrobe.missing` 警告が例外になる。GUI 保存 → `character diff` で差分追跡できる |
 | **M13 生成モード** | `presets`（性別・年齢別の人体計測事前分布）、`character random`、`character prompt`（LLM → Recipe、スキーマ制約、カタログ ID の実在検証）、クリップ動画記録、`physics_settings` 書き出し | 1,000 体を seed 決定的に生成して全件 `validate` を通す。プロンプト 1 文から `build` まで人手なし |
 
 M10 の最初に **HDRP のヘッドレスレンダが Intel iGPU で動くか** と **UMA の HDRP シェーダの入手** を確認し、駄目なら検証レンダ用 URP プロジェクトに分ける判断をここで下す。
@@ -889,6 +905,55 @@ M10 の最初に **HDRP のヘッドレスレンダが Intel iGPU で動くか**
   女性で緩めるかの判断で、次の段階へ持ち越す。
 - 春香のアンダーバスト +85 mm は報告のみ（UMA の乳房が平面を割る）。
 - 15 体の総ビルド時間は約 35 分（1 体 80〜190 秒、付属品の Blender ビルドはキャッシュ済み）。
+
+### 18.7 肩幅ハンドル・解法の修正・プロップ衣服（2026-09-23）
+
+18.6 節の持ち越し（女性 4 体の股下・肩幅残差、輪郭の段、ネクタイ・帯の欠落）に対して行ったこと。
+
+1. **鎖骨長ハンドル `adj:shoulder_length`**。`--probe` で Shoulder ボーンの X/Y/Z スケールを比べ、ローカル Y が鎖骨方向だった
+   （肩幅 −49/+70 mm、バストへの副作用 ±10 mm。`pos:arm_spread` はバスト +99 mm を伴う）。子の Arm ボーンに逆数スケール。
+   これだけで空手門下生の肩幅は −17 → −4 mm。
+2. **股下が直らなかった真因は解法**。単位行列の LM 減衰（0.3）が列ノルム ~0.8 の `legsSize` を凍らせ（`height` は ~30）、
+   `lengths2` 段で同じ残差を 4 回繰り返していた。Marquardt の対角スケーリング + 後退線形探索 + 対角の床（効かない `chestSize` 列が
+   巨大ステップを出して全員のステップを潰すのを防ぐ）に変更。
+3. **`adj:head_height` は目標があるときだけ解く**。空手門下生では身長合わせに使われ頭が 0.65 倍になっていた。
+4. **股下計測を連続化**。ルートスケール 0.03% で頂点選択が飛び、−2 → +9 mm になった。x = 0 面と辺の交点の最低点に変更。
+5. **断面幅・奥行きは重み 0**。設計書の幅・奥行きは周長から楕円で導いた値か周長と矛盾する値で、0.25 の重みでも股下を胸の奥行きと
+   引き換えていた。報告のみ（UMA の胴は同じ周長で設計書より幅広・平たい: 男性で胸奥行き −115〜−149 mm、幅 +48〜+70 mm）。
+6. **調整の隣接分配**。各 `adj:*` を主ボーン（指数 1）と隣接ボーン（指数 0.4）に掛ける。
+7. **プロップ衣服**（12 章）。`assets/props/necktie.py`（`neck`）と `assets/props/obi_belt.py`（`waist`）を作り、カタログの
+   `necktie_01` / `karate_belt_01` を `promodeler_asset` で解決。`wardrobe.missing` は消え、`build.json` に `garment:<slot>` の装着結果が入る。
+   帯は UMA サンプルのパーカーの裾に隠れる（実寸・位置は境界ボックスで確認: 幅 0.294 × 高 0.297 × 奥 0.281 m、中心が腰面）。
+   ネクタイは T ポーズの厚いジャケットの上で胸の接線（約 31°）に傾く。
+
+全 15 体を再ビルドした結果（`promodeler character report`）:
+
+| id | status | s | barefoot_height | inseam | shoulder_width | foot_length | head_height | chest | bust | underbust | waist | hip |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| businessman | ok | 123 | +0 | +0 | +0 | +0 |  | +0 |  |  | +0 | -0 |
+| businesswoman | ok | 117 | +0 | +0 | -0 | +0 |  |  | +0 |  | +0 | -0 |
+| cafe-clerk | ok | 117 | -0 | +0 | +0 | -0 |  |  | -0 |  | +0 | +0 |
+| convenience-clerk | ok | 105 | -0 | -0 | -0 | +0 |  | +0 |  |  | +0 | +0 |
+| convenience-customer | ok | 117 | -0 | -0 | +0 | +0 |  |  | +0 |  | -0 | +0 |
+| karate-master | ok | 111 | +0 | +0 | +0 | +0 |  | +0 |  |  | +0 | -0 |
+| karate-student | ok | 120 | +0 | +0 | -0 | +0 |  |  | +0 |  | +0 | -0 |
+| passerby-a | ok | 108 | +0 | +0 | +0 | -0 |  | +0 |  |  | +0 | -0 |
+| passerby-b | ok | 123 | +0 | -0 | +0 | -0 |  |  | +0 |  | +0 | -0 |
+| passerby-c | ok | 108 | +0 | +0 | +0 | +0 |  | -0 |  |  | +0 | +0 |
+| passerby-d | ok | 105 | +0 | -0 | -0 | +0 |  |  | +0 |  | +0 | -0 |
+| passerby-e | ok | 120 | +0 | +0 | +0 | +0 |  | +0 |  |  | -0 | -0 |
+| passerby-f | ok | 123 | -0 | +0 | +0 | +0 |  |  | +0 |  | +0 | +0 |
+| passerby-g | ok | 120 | +0 | +0 | +0 | +0 |  | +0 |  |  | +0 | -0 |
+| woman | ok | 141 | +0 | -5 | -8* | -1 | -17* |  | -7* | +181* | -2 | -3 |
+
+- 14 体で解いた全項目（身長・股下・肩幅・足長・周長）が ±0 mm（表示丸め）。18.6 節の残差はすべて解法側の問題だった。
+- 春香（`woman`、設計書 05）は肩幅 −8、頭高 −17、バスト −7、アンダーバスト +181（報告のみ: UMA の乳房が平面を割る）。
+  `adj:shoulder_length` と `pos:arm_spread` が上限で飽和し（空手門下生も同じ）、`all` 段の 14 反復で頭高が 1 mm/反復しか縮まない。
+  肩幅 0.36 m の要求に対し UMA 女性の鎖骨可動域が足りない。次は肩幅ハンドルの範囲拡大（Shoulder Y スケール 1.45 → 1.7）か、
+  頭高の重みの見直し。
+- 副作用: 鎖骨 1.45 倍で肩の輪郭が角張る（空手門下生のクレイ前面）。実資産の袖で隠れる範囲だが、範囲拡大の前に見た目の上限を決める。
+- 1 体 105〜141 秒、15 体で約 30 分（後退線形探索で評価回数は増えたが、反復が早く収束する）。
+
 
 ## 19. 未決事項（実装フェーズで決める）
 

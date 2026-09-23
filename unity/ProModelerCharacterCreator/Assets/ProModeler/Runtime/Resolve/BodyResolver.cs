@@ -59,10 +59,11 @@ namespace ProModeler.Resolve
                                                           { "underbust", 0f } };  // measured and reported only: UMA's breasts cross the underbust plane, and chasing it drove breastSize to 0
             foreach (var section in recipe.Body.MeasurementsM.CrossSections)
             {
-                // Circumferences lead (blueprint priority); UMA's boxy torso sections cannot hold girth, width and depth at
-                // once, so the extents only steer the shape at a quarter of the weight.
-                weights[section.Landmark + "_width"] = 0.25f;
-                weights[section.Landmark + "_depth"] = 0.25f;
+                // Circumferences lead (blueprint priority) and the extents are measured and reported only: blueprint
+                // extents are ellipse-derived from the girth or contradict it, and at weight 0.25 they still bought chest
+                // depth with inseam (karate-student: inseam -16 mm against a derived chest depth).
+                weights[section.Landmark + "_width"] = 0f;
+                weights[section.Landmark + "_depth"] = 0f;
             }
             return weights;
         }
@@ -90,6 +91,9 @@ namespace ProModeler.Resolve
             var initial = new Dictionary<string, float>();
             var current = _runtime.GetBodyParameters();
             foreach (var name in _runtime.BodyParameterNames) initial[name] = current.TryGetValue(name, out var v) ? v : 0.5f;
+            // The head adjust only serves a head_height target. Without one it is a free height handle and the solver
+            // bought height with it (karate-student ended with a 0.65x head).
+            if (!_recipe.Body.MeasurementsM.HeadHeight.HasValue) initial.Remove("adj:head_height");
             var shape = _recipe.Body.Shape;
             if (shape.TryGetValue("body_fat", out var fat))
             {
@@ -170,7 +174,7 @@ namespace ProModeler.Resolve
                     return Measure();
                 };
                 var lengthTargets = new[] { "barefoot_height", "inseam", "shoulder_width", "foot_length", "head_height" };
-                var lengthParameters = new[] { "height", "legsSize", "feetSize", "shoulderWidth", "pos:arm_spread", "adj:head_height" };
+                var lengthParameters = new[] { "height", "legsSize", "feetSize", "shoulderWidth", "adj:shoulder_length", "pos:arm_spread", "adj:head_height" };
                 var current = new Dictionary<string, float>(initial);
                 var stages = new[]
                 {
@@ -184,6 +188,7 @@ namespace ProModeler.Resolve
                     ("all", initial.Keys.ToArray(), (Func<string, bool>)(t => true), maxIterations),
                 };
                 result = null;
+                var totalIterations = 0;
                 foreach (var (stageName, parameterNames, targetFilter, iterations) in stages)
                 {
                     var stageInitial = parameterNames.Where(current.ContainsKey).ToDictionary(n => n, n => current[n]);
@@ -199,13 +204,16 @@ namespace ProModeler.Resolve
                     }, weights);
                     foreach (var kv in stageResult.Parameters) current[kv.Key] = kv.Value;
                     foreach (var line in stageResult.Log) Debug.Log($"[ProModeler] solve[{stageName}] " + line);
+                    totalIterations += stageResult.Iterations;
                     result = stageResult;
                 }
+                result.Iterations = totalIterations;
                 // The runtime still holds the last probe (a Jacobian column or a rejected step); restore the solution.
                 _runtime.SetBodyParameters(current);
                 if (!_runtime.Rebuild(60f)) throw new RecipeException("uma.rebuild", "character rebuild failed after the body solve");
                 result.Parameters = current;
                 result.Measured = Measure();
+                Debug.Log("[ProModeler] solve restored: " + string.Join(", ", targets.Keys.Where(result.Measured.ContainsKey).Select(k => $"{k} {(result.Measured[k] - targets[k]) * 1000f:+0} mm")));
             }
 
             // Root scale as the last resort for the strict height tolerance.

@@ -54,19 +54,27 @@ namespace ProModeler.Runtime
         /// generation (they carry local skin weights and no children, so scaling them deforms only their region).
         /// 0.5 is neutral; scales run 0.6..1.5, offsets +-4 cm outward. Names are ProModeler's, not UMA's.
         /// </summary>
+        // Every adjust names a primary bone (exponent 1) and neighbours with fractional exponents, so one parameter blends
+        // over two or three bones instead of stepping the silhouette at a single bone's weight boundary. A negative
+        // exponent cancels the parent's scale on a child (the shoulder handle lengthens the clavicle without lengthening
+        // the arm hanging from it).
         public static readonly SkeletonAdjust[] Adjusts =
         {
-            new SkeletonAdjust("adj:chest_depth", new[] { "Spine1Adjust" }, Axis.Z, false),
-            new SkeletonAdjust("adj:chest_width", new[] { "Spine1Adjust" }, Axis.X, false),
-            new SkeletonAdjust("adj:underbust_depth", new[] { "SpineAdjust" }, Axis.Z, false),
-            new SkeletonAdjust("adj:underbust_width", new[] { "SpineAdjust" }, Axis.X, false),
-            new SkeletonAdjust("adj:belly_depth", new[] { "LowerBackBelly" }, Axis.Z, false),
-            new SkeletonAdjust("adj:hip_depth", new[] { "LowerBackAdjust" }, Axis.Z, false),
-            new SkeletonAdjust("adj:hip_width", new[] { "LowerBackAdjust" }, Axis.X, false),
-            new SkeletonAdjust("adj:head_height", new[] { "HeadAdjust" }, Axis.Y, false),
-            // ShoulderAdjust bones carry no usable skin weight (probe: +6 mm over the full range); the arm root offset is
-            // the shoulder-width handle for races without a shoulderWidth DNA.
-            new SkeletonAdjust("pos:arm_spread", new[] { "LeftArm", "RightArm" }, Axis.X, true),
+            new SkeletonAdjust("adj:chest_depth", new[] { "Spine1Adjust", "SpineAdjust" }, new[] { 1f, 0.4f }, Axis.Z, false),
+            new SkeletonAdjust("adj:chest_width", new[] { "Spine1Adjust", "SpineAdjust" }, new[] { 1f, 0.4f }, Axis.X, false),
+            new SkeletonAdjust("adj:underbust_depth", new[] { "SpineAdjust", "Spine1Adjust", "LowerBackBelly" }, new[] { 1f, 0.4f, 0.4f }, Axis.Z, false),
+            new SkeletonAdjust("adj:underbust_width", new[] { "SpineAdjust", "Spine1Adjust", "LowerBackAdjust" }, new[] { 1f, 0.4f, 0.4f }, Axis.X, false),
+            new SkeletonAdjust("adj:belly_depth", new[] { "LowerBackBelly", "SpineAdjust", "LowerBackAdjust" }, new[] { 1f, 0.4f, 0.4f }, Axis.Z, false),
+            new SkeletonAdjust("adj:hip_depth", new[] { "LowerBackAdjust", "LowerBackBelly" }, new[] { 1f, 0.4f }, Axis.Z, false),
+            new SkeletonAdjust("adj:hip_width", new[] { "LowerBackAdjust", "LowerBackBelly" }, new[] { 1f, 0.4f }, Axis.X, false),
+            new SkeletonAdjust("adj:head_height", new[] { "HeadAdjust" }, new[] { 1f }, Axis.Y, false),
+            // ShoulderAdjust bones carry no usable skin weight (probe: +6 mm over the full range). Two shoulder handles for
+            // races without a shoulderWidth DNA: the clavicle length (Shoulder bone scaled along the bone, the Arm child
+            // scaled back so the arm keeps its length) and the arm root offset.
+            // The clavicle runs along the Shoulder bone's local Y (probe on the female race: Y -49/+70 mm of shoulder width
+            // over the range with ~10 mm of bust side effect; X and Z do nothing, arm_spread adds +99 mm of bust).
+            new SkeletonAdjust("adj:shoulder_length", new[] { "LeftShoulder", "LeftArm", "RightShoulder", "RightArm" }, new[] { 1f, -1f, 1f, -1f }, Axis.Y, false),
+            new SkeletonAdjust("pos:arm_spread", new[] { "LeftArm", "RightArm" }, new[] { 1f, 1f }, Axis.X, true),
         };
 
         public enum Axis { X, Y, Z }
@@ -75,9 +83,13 @@ namespace ProModeler.Runtime
         {
             public readonly string Name;
             public readonly string[] Bones;
+            public readonly float[] Exponents;   // per bone: the scale factor is Scale(value) to this power (1 primary, 0.4 neighbour, -1 cancel)
             public readonly Axis Axis;
             public readonly bool IsOffset;
-            public SkeletonAdjust(string name, string[] bones, Axis axis, bool isOffset) { Name = name; Bones = bones; Axis = axis; IsOffset = isOffset; }
+            public SkeletonAdjust(string name, string[] bones, float[] exponents, Axis axis, bool isOffset)
+            {
+                Name = name; Bones = bones; Exponents = exponents; Axis = axis; IsOffset = isOffset;
+            }
             public static float Scale(float v) => Mathf.Lerp(0.65f, 1.45f, Mathf.Clamp01(v));   // 0.6-1.5 stepped the silhouette, 0.7-1.4 lost 2-3 cm of chest girth; compromise at the bone's weight boundary
             public static float Offset(float v) => (Mathf.Clamp01(v) - 0.5f) * 0.24f;   // +-12 cm outward: the female race has no shoulderWidth DNA and otherwise buys shoulders with height
         }
@@ -187,6 +199,7 @@ namespace ProModeler.Runtime
                 warn("catalog.unknown", $"{label}: catalog id {catalogId} not found in {catalog.Root}");
                 return null;
             }
+            if (!string.IsNullOrEmpty(entry.PromodelerAsset)) return null;   // a promodeler prop; AccessoryResolver attaches it after dressing
             var umaName = AssetCatalog.UmaRecipeFor(entry, _recipe.Base.Race);
             if (string.IsNullOrEmpty(umaName))
             {
@@ -266,8 +279,8 @@ namespace ProModeler.Runtime
             var skeleton = Avatar.skeleton;
             foreach (var adjust in Adjusts)
             {
-                var present = skeleton != null;
-                foreach (var bone in adjust.Bones) present &= skeleton != null && skeleton.HasBone(UMAUtils.StringToHash(bone));
+                // The primary bone (first entry) must exist; neighbours are optional.
+                var present = skeleton != null && skeleton.HasBone(UMAUtils.StringToHash(adjust.Bones[0]));
                 if (present) _bodyParameterNames.Add(adjust.Name);
             }
         }
@@ -282,8 +295,10 @@ namespace ProModeler.Runtime
             foreach (var adjust in Adjusts)
             {
                 if (!_adjustValues.TryGetValue(adjust.Name, out var value) || Mathf.Abs(value - 0.5f) < 1e-4f) continue;
-                foreach (var bone in adjust.Bones)
+                for (var b = 0; b < adjust.Bones.Length; b++)
                 {
+                    var bone = adjust.Bones[b];
+                    var exponent = b < adjust.Exponents.Length ? adjust.Exponents[b] : 1f;
                     var hash = UMAUtils.StringToHash(bone);
                     if (!skeleton.HasBone(hash)) continue;
                     if (adjust.IsOffset)
@@ -302,7 +317,7 @@ namespace ProModeler.Runtime
                     else
                     {
                         var scale = skeleton.GetScale(hash);
-                        var factor = SkeletonAdjust.Scale(value);
+                        var factor = Mathf.Pow(SkeletonAdjust.Scale(value), exponent);
                         if (adjust.Axis == Axis.X) scale.x *= factor; else if (adjust.Axis == Axis.Y) scale.y *= factor; else scale.z *= factor;
                         skeleton.SetScale(hash, scale);
                     }
