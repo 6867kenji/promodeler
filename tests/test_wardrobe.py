@@ -52,7 +52,7 @@ class WhiteShirtTests(unittest.TestCase):
         self.assertEqual(ctx.exception.code, "white_shirt.sleeve")
         with self.assertRaises(ModelingError) as ctx:
             load_asset(SHIRT, parameter_overrides={"profile": "character/profiles/nowhere.json"})
-        self.assertEqual(ctx.exception.code, "white_shirt.profile")
+        self.assertEqual(ctx.exception.code, "garment.profile")
         short = load_asset(SHIRT, parameter_overrides={"sleeve_length": 0.3})
         long = load_asset(SHIRT, parameter_overrides={"sleeve_length": 0.9})
         sections = lambda l: len({p["id"]: p for p in l.recipe["asset"]["parts"]}["sleeve_left"]["shape"]["sections"])

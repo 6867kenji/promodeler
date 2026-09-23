@@ -1089,6 +1089,25 @@ Animator の T ポーズで描かれている（寸法・残差は `BakeMesh` �
 **残り**: MakeHuman CC0 衣装での実証（MH 基本メッシュ + 関節位置 JSON → `profile-from-mesh` → `fit-garment` → `import-slot`）、
 プロファイルの首・頭部（帽子・襟）、手（手袋）の部位追加、凹みに沿う服のための非凸輪郭。
 
+### 18.14 裁断衣服の追加: T シャツとズボン、共通部品（2026-09-23）
+
+- `promodeler/garments.py`: プロファイル読み込み、凸包輪郭の ease 付き再標本化、胴の高さ範囲の `LoftSection` 列、四肢の断面列
+  （腕は `angle_z`、脚は `e1/e2` 基底。左手系の基底は v の符号で吸収し、Blender の XYZ オイラーへ `euler_from_basis` で変換）。
+  `white_shirt.py` はこれを使う形に書き直し（形状は同じ）。
+- `assets/wardrobe/trousers.py`: 腰（身長比 0.585）から股関節までの胴ロフトと、脚断面に沿う左右の脚チューブ（ease 3 cm、
+  股関節から足首の 94%）。2,229 頂点、Blender 3 秒。
+- `character/garments.json` に 6 着: `white_shirt_f/m`（七分袖）、`tshirt_f/m`（`sleeve_length 0.3`、裾 0.53）、`trousers_f/m`。
+  `_m` は女性裁断を `fit` で男性中立体へ移したもの（T シャツ 平均 40 mm、ズボン 平均 19 mm の移動）。取り込みは 1 着 12–15 秒。
+- カタログ: `tshirt_01`・`pants_01` は ready（promodeler 製）。`chinos_01` `slacks_01` `pants_tapered_01` `jeans_straight_01`
+  `joggers_01` `cargo_pants_01` `pants_wide_01` `karate_gi_pants_01` `tshirt_athletic_01` `shirt_short_sleeve_01` は同じ服を
+  スタンドインにし（status は placeholder のまま、色は Recipe の材質色ではなくスロット既定色）、UMA サンプル服の Chest/Legs 取り合い
+  （`wardrobe.slotConflict`）を減らす。
+- 見え方: ズボンの股は胴ロフトの最下段が両脚をまたぐ凸包なので前から見ると股の内側面が見える（体で埋まる）。T シャツの裾は腰。
+  襟・カフス・ボタン・ポケットはなし。UMA の脚スロット（Legs）は靴スロットと干渉しない。
+
+残り: 襟付きジャケット（前開き = 非閉曲線の Loft か 2 枚の身頃）、スカート、Recipe の `material.base_color_srgb` を
+オーバーレイ色へ渡す経路（今は `garments.json` の `color` 固定）、MakeHuman CC0 衣装の `profile-from-mesh → fit → import` 実証。
+
 ### 18.9 衣装調達の調査（2026-09-23）
 
 承認済み計画の (b)。結果は `docs/04-wardrobe-sourcing-survey.md`。要点: UMA 3.0 レース用のサードパーティ衣装は 2026-09 時点で存在せず、

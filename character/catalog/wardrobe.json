@@ -388,8 +388,8 @@
         "uma_wardrobe_recipe": null,
         "addressable": "character/wardrobe/shirt_short_sleeve_01",
         "uma_wardrobe_recipe_by_race": {
-          "human_male": "male_tshirt_white_Recipe",
-          "human_female": "tshirt_turquoise_Recipe"
+          "human_female": "tshirt_f_Wardrobe",
+          "human_male": "tshirt_m_Wardrobe"
         }
       },
       "base_color_srgb": null,
@@ -404,8 +404,7 @@
       },
       "provenance": {
         "origin": "placeholder",
-        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12).",
-        "stand_in": "UMA 3.05 sample content (MIT) stands in until the real asset exists"
+        "note": "ID reserved; the promodeler T-shirt stands in until a dedicated garment is cut."
       },
       "version": "2026.09",
       "tags": [
@@ -590,16 +589,18 @@
         ]
       },
       "runtime": {
-        "status": "placeholder",
+        "status": "ready",
         "uma_wardrobe_recipe": null,
         "addressable": "character/wardrobe/tshirt_01",
         "uma_wardrobe_recipe_by_race": {
-          "human_male": "male_tshirt_white_Recipe",
-          "human_female": "tshirt_turquoise_Recipe"
+          "human_female": "tshirt_f_Wardrobe",
+          "human_male": "tshirt_m_Wardrobe"
         }
       },
       "base_color_srgb": null,
-      "materials": {},
+      "materials": {
+        "constant": true
+      },
       "neutral_measurements_m": {},
       "triangles": null,
       "license": {
@@ -609,9 +610,8 @@
         "redistribution": true
       },
       "provenance": {
-        "origin": "placeholder",
-        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12).",
-        "stand_in": "UMA 3.05 sample content (MIT) stands in until the real asset exists"
+        "origin": "promodeler",
+        "note": "white_shirt.py with sleeve_length 0.3 (T-shirt) cut on the female profile; male via fit-garment."
       },
       "version": "2026.09",
       "tags": [
@@ -646,8 +646,8 @@
         "uma_wardrobe_recipe": null,
         "addressable": "character/wardrobe/tshirt_athletic_01",
         "uma_wardrobe_recipe_by_race": {
-          "human_male": "male_tanktop_yellow_Recipe",
-          "human_female": "sportswear_top_Recipe"
+          "human_female": "tshirt_f_Wardrobe",
+          "human_male": "tshirt_m_Wardrobe"
         }
       },
       "base_color_srgb": null,
@@ -662,8 +662,7 @@
       },
       "provenance": {
         "origin": "placeholder",
-        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12).",
-        "stand_in": "UMA 3.05 sample content (MIT) stands in until the real asset exists"
+        "note": "ID reserved; the promodeler T-shirt stands in until a dedicated garment is cut."
       },
       "version": "2026.09",
       "tags": [
@@ -894,8 +893,8 @@
         "uma_wardrobe_recipe": null,
         "addressable": "character/wardrobe/slacks_01",
         "uma_wardrobe_recipe_by_race": {
-          "human_male": "male_sweatpants_black_Recipe",
-          "human_female": "sportwear_pants_granit_Recipe"
+          "human_female": "trousers_f_Wardrobe",
+          "human_male": "trousers_m_Wardrobe"
         }
       },
       "base_color_srgb": null,
@@ -910,8 +909,7 @@
       },
       "provenance": {
         "origin": "placeholder",
-        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12).",
-        "stand_in": "UMA 3.05 sample content (MIT) stands in until the real asset exists"
+        "note": "ID reserved; the promodeler trousers stand in (same cut, catalog color) until a dedicated garment is cut."
       },
       "version": "2026.09",
       "tags": [
@@ -945,8 +943,8 @@
         "uma_wardrobe_recipe": null,
         "addressable": "character/wardrobe/chinos_01",
         "uma_wardrobe_recipe_by_race": {
-          "human_male": "male_sweatpants_black_Recipe",
-          "human_female": "sportwear_pants_granit_Recipe"
+          "human_female": "trousers_f_Wardrobe",
+          "human_male": "trousers_m_Wardrobe"
         }
       },
       "base_color_srgb": null,
@@ -961,8 +959,7 @@
       },
       "provenance": {
         "origin": "placeholder",
-        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12).",
-        "stand_in": "UMA 3.05 sample content (MIT) stands in until the real asset exists"
+        "note": "ID reserved; the promodeler trousers stand in (same cut, catalog color) until a dedicated garment is cut."
       },
       "version": "2026.09",
       "tags": [
@@ -995,8 +992,8 @@
         "uma_wardrobe_recipe": null,
         "addressable": "character/wardrobe/jeans_straight_01",
         "uma_wardrobe_recipe_by_race": {
-          "human_male": "male_sweatpants_black_Recipe",
-          "human_female": "sportwear_pants_granit_Recipe"
+          "human_female": "trousers_f_Wardrobe",
+          "human_male": "trousers_m_Wardrobe"
         }
       },
       "base_color_srgb": null,
@@ -1011,8 +1008,7 @@
       },
       "provenance": {
         "origin": "placeholder",
-        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12).",
-        "stand_in": "UMA 3.05 sample content (MIT) stands in until the real asset exists"
+        "note": "ID reserved; the promodeler trousers stand in (same cut, catalog color) until a dedicated garment is cut."
       },
       "version": "2026.09",
       "tags": [
@@ -1045,8 +1041,8 @@
         "uma_wardrobe_recipe": null,
         "addressable": "character/wardrobe/pants_tapered_01",
         "uma_wardrobe_recipe_by_race": {
-          "human_male": "male_sweatpants_black_Recipe",
-          "human_female": "sportwear_pants_granit_Recipe"
+          "human_female": "trousers_f_Wardrobe",
+          "human_male": "trousers_m_Wardrobe"
         }
       },
       "base_color_srgb": null,
@@ -1061,8 +1057,7 @@
       },
       "provenance": {
         "origin": "placeholder",
-        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12).",
-        "stand_in": "UMA 3.05 sample content (MIT) stands in until the real asset exists"
+        "note": "ID reserved; the promodeler trousers stand in (same cut, catalog color) until a dedicated garment is cut."
       },
       "version": "2026.09",
       "tags": [
@@ -1096,8 +1091,8 @@
         "uma_wardrobe_recipe": null,
         "addressable": "character/wardrobe/pants_wide_01",
         "uma_wardrobe_recipe_by_race": {
-          "human_male": "male_sweatpants_black_Recipe",
-          "human_female": "sportwear_pants_granit_Recipe"
+          "human_female": "trousers_f_Wardrobe",
+          "human_male": "trousers_m_Wardrobe"
         }
       },
       "base_color_srgb": null,
@@ -1112,8 +1107,7 @@
       },
       "provenance": {
         "origin": "placeholder",
-        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12).",
-        "stand_in": "UMA 3.05 sample content (MIT) stands in until the real asset exists"
+        "note": "ID reserved; the promodeler trousers stand in (same cut, catalog color) until a dedicated garment is cut."
       },
       "version": "2026.09",
       "tags": [
@@ -1146,8 +1140,8 @@
         "uma_wardrobe_recipe": null,
         "addressable": "character/wardrobe/cargo_pants_01",
         "uma_wardrobe_recipe_by_race": {
-          "human_male": "male_sportpants_grey_Recipe",
-          "human_female": "sportwear_pants_granit_Recipe"
+          "human_female": "trousers_f_Wardrobe",
+          "human_male": "trousers_m_Wardrobe"
         }
       },
       "base_color_srgb": null,
@@ -1162,8 +1156,7 @@
       },
       "provenance": {
         "origin": "placeholder",
-        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12).",
-        "stand_in": "UMA 3.05 sample content (MIT) stands in until the real asset exists"
+        "note": "ID reserved; the promodeler trousers stand in (same cut, catalog color) until a dedicated garment is cut."
       },
       "version": "2026.09",
       "tags": [
@@ -1196,8 +1189,8 @@
         "uma_wardrobe_recipe": null,
         "addressable": "character/wardrobe/joggers_01",
         "uma_wardrobe_recipe_by_race": {
-          "human_male": "male_sportpants_grey_Recipe",
-          "human_female": "tights_gray_Recipe"
+          "human_female": "trousers_f_Wardrobe",
+          "human_male": "trousers_m_Wardrobe"
         }
       },
       "base_color_srgb": null,
@@ -1212,8 +1205,7 @@
       },
       "provenance": {
         "origin": "placeholder",
-        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12).",
-        "stand_in": "UMA 3.05 sample content (MIT) stands in until the real asset exists"
+        "note": "ID reserved; the promodeler trousers stand in (same cut, catalog color) until a dedicated garment is cut."
       },
       "version": "2026.09",
       "tags": [
@@ -1242,16 +1234,18 @@
         ]
       },
       "runtime": {
-        "status": "placeholder",
+        "status": "ready",
         "uma_wardrobe_recipe": null,
         "addressable": "character/wardrobe/pants_01",
         "uma_wardrobe_recipe_by_race": {
-          "human_male": "male_sweatpants_black_Recipe",
-          "human_female": "sportwear_pants_granit_Recipe"
+          "human_female": "trousers_f_Wardrobe",
+          "human_male": "trousers_m_Wardrobe"
         }
       },
       "base_color_srgb": null,
-      "materials": {},
+      "materials": {
+        "constant": true
+      },
       "neutral_measurements_m": {},
       "triangles": null,
       "license": {
@@ -1261,9 +1255,8 @@
         "redistribution": true
       },
       "provenance": {
-        "origin": "placeholder",
-        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12).",
-        "stand_in": "UMA 3.05 sample content (MIT) stands in until the real asset exists"
+        "origin": "promodeler",
+        "note": "trousers.py cut on the female profile; male via fit-garment."
       },
       "version": "2026.09",
       "tags": [
@@ -1446,8 +1439,8 @@
         "uma_wardrobe_recipe": null,
         "addressable": "character/wardrobe/karate_gi_pants_01",
         "uma_wardrobe_recipe_by_race": {
-          "human_male": "male_sweatpants_black_Recipe",
-          "human_female": "sportwear_pants_granit_Recipe"
+          "human_female": "trousers_f_Wardrobe",
+          "human_male": "trousers_m_Wardrobe"
         }
       },
       "base_color_srgb": null,
@@ -1462,8 +1455,7 @@
       },
       "provenance": {
         "origin": "placeholder",
-        "note": "ID reserved for the japan-realistic-v1 blueprints; content to be produced (M12).",
-        "stand_in": "UMA 3.05 sample content (MIT) stands in until the real asset exists"
+        "note": "ID reserved; the promodeler trousers stand in (same cut, catalog color) until a dedicated garment is cut."
       },
       "version": "2026.09",
       "tags": [
