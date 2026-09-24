@@ -21,6 +21,7 @@ FOCAL_TEXTURE_PARTS = {
     "11-pc-desk": ("top",),
     "15-gaming-pc-white": ("tower-shell", "monitor-panel", "active-screen", "keyboard"),
     "16-gaming-pc-pink": ("tower-shell", "monitor-panel", "active-screen", "keyboard"),
+    "21-karate-dojo": ("bag-0", "bag-1"),
 }
 
 

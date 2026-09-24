@@ -1,1 +1,28 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="900" viewBox="0 0 1100 900"><rect width="100%" height="100%" fill="#f6f8fa"/><style>text{font-family:Arial,sans-serif;fill:#172e3c}.dim{stroke:#54778a;stroke-width:1;fill:none}.part{stroke:#244c60;stroke-width:1.5;fill:#d8e5e9}</style><text x="35" y="35" font-size="21">convenience / TOP PLAN / metres / north up</text><rect x="70.00" y="225.96" width="760.00" height="371.41" fill="#dae8e9" stroke="#244c60"/><text x="74.00" y="243.96" font-size="10">sales</text><rect x="70.00" y="95.00" width="629.04" height="126.67" fill="#e4ddcd" stroke="#244c60"/><text x="74.00" y="113.00" font-size="10">backroom</text><rect x="703.33" y="95.00" width="126.67" height="126.67" fill="#c6dce5" stroke="#244c60"/><text x="707.33" y="113.00" font-size="10">toilet</text><rect x="123.67" y="488.95" width="154.58" height="32.20" fill="#c6b692" stroke="#244c60"/><text x="123.67" y="505.06" font-size="9">checkout</text><rect x="218.14" y="236.69" width="463.73" height="34.35" fill="#c6b692" stroke="#244c60"/><text x="218.14" y="253.87" font-size="9">cold-wall</text><rect x="301.86" y="290.37" width="38.64" height="154.58" fill="#c6b692" stroke="#244c60"/><text x="301.86" y="367.66" font-size="9">shelf-0</text><rect x="430.68" y="290.37" width="38.64" height="154.58" fill="#c6b692" stroke="#244c60"/><text x="430.68" y="367.66" font-size="9">shelf-1</text><rect x="559.49" y="290.37" width="38.64" height="154.58" fill="#c6b692" stroke="#244c60"/><text x="559.49" y="367.66" font-size="9">shelf-2</text><text x="65.00" y="825.00" font-size="16">Extent: X -8.85 ... 8.85 / Z -5.85 ... 5.85</text><text x="65.00" y="853.00" font-size="13">Filled zones are allocation bounds. Wall thickness / door schedules: blueprint.json.</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="900" viewBox="0 0 1100 900">
+  <rect width="100%" height="100%" fill="#f6f8fa"/>
+  <style>text{font-family:Arial,sans-serif;fill:#172e3c}.zone{stroke:#244c60;stroke-width:1.5}.fixture{fill:#c6b692;stroke:#244c60;stroke-width:1.5}.path{fill:none;stroke:#46a492;stroke-width:7;stroke-dasharray:10 7;opacity:.8}</style>
+  <text x="35" y="35" font-size="21">convenience / TOP PLAN / metres / north up</text>
+  <rect class="zone" x="70" y="226" width="760" height="371" fill="#dae8e9"/>
+  <text x="74" y="244" font-size="11">sales</text>
+  <rect class="zone" x="70" y="95" width="629" height="127" fill="#e4ddcd"/>
+  <text x="74" y="113" font-size="11">backroom</text>
+  <rect class="zone" x="703" y="95" width="127" height="127" fill="#c6dce5"/>
+  <text x="708" y="113" font-size="11">toilet</text>
+  <rect class="fixture" x="218" y="226" width="464" height="34"/>
+  <text x="340" y="247" font-size="12">open rear cold shelf</text>
+  <rect class="fixture" x="785" y="288" width="43" height="176"/>
+  <text x="720" y="280" font-size="11">right cooler</text>
+  <rect class="fixture" x="302" y="314" width="39" height="155"/>
+  <rect class="fixture" x="431" y="314" width="39" height="155"/>
+  <rect class="fixture" x="559" y="314" width="39" height="155"/>
+  <text x="302" y="395" font-size="10">shelf 0</text>
+  <text x="431" y="395" font-size="10">shelf 1</text>
+  <text x="559" y="395" font-size="10">shelf 2</text>
+  <path class="fixture" d="M124 380H156V522H278V554H124Z"/>
+  <text x="87" y="369" font-size="12">L-shaped checkout</text>
+  <path class="path" d="M450 593V485M450 300H680M245 290H680"/>
+  <path d="M411 597H430M469 597H489" fill="none" stroke="#244c60" stroke-width="7"/>
+  <text x="391" y="622" font-size="12">automatic sliding entry</text>
+  <text x="65" y="825" font-size="16">Extent: X -8.85 ... 8.85 / Z -5.85 ... 5.85</text>
+  <text x="65" y="853" font-size="13">Rear aisle 1.25 m; checkout-to-shelf aisle 1.25 m; shelf-to-right-cooler aisle 4.35 m.</text>
+</svg>

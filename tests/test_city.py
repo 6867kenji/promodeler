@@ -1,10 +1,10 @@
-"""The city layout has 64 legal sites and repeatable building geometry."""
+"""The city keeps 64 designed sites and adds repeatable, collision-free infill."""
 
 import copy
 import unittest
 from pathlib import Path
 
-from assets.city import CITY, asset, footprint, validate_city_layout
+from assets.city import CITY, _overlap, _variation, asset, footprint, infill_sites, validate_city_layout
 from promodeler.build import load_asset
 from promodeler.core import ModelingError
 
@@ -42,6 +42,24 @@ class CityTests(unittest.TestCase):
         self.assertIn("site_b-0-0-1_checkout", ids)
         self.assertIn("site_b-0-0-2_stair_w_upper_a", ids)
         self.assertEqual(len(asset.generate().parts), len(ids))
+
+    def test_infill_is_dense_varied_and_keeps_roads_clear(self):
+        sites = infill_sites()
+        self.assertEqual(sites, infill_sites())
+        self.assertEqual(len(sites), 80)
+        self.assertGreaterEqual(len({site["facade"] for site in sites}), 6)
+        self.assertGreaterEqual(len({site["floors"] for site in sites}), 7)
+        occupied = [tuple(zone["rect_xz_m"]) for zone in CITY["layout"]]
+        for index, placement in enumerate(CITY["placements"]):
+            x, _, z = placement["position_m"]
+            scale, _ = _variation(index)
+            left, back, right, front = footprint(placement)
+            occupied.append((x + (left - x) * scale, z + (back - z) * scale,
+                             x + (right - x) * scale, z + (front - z) * scale))
+        for site in sites:
+            bounds = site["bounds"]
+            self.assertFalse(any(_overlap(bounds, other) for other in occupied), site["id"])
+            occupied.append(bounds)
 
 
 if __name__ == "__main__":

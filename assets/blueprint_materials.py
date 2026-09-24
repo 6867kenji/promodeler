@@ -1,8 +1,8 @@
 """Small, repeatable PBR palettes derived from the numerical design colors.
 
-Broad building surfaces use constants so a single large face does not claim a
-misleading 512 px/m unique map.  Visible furniture, upholstery and electronics
-receive per-part baked color, roughness and bump maps.
+Large building surfaces start with these palette colors, then receive shared,
+physically scaled maps during surface finishing. Visible furniture, upholstery
+and electronics receive per-part baked color, roughness and bump maps.
 """
 
 from __future__ import annotations
@@ -58,7 +58,15 @@ def materials_for(design: dict, *, include_surface_maps: bool = True,
                                                                   (0.55, color), (0.85, color.scaled(1.12)))),
                                 roughness=midpoint - 0.04 + long_grain * 0.08,
                                 height=long_grain * 0.00008, bump_strength=1.1))
-        elif mid in {"fabric", "eva-blue", "eva-charcoal", "vinyl", "rubber"} and textured:
+        elif mid == "vinyl" and textured:
+            pebble = Noise(size=0.002, detail=4, roughness=0.65, seed=index + 31)
+            patina = Noise(size=0.06, detail=2, roughness=0.58, seed=index + 79)
+            out.append(Material(mid,
+                                base_color=ColorRamp(patina, ((0.2, color.scaled(0.73)),
+                                                               (0.55, color), (0.85, color.scaled(1.08)))),
+                                roughness=max(0.05, midpoint - 0.08) + pebble * 0.16,
+                                height=pebble * 0.00045, bump_strength=1.4))
+        elif mid in {"fabric", "eva-blue", "eva-charcoal", "rubber"} and textured:
             grain = Noise(size=0.0015 if mid == "fabric" else 0.0035, detail=3,
                           roughness=0.6, seed=index + 31)
             amplitude = 0.00016 if mid == "fabric" else 0.00025

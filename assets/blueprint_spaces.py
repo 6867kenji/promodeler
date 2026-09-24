@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+import math
 from dataclasses import replace
 
-from promodeler.core import Asset, Bevel, Box, Color, Material, Part, Transform
+from promodeler.core import Array, Asset, Bevel, Box, Color, Cylinder, Material, Part, Transform
 
-from assets.blueprint_materials import materials_for, texture_resolution_for
+from assets.blueprint_materials import color_from_hex, materials_for, texture_resolution_for
 from assets.blueprint_props import joint_id, rig_for
 
 
@@ -21,6 +22,13 @@ def _box(parts: list[Part], name: str, bounds, material: str, *, bevel=0.0,
         parent_joint=joint_id(joint) if joint else None,
         texture_resolution=texture_resolution,
     ))
+
+
+def _sloped_box(parts: list[Part], name: str, center, size, slope_rad: float,
+                material: str) -> None:
+    parts.append(Part(id=name, shape=Box(size=size), material=material,
+                      transform=Transform(translation=center,
+                                          rotation=(slope_rad, 0, 0))))
 
 
 def _scheduled_parts(design: dict, folder: str) -> list[Part]:
@@ -51,6 +59,21 @@ def _scheduled_parts(design: dict, folder: str) -> list[Part]:
                          (lx - 0.015, lx + 0.015, 0, 0.415,
                           lz - 0.015, lz + 0.015), "bronze")
             continue
+        if folder == "21-karate-dojo" and pid.startswith("bag-"):
+            joint = joint_id("bag-tilt") if pid == "bag-0" else None
+            parts.append(Part(id=pid, shape=Cylinder(radius=0.29, height=1.42, segments=64),
+                              material="vinyl", transform=Transform(translation=(x, 0.99, z)),
+                              modifiers=(Bevel(width=0.014, segments=3),),
+                              parent_joint=joint, texture_resolution=2048))
+            parts.append(Part(id=pid + "_base", shape=Cylinder(radius=0.325, height=0.32, segments=64),
+                              material="rubber", transform=Transform(translation=(x, 0.16, z)),
+                              modifiers=(Bevel(width=0.012, segments=3),)))
+            for index, seam_y in enumerate((0.36, 1.58)):
+                parts.append(Part(id=f"{pid}_seam_{index}",
+                                  shape=Cylinder(radius=0.294, height=0.012, segments=64),
+                                  material="rubber", transform=Transform(translation=(x, seam_y, z)),
+                                  parent_joint=joint))
+            continue
         joint = None
         if folder == "21-karate-dojo" and pid == "bag-0":
             joint = "bag-tilt"
@@ -79,27 +102,44 @@ def _escalators(parts: list[Part], design: dict) -> None:
         width = escalator["overall_width_m"]
         profile = escalator["section_profile_zy"]
         for index, ((z0, y0), (z1, y1)) in enumerate(zip(profile, profile[1:])):
-            if z1 <= z0:
+            dz = z1 - z0
+            if abs(dz) < 0.01:
                 continue
+            dy = y1 - y0
+            slope = math.atan(-dy / dz)
+            length = math.hypot(dz, dy)
+            mid_z, mid_y = (z0 + z1) / 2, (y0 + y1) / 2
             for side in (-1, 1):
-                rail_x = x + side * (width / 2 - 0.055)
-                # Section rails are stepped to follow the numerical slope.
-                segments = max(1, int((z1 - z0) / 0.45))
-                for section in range(segments):
-                    a = section / segments
-                    b = (section + 1) / segments
-                    za, zb = z0 + (z1 - z0) * a, z0 + (z1 - z0) * b
-                    ya, yb = y0 + (y1 - y0) * a, y0 + (y1 - y0) * b
-                    _box(parts, f"{escalator['id']}_rail_{index}_{side}_{section}",
-                         (rail_x - 0.035, rail_x + 0.035, min(ya, yb) + 0.78,
-                          max(ya, yb) + 0.85, za, zb), "rubber")
-            if abs(y1 - y0) > 0.1:
-                steps = max(1, int((z1 - z0) / escalator.get("step_pitch_m", 0.4)))
-                for step in range(steps):
-                    z = z0 + (step + 0.5) * (z1 - z0) / steps
-                    y = y0 + (step + 0.5) * (y1 - y0) / steps
-                    _box(parts, f"{escalator['id']}_step_{index}_{step}",
-                         (x - 0.5, x + 0.5, y - 0.11, y, z - 0.17, z + 0.17), "stainless")
+                rail_x = x + side * (width / 2 - 0.075)
+                # Continuous glass balustrade and a straight, flat rubber belt.
+                _sloped_box(parts, f"{escalator['id']}_glass_{index}_{side}",
+                            (rail_x, mid_y + 0.55, mid_z), (0.018, 0.78, length),
+                            slope, "glass")
+                _sloped_box(parts, f"{escalator['id']}_handrail_{index}_{side}",
+                            (rail_x, mid_y + 0.96, mid_z), (0.105, 0.055, length),
+                            slope, "rubber")
+                _sloped_box(parts, f"{escalator['id']}_glass_base_{index}_{side}",
+                            (rail_x, mid_y + 0.16, mid_z), (0.045, 0.07, length),
+                            slope, "stainless")
+            if abs(dy) <= 0.1:
+                _box(parts, f"{escalator['id']}_landing_{index}",
+                     (x - 0.5, x + 0.5, y0 - 0.15, y0,
+                      min(z0, z1), max(z0, z1)), "escalator-tread")
+                continue
+            steps = max(1, math.ceil(abs(dz) / escalator.get("step_pitch_m", 0.4)))
+            pitch = abs(dz) / steps
+            for step in range(steps):
+                t = (step + 0.5) / steps
+                z = z0 + t * dz
+                top = y0 + t * dy
+                _box(parts, f"{escalator['id']}_step_{index}_{step}",
+                     (x - 0.5, x + 0.5, top - 0.18, top,
+                      z - pitch / 2 + 0.004, z + pitch / 2 - 0.004),
+                     "escalator-tread")
+                nose = z + (1 if dz > 0 else -1) * (pitch / 2 - 0.02)
+                _box(parts, f"{escalator['id']}_step_nosing_{index}_{step}",
+                     (x - 0.48, x + 0.48, top + 0.001, top + 0.005,
+                      nose - 0.012, nose + 0.012), "tactile")
 
 
 def _entrance(parts: list[Part], design: dict) -> None:
@@ -116,9 +156,21 @@ def _entrance(parts: list[Part], design: dict) -> None:
          joint="lift-cabin")
     _box(parts, "lift_door_left", (5.6, 6.0, -2.1, 0, -7.704, -7.696), "stainless",
          joint="lift-door-left")
-    for index in range(9):
-        z = -10.5 + index * 2.8
-        _box(parts, f"tactile_{index}", (-0.35, 0.35, -6, -5.995, z, z + 0.6), "tactile")
+    _box(parts, "street_tactile_warning", (-0.35, 0.35, 0, 0.005,
+                                            -13.3, -12.7), "tactile")
+    parts.append(Part(id="street_tactile_dots",
+                      shape=Cylinder(radius=0.022, height=0.006, segments=10),
+                      material="tactile",
+                      transform=Transform(translation=(-0.27, 0.008, -13.22)),
+                      modifiers=(Array(count=7, offset=(0.09, 0, 0)),
+                                 Array(count=6, offset=(0, 0, 0.09)))))
+    for index, z in enumerate((4.5, 7.3, 10.1)):
+        _box(parts, f"tactile_{index}", (-0.15, 0.15, -6, -5.995,
+                                         z, z + 2.8), "tactile")
+        for rib in range(4):
+            x = -0.115 + rib * 0.075
+            _box(parts, f"entrance_tactile_rib_{index}_{rib}",
+                 (x, x + 0.018, -5.995, -5.989, z, z + 2.8), "tactile")
     _box(parts, "closure_shutter", (-3.2, 3.2, 0, 2.6, -12.04, -12.02), "stainless",
          joint="closure-shutter")
 
@@ -143,13 +195,95 @@ def _concourse(parts: list[Part], design: dict) -> None:
              joint="gate-flap" if index == 0 else None)
         _box(parts, f"gate_reader_{index}", (x - 0.07, x + 0.07, 1.0, 1.02,
                                             -28.12, -27.88), "dark-display")
+        _box(parts, f"gate_status_{index}", (x - 0.11, x + 0.11, 1.02, 1.036,
+                                            -28.67, -28.52), "teal")
+        _box(parts, f"gate_flap_edge_{index}", (x - 0.28, x + 0.28,
+                                               0.90, 0.925, -28.016, -27.986),
+             "stainless")
+    # The gate bank joins a glazed staff room on the west and a steel fence on
+    # the east, so there is no public bypass around either end.
+    for tag, z0, z1 in (("staff_glass_front_n", -32.0, -30.9),
+                        ("staff_glass_front_s", -30.0, -24.0)):
+        _box(parts, tag, (-4.13, -4.11, 0.1, 2.68, z0, z1), "glass")
+    _box(parts, "staff_glass_door", (-4.13, -4.11, 0.1, 2.1, -30.9, -30.0), "glass")
+    _box(parts, "staff_door_handle", (-4.19, -4.13, 0.9, 1.2, -30.2, -30.16),
+         "stainless")
+    _box(parts, "staff_glass_transom", (-4.13, -4.11, 2.1, 2.68, -30.9, -30.0),
+         "glass")
+    for tag, z0, z1 in (("staff_glass_north", -32.0, -31.98),
+                        ("staff_glass_south", -24.02, -24.0)):
+        _box(parts, tag, (-9.8, -4.11, 0.1, 2.68, z0, z1), "glass")
+    for index in range(7):
+        z = -31.95 + index * 1.3
+        _box(parts, f"staff_window_frame_{index}",
+             (-4.15, -4.09, 0.08, 2.7, z, z + 0.035), "stainless")
+    for height, y0, y1 in (("sill", 0.06, 0.11), ("head", 2.66, 2.72)):
+        _box(parts, f"staff_front_{height}", (-4.16, -4.08, y0, y1,
+                                               -32.0, -24.0), "stainless")
+        for side, z0, z1 in (("north", -32.02, -31.96),
+                             ("south", -24.04, -23.98)):
+            _box(parts, f"staff_{side}_{height}", (-9.8, -4.08, y0, y1,
+                                                    z0, z1), "stainless")
+    _box(parts, "staff_room_floor_border", (-9.8, -4.08, 0.003, 0.012,
+                                            -32.02, -31.96), "rail-steel")
+    _box(parts, "staff_room_gate_joiner", (-4.11, -3.81, 0, 2.65,
+                                            -28.07, -27.93), "stainless")
+    # Shelves, desk and a recognizable chair are visible through the glazing.
+    for level in range(4):
+        y = 0.36 + level * 0.43
+        _box(parts, f"staff_shelf_{level}", (-9.45, -8.65, y, y + 0.035,
+                                             -31.35, -25.0), "paint")
+        for file_index in range(6):
+            z = -31.1 + file_index * 0.96
+            _box(parts, f"staff_shelf_files_{level}_{file_index}",
+                 (-9.27, -8.89, y + 0.035, y + 0.29,
+                  z, z + 0.56), "teal" if (level + file_index) % 3 == 0 else "paint")
+    _box(parts, "staff_shelf_back", (-9.45, -9.41, 0, 1.85, -31.35, -25.0),
+         "paint")
+    _box(parts, "staff_desk", (-6.9, -4.7, 0.71, 0.78, -28.8, -27.7),
+         "paint")
+    _box(parts, "staff_desk_screen", (-5.7, -5.05, 0.78, 1.2, -28.2, -28.15),
+         "dark-display")
+    _box(parts, "staff_chair_seat", (-6.1, -5.55, 0.43, 0.49, -27.25, -26.7),
+         "teal")
+    _box(parts, "staff_chair_back", (-6.1, -5.55, 0.49, 1.1, -26.75, -26.7),
+         "teal")
+    _box(parts, "staff_chair_stem", (-5.85, -5.8, 0.06, 0.43, -27.0, -26.95),
+         "stainless")
+    for side in (-1, 1):
+        _box(parts, f"staff_chair_base_{side}", (-6.15, -5.5, 0.04, 0.07,
+                                                 -27.0 + side * 0.14,
+                                                 -26.96 + side * 0.14), "stainless")
+    for level, y in enumerate((0.14, 0.79, 1.45)):
+        _box(parts, f"fare_fence_rail_{level}", (3.81, 9.8, y, y + 0.045,
+                                                -28.05, -27.99), "rail-steel")
+    for index in range(22):
+        x = 3.82 + index * 0.283
+        _box(parts, f"fare_fence_post_{index}", (x, x + 0.035, 0, 1.5,
+                                                -28.07, -27.97), "rail-steel")
     _box(parts, "paid_lift_cabin", (-7.8, -6.2, -5.9, -3.7, 9, 10.5), "stainless",
          joint="paid-lift")
     _box(parts, "staff_door", (-6.25, -6.2, 0, 2.1, -35.4, -34.6), "paint",
          joint="staff-door")
-    for z in range(-44, 47, 8):
-        _box(parts, f"tactile_guide_{z}", (-0.15, 0.15, 0, 0.005,
-                                          z, min(z + 7.5, 47.9)), "tactile")
+    for z in range(-44, 48, 8):
+        end = min(z + 8, 47.9)
+        if end <= z:
+            continue
+        _box(parts, f"tactile_guide_{z}", (2.93, 3.23, 0, 0.005,
+                                          z, end), "tactile")
+        for rib in range(4):
+            x = 2.965 + rib * 0.075
+            _box(parts, f"tactile_rib_{z}_{rib}", (x, x + 0.018,
+                                                  0.005, 0.011, z, end), "tactile")
+    for tag, z0 in (("north", -30.15), ("south", -26.45)):
+        _box(parts, f"tactile_warning_{tag}", (2.78, 3.38, 0, 0.005,
+                                               z0, z0 + 0.6), "tactile")
+        parts.append(Part(id=f"tactile_dots_{tag}",
+                          shape=Cylinder(radius=0.022, height=0.006, segments=10),
+                          material="tactile",
+                          transform=Transform(translation=(2.86, 0.008, z0 + 0.08)),
+                          modifiers=(Array(count=6, offset=(0.09, 0, 0)),
+                                     Array(count=6, offset=(0, 0, 0.09)))))
 
 
 def _platform(parts: list[Part]) -> None:
@@ -282,7 +416,22 @@ def _dojo(parts: list[Part], materials: list[Material]) -> None:
 
 
 def build_space(design: dict, folder: str) -> Asset:
-    materials = list(materials_for(design, include_surface_maps=False))
+    materials = list(materials_for(design, include_surface_maps=folder == "21-karate-dojo",
+                                   textured_ids={"vinyl"}))
+    tiled_materials = {}
+    if folder in {"17-subway-entrance", "18-subway-concourse", "19-subway-platform"}:
+        tiled_materials = {
+            "floor-tile": {"pattern": "subway_floor", "scale_m": 1.2,
+                           "resolution": 1024, "normal_strength": 0.35},
+        }
+    if folder in {"17-subway-entrance", "18-subway-concourse"}:
+        materials.append(Material("escalator-tread", base_color=color_from_hex("#69727A"),
+                                  roughness=0.47, metallic=0.64))
+        tiled_materials.update({
+            "wall-tile": {"pattern": "ceramic", "scale_m": 0.095, "resolution": 256},
+            "rubber": {"pattern": "rubber", "scale_m": 0.24, "resolution": 256},
+            "tactile": {"pattern": "floor_tile", "scale_m": 0.3, "resolution": 256},
+        })
     parts = _scheduled_parts(design, folder)
     if folder == "17-subway-entrance":
         _entrance(parts, design)
@@ -298,4 +447,5 @@ def build_space(design: dict, folder: str) -> Asset:
             _dojo(parts, materials)
     rig, poses, clips = rig_for(design, folder)
     return Asset(name=design["id"], materials=tuple(materials), parts=tuple(parts),
-                 rig=rig, poses=poses, clips=clips)
+                 rig=rig, poses=poses, clips=clips,
+                 extras={"tiled_materials": tiled_materials} if tiled_materials else {})

@@ -85,15 +85,15 @@
       "id": "floor-tile",
       "base_color_srgb": "#9C9F9C",
       "roughness": [
-        0.6,
-        0.8
+        0.38,
+        0.52
       ],
       "metallic": 0,
       "feature_scale_m": [
         0.3,
         0.3
       ],
-      "detail": "床300角、目地4mm、凹凸0.3mm。動線沿いに粗さ差±0.05。"
+      "detail": "床300角、目地4mm、凹凸0.3mm。少しだけ艶を残し、タイルごとに淡い色差、局所的な汚れとくすみをつける。汚れ部は粗さを少し上げる。"
     },
     {
       "id": "tactile",

@@ -6,7 +6,7 @@ import os
 
 import bpy
 
-from . import materials, uv
+from . import materials, tiled, uv
 from .compile import CompiledScene
 
 
@@ -21,6 +21,9 @@ def finish(scene: CompiledScene, recipe: dict, out_dir: str, reuse_textures: boo
     material_specs = {m["id"]: m for m in recipe["asset"]["materials"]}
     part_specs = {p["id"]: p for p in recipe["asset"]["parts"]}
     textures_dir = os.path.join(out_dir, "textures")
+    tile_specs = (recipe["asset"].get("extras") or {}).get("tiled_materials", {})
+    tiled_materials = {mid: tiled.build(material_specs[mid], tile, textures_dir)
+                       for mid, tile in tile_specs.items()}
     previous_engine = bpy.context.scene.render.engine
     # Scattered and fur geometry is dense decoration; keep it out of the bake
     # ray tracing so probes on the underlying parts stay fast.
@@ -30,6 +33,14 @@ def finish(scene: CompiledScene, recipe: dict, out_dir: str, reuse_textures: boo
     for part_id, obj in scene.parts.items():
         part_spec = part_specs[part_id]
         material_id = part_spec["material"]
+        if material_id in tiled_materials:
+            tile = tile_specs[material_id]
+            tiled.project(obj, tile["scale_m"])
+            scene.uv_stats[part_id] = uv.uv_statistics(obj.data, tile.get("resolution", 256))
+            material, textures = tiled_materials[material_id]
+            obj.data.materials[0] = material
+            scene.textures[part_id] = textures
+            continue
         proc = scene.procedural.get(material_id)
         if proc is None:
             continue
