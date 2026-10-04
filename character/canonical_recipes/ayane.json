@@ -1,0 +1,6 @@
+{
+  "schema": "promodeler-canonical-character/2.0",
+  "id": "ayane", "name": "Ayane", "base": "Ayane_Static_v1", "seed": 1,
+  "source": {"kind": "local_static_blend"},
+  "face": {}, "body": {}, "appearance": {}, "material": {}, "wardrobe": {}, "accessories": []
+}

@@ -519,9 +519,10 @@ def batch_command(unity: str, staged: Staged, views, passes, formats, render: bo
 
 def build(recipe: CharacterRecipe, outfit: OutfitRecipe | None = None, catalog: Catalog | None = None,
           out_root: str | Path = "build/character", force: bool = False, views=None, passes=None, formats=None,
-          render: bool = True, timeout: float = 1800.0, log=None, project: Path = UNITY_PROJECT, probe: bool = False,
+          render: bool = True, timeout: float = 1800.0, log=None, project: Path | None = None, probe: bool = False,
           clips: tuple[str, ...] | None = None, clip_fps: int = 12, clip_seconds: float = 3.0, clip_resolution: int = 384) -> CharacterBuildResult:
     """Stage the recipe, run the Unity batch build and return its ``build.json`` (cached when the hash already built)."""
+    project = project or UNITY_PROJECT
     catalog = catalog or Catalog()
     views = tuple(views or DEFAULT_VIEWS)
     passes = tuple(passes or DEFAULT_PASSES)

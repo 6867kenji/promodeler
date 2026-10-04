@@ -1,0 +1,20 @@
+{
+  "schema": "promodeler-canonical-character/2.0",
+  "id": "blue-silver-woman",
+  "name": "Blue Silver Woman",
+  "base": "RiggedWoman_v2",
+  "seed": 1,
+  "source": {"kind": "visual_reference", "id": "blue-hiar-girl"},
+  "face": {
+    "faceRoundness": 0.61,
+    "jawWidth": 0.42,
+    "eyeSize": 0.68,
+    "noseSize": 0.44,
+    "cheekVolume": 0.54
+  },
+  "body": {},
+  "appearance": {"hairStyle": "hair_blue_silver_long"},
+  "material": {},
+  "wardrobe": {},
+  "accessories": []
+}

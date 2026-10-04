@@ -1,0 +1,17 @@
+{
+  "schema": "promodeler-city-density/1.0",
+  "seed": 91108,
+  "buildingsPerBlock": 20,
+  "rowsPerBlock": 4,
+  "buildingsPerRow": 5,
+  "frontageSetbackM": 1.4,
+  "sideGapM": [1.0, 12.0],
+  "smallBuildingWidthM": [8.0, 14.0],
+  "smallBuildingSideGapM": [1.0, 2.4],
+  "reservedSites": [
+    {"id": "future-station", "block": [1, 1], "corner": "se", "widthM": 30.0,
+     "use": "地下鉄入口と周辺施設", "requiredClearanceM": [16.0, 32.0]},
+    {"id": "future-building", "block": [2, 2], "corner": "nw", "widthM": 32.0,
+     "use": "別の建物・公共施設", "requiredClearanceM": [28.0, 40.0]}
+  ]
+}

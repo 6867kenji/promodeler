@@ -1,0 +1,34 @@
+{
+  "id": "RiggedWoman_v3",
+  "model": "../../../../../OneDrive/画像/モデル生成/promodeler-clothing/base/RiggedWoman_v3.blend",
+  "textureMaxSize": 4096,
+  "parameters": {
+    "face.faceRoundness": {"shapeKeys": [{"name": "PM_Face_Round", "side": "positive"}, {"name": "PM_Face_Narrow", "side": "negative"}]},
+    "face.jawWidth": {"shapeKeys": [{"name": "PM_Jaw_Wide", "side": "positive"}, {"name": "PM_Jaw_Narrow", "side": "negative"}]},
+    "face.eyeSize": {"shapeKeys": [{"name": "PM_Eye_Large", "side": "positive"}, {"name": "PM_Eye_Small", "side": "negative"}]},
+    "face.noseSize": {"shapeKeys": [{"name": "PM_Nose_Large", "side": "positive"}, {"name": "PM_Nose_Small", "side": "negative"}]},
+    "face.cheekVolume": {"shapeKeys": [{"name": "PM_Cheek_Full", "side": "positive"}, {"name": "PM_Cheek_Slim", "side": "negative"}]},
+    "body.shoulderWidth": {"bones": [{"name": "CC_Base_L_Clavicle", "axis": "Y", "scale": [0.92, 1.08]}, {"name": "CC_Base_R_Clavicle", "axis": "Y", "scale": [0.92, 1.08]}]},
+    "body.chest": {"shapeKeys": [{"name": "PM_Bust_Flatten", "side": "negative"}]},
+    "body.armLength": {"bones": [{"name": "CC_Base_L_Upperarm", "axis": "Y", "scale": [0.92, 1.08]}, {"name": "CC_Base_R_Upperarm", "axis": "Y", "scale": [0.92, 1.08]}, {"name": "CC_Base_L_Forearm", "axis": "Y", "scale": [0.92, 1.08]}, {"name": "CC_Base_R_Forearm", "axis": "Y", "scale": [0.92, 1.08]}]},
+    "body.legLength": {"bones": [{"name": "CC_Base_L_Thigh", "axis": "Y", "scale": [0.92, 1.08]}, {"name": "CC_Base_R_Thigh", "axis": "Y", "scale": [0.92, 1.08]}, {"name": "CC_Base_L_Calf", "axis": "Y", "scale": [0.92, 1.08]}, {"name": "CC_Base_R_Calf", "axis": "Y", "scale": [0.92, 1.08]}]}
+  },
+  "modules": {
+    "appearance.hairStyle": {"hair_blue_silver_long": ["Hair_BlueSilver_Long", "Hair_Flower_Clip"]},
+    "wardrobe.top": {"sports_bra": ["Wardrobe_SportsBRA"]},
+    "wardrobe.dress": {
+      "medieval_thin": ["Wardrobe_Medieval_Thin"],
+      "medieval_thick": ["Wardrobe_Medieval_Thick"],
+      "lingerie_set": ["Wardrobe_Lingerie_Set"]
+    }
+  },
+  "bodyMasks": {
+    "wardrobe.top": {"sports_bra": ["Bra"]},
+    "wardrobe.dress": {
+      "medieval_thin": ["Bra", "Underwear_Bottoms"],
+      "medieval_thick": ["Bra", "Underwear_Bottoms"],
+      "lingerie_set": ["Bra", "Underwear_Bottoms"]
+    }
+  },
+  "materials": {"skin": ["Std_Skin_Head", "Std_Skin_Body", "Std_Skin_Arm", "Std_Skin_Leg"]}
+}

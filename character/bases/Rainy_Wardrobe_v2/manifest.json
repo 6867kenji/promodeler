@@ -1,0 +1,23 @@
+{
+  "id": "Rainy_Wardrobe_v2",
+  "model": "C:/Users/kuwano/OneDrive/画像/モデル生成/promodeler-new-characters/base/Rainy_Rigged_v1.blend",
+  "textureMaxSize": 4096,
+  "modules": {
+    "wardrobe.top": {
+      "rainy_shirt": [
+        "shirt"
+      ]
+    },
+    "wardrobe.bottom": {
+      "rainy_pants": [
+        "pant"
+      ]
+    },
+    "wardrobe.shoes": {
+      "rainy_boots": [
+        "boot"
+      ]
+    }
+  },
+  "bodyMasks": {}
+}

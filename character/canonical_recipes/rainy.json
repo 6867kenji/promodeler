@@ -1,0 +1,6 @@
+{
+  "schema": "promodeler-canonical-character/2.0",
+  "id": "rainy", "name": "Rainy", "base": "Rainy_Rigged_v1", "seed": 1,
+  "source": {"kind": "local_rigged_blend"},
+  "face": {}, "body": {}, "appearance": {}, "material": {}, "wardrobe": {}, "accessories": []
+}

@@ -175,20 +175,26 @@ def freeze_geometry(scene: CompiledScene) -> None:
         if len(mesh.polygons) == 0:
             raise ModelingError("geometry.empty", f"Part {part_id!r} has no faces after its modifiers.")
         frozen[part_id] = mesh
+    old_meshes = set()
     for part_id, obj in scene.parts.items():
         old = obj.data
         old_materials = list(old.materials)
         obj.modifiers.clear()
         obj.data = frozen[part_id]
         if old.users == 0:
-            bpy.data.meshes.remove(old)
-        frozen[part_id].name = f"mesh:{part_id}"
+            old_meshes.add(old)
         if len(frozen[part_id].materials) == 0:
             for material in old_materials:
                 frozen[part_id].materials.append(material)
         elif part_id in scene.generated:
             for slot in range(len(frozen[part_id].materials)):
                 frozen[part_id].materials[slot] = old_materials[0]
+    # Remove superseded meshes together; per-mesh removal repeatedly invalidates
+    # the full dependency graph in scenes with thousands of city components.
+    if old_meshes:
+        bpy.data.batch_remove(ids=old_meshes)
+    for part_id, mesh in frozen.items():
+        mesh.name = f"mesh:{part_id}"
     for cutter in scene.cutters:
         mesh = cutter.data
         bpy.data.objects.remove(cutter, do_unlink=True)

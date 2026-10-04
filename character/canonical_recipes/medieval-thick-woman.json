@@ -1,0 +1,13 @@
+{
+  "schema": "promodeler-canonical-character/2.0",
+  "id": "medieval-thick-woman",
+  "name": "Medieval Thick Outfit Woman",
+  "base": "RiggedWoman_v3",
+  "seed": 1,
+  "source": {"kind": "local_clothing", "id": "medieval-girl-outfit/fbx-thick"},
+  "face": {}, "body": {"chest": 0.25},
+  "appearance": {"hairStyle": "hair_blue_silver_long"},
+  "material": {},
+  "wardrobe": {"dress": "medieval_thick"},
+  "accessories": []
+}

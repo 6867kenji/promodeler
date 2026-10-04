@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ProModeler キャラクターメイク</title>
+<script type="importmap">{"imports":{"three":"/vendor/build/three.module.js","three/addons/":"/vendor/examples/jsm/"}}</script>
+<style>
+:root{font-family:"Yu Gothic UI",Meiryo,system-ui,sans-serif;color:#e9edf3;background:#10141b;font-size:14px}
+*{box-sizing:border-box}body{margin:0}button,input,select{font:inherit}button{cursor:pointer}
+header{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:16px 22px;border-bottom:1px solid #303744;background:#181e28}
+h1{font-size:20px;margin:0;letter-spacing:.02em}h2{font-size:16px;margin:0 0 16px}h3{font-size:13px;margin:18px 0 10px;color:#abc0d9}
+.muted{color:#9aa9ba}.shell{display:grid;grid-template-columns:minmax(320px,390px) minmax(0,1fr);min-height:calc(100vh - 66px)}
+.controls{padding:20px;overflow:auto;max-height:calc(100vh - 66px);border-right:1px solid #303744;background:#171c25}
+.panel{border:1px solid #303744;border-radius:12px;padding:17px;margin-bottom:16px;background:#1d2530}
+.control{display:grid;grid-template-columns:1fr auto;gap:4px 12px;margin:0 0 15px}.control label{font-weight:600}.control output{font-variant-numeric:tabular-nums;color:#a4ccf3}.control input{grid-column:1/-1;width:100%;accent-color:#79baff}
+.selectrow{display:grid;grid-template-columns:96px 1fr;align-items:center;gap:10px;margin:0 0 11px}.selectrow select,.save-row input{width:100%;background:#111821;color:#edf3fa;border:1px solid #465365;border-radius:7px;padding:8px}
+.check{display:flex;gap:10px;align-items:center;margin-top:12px}.check input{width:17px;height:17px;accent-color:#79baff}
+.actions{display:flex;gap:9px;align-items:center;flex-wrap:wrap}button{border:1px solid #527cac;border-radius:8px;padding:9px 15px;color:#fff;background:#2a6098;font-weight:700}button:hover:not(:disabled){background:#397ab9}button:disabled{opacity:.45;cursor:default}.secondary{background:#263345;border-color:#4a5f78}.secondary:hover:not(:disabled){background:#31445d}
+.save-row{display:flex;gap:8px}.save-row input{min-width:0}.save-row button{white-space:nowrap}.hint{font-size:12px;line-height:1.6;color:#aebed0;margin:8px 0 0}
+.stage{min-width:0;padding:24px;overflow:auto}.stage-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap}.tabs{display:flex;background:#1f2834;border:1px solid #394657;border-radius:9px;padding:3px}.tabs button{background:transparent;border:0;color:#afbdce;padding:7px 14px}.tabs button.active{background:#335f91;color:#fff}.compare{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:17px}.card{background:#1b222c;border:1px solid #354252;border-radius:13px;overflow:hidden}.card-head{padding:13px 16px;border-bottom:1px solid #354252;font-weight:700}.card figure{margin:0;min-height:400px;aspect-ratio:2/3;display:grid;place-items:center;background:#282b30;overflow:hidden}.card img,.card canvas{width:100%;height:100%;object-fit:contain;display:block}.card figcaption{color:#aebed0;padding:10px 16px;min-height:39px}.placeholder{padding:18px;text-align:center;color:#abb8c7}.downloads{margin-top:15px;display:flex;gap:18px;flex-wrap:wrap}.downloads a{color:#98c8ff}.status{display:flex;align-items:center;gap:8px;color:#bcd3ec}.dot{width:9px;height:9px;background:#7aa5ce;border-radius:50%;display:inline-block}.status[data-phase=ready] .dot{background:#73d9a5}.status[data-phase=starting] .dot{background:#ffce76;box-shadow:0 0 0 3px #ffce762a}.status[data-phase=error] .dot{background:#ed7d7d}
+@media(max-width:900px){.shell{grid-template-columns:1fr}.controls{max-height:none;border-right:0;border-bottom:1px solid #303744}.stage{padding:16px}}@media(max-width:610px){.compare{grid-template-columns:1fr}.card figure{min-height:300px}header{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+<header><div><h1>ProModeler キャラクターメイク</h1><div class="muted">RiggedWoman_v6 · 操作するとすぐに3Dへ反映</div></div><div id="status" class="status" data-phase="starting"><span class="dot"></span><span id="status-text">3Dモデルを準備しています</span></div></header>
+<main class="shell">
+<aside class="controls">
+  <section class="panel"><h2>顔と体型</h2><p class="hint">スライダーを動かすと右の3Dがすぐ変わります。</p><div id="face-controls"></div><h3>体型</h3><div id="body-controls"></div></section>
+  <section class="panel"><h2>髪型と衣装</h2><div id="module-controls"></div><label class="check"><input id="bag" type="checkbox">バッグを付ける</label><h3>基本の下着</h3><label class="check"><input id="underwear-top" type="checkbox" checked>上の下着を表示</label><label class="check"><input id="underwear-bottom" type="checkbox" checked>下の下着を表示</label><p class="hint">衣装で覆う部分の下着は自動で隠れます。ドレスを選ぶとトップス、ボトムス、上着は外れます。</p></section>
+  <section class="panel"><div class="actions"><button id="reset" class="secondary">初期値へ戻す</button></div><p class="hint">変更はこのブラウザーに一時保存されます。</p></section>
+  <section class="panel"><h2>設定を保存</h2><div class="save-row"><input id="recipe-name" aria-label="保存名" placeholder="例: my-character-01" maxlength="80"><button id="save" disabled>レシピ保存</button></div><p class="hint">保存名には半角英数字を使ってください。</p><p id="save-note" class="hint"></p></section>
+  <section class="panel"><h2>モデルを書き出す</h2><button id="export" disabled>GLBを書き出す</button><p class="hint">画面内の調整は即時反映です。GLBの書き出しだけ少し時間がかかります。</p><p id="export-note" class="hint"></p></section>
+</aside>
+<section class="stage">
+  <div class="stage-top"><div><h2>元モデルと調整後を比較</h2><div class="muted">右の3Dモデルはドラッグで回転、ホイールで拡大できます。</div></div><div class="tabs"><button id="tab-full" class="active" type="button">全身</button><button id="tab-face" type="button">顔を拡大</button></div></div>
+  <div class="compare">
+    <article class="card"><div class="card-head">元モデル</div><figure><img id="original-image" alt="元モデルの画像"></figure><figcaption>変更前の基準モデル</figcaption></article>
+    <article class="card"><div class="card-head">調整後・リアルタイム3D</div><figure id="current-figure"><div class="placeholder">3Dモデルを読み込んでいます</div></figure><figcaption id="current-caption">読み込み後、変更がすぐに反映されます</figcaption></article>
+  </div>
+  <div class="downloads"><a id="glb-link" hidden download="character.glb">生成した GLB を開く</a><a id="recipe-link" hidden download="recipe.json">保存したレシピを開く</a></div>
+</section>
+</main>
+<script type="module" src="/makeup_live.js?v=4"></script>
+</body>
+</html>

@@ -68,15 +68,41 @@ CLI の `--texture-resolution` は反復用に全部品の設定を上書きす�
 
 ### 汐見町の空間生成
 
-`assets/city.py` は `01-city/blueprint.json` の道路と64棟の配置を読み、
-マンション・コンビニ・オフィスの反復部材、屋内の床・固定設備、歩道、区画線、横断歩道、植栽、街灯を生成する。
+`assets/city.py` は `01-city/blueprint.json` の道路・64棟の建物種類と `density_layout.json` の配置規則を読み、
+マンション・コンビニ・オフィスの反復部材、屋内の床・固定設備、歩道、区画線、横断歩道、街灯を生成する。
 3種類の建物設計書の内容ハッシュもレシピに記録する。配置が道路や他建物と交差すると生成前に停止する。
 
 ```sh
 python -m promodeler build assets/city.py --strict-blueprint
 ```
 
-検証カメラは俯瞰・平面・幹線道路の3方向。街区の出力は単一GLBで、
+64棟の設計建物と256棟の追加建物を、16街区に20棟ずつ配置し、高さ・大きさ・外壁色を固定シードで変える。
+`01-city/density_layout.json` に従い歩道から1.4mへ近づけ、建物間は1–12m、小規模ビルの左右は1–2.4mにする。
+中央交差点付近の2か所の専用敷地に地下鉄入口と倉庫を配置する。道路形状と元の64棟の種類・IDは保持する。
+建築物の参考モデルをもとに、全320棟へ屋上空調・換気設備・点検口・雨樋を追加した。
+
+`assets/24-warehouse.py` はWSE_11を外観参考に、25×26.5×8.55mの物流倉庫を生成する。
+
+波板・レンガ・シャッターのPBR、12枚の天窓、中央の開いた搬入口、雨樋・トラスを含む。
+`facility_layout.json` で街の建物用敷地へ北向きに配置し、既存320棟＋倉庫1棟とする。
+北側荷捌き場・車両入口の縁石切り欠きとスロープ・1.8m歩行通路を設ける。
+
+```powershell
+python -m promodeler build assets/24-warehouse.py --strict-blueprint --engine eevee --formats glb
+```
+
+`assets/25-subway-station.py` は地下鉄入口・コンコース・ホームを接続した固定開場状態の駅を生成する。
+SubwayPassageを参考に、階段・踊り場・手すり・配管と壁タイルを追加し、B1床とB2天井に実際の開口を設ける。
+`assets/city.py` では専用敷地へ配置し、地面開口と歩道からの通路を生成する。単体17・18・19の既存リグは保持する。
+
+```powershell
+python -m promodeler build assets/25-subway-station.py --strict-blueprint --engine eevee --formats glb
+```
+
+建築参考一覧 `01-city/reference_models.json` にSubwayPassage・Warehouse・新しい地下鉄3件を登録し、NewYorkBlockを既存NYC Set 8の別名として記録する。SubwayPassageは画像43枚のリンクを復元した参考コピーがあり、9枚は提供フォルダーにないため未解決である。改札・自販機と駅・車両のFBXは `promodeler external export` で個別にGLBへ変換できる。駅2の大規模Blendは必要な部品を選んで参照する。
+レンガと外壁タイルの目地は高さから法線マップを生成し、歩道には色むらと粗さの使用感、道路には補修跡・排水口を用意する。
+
+検証カメラは俯瞰・平面・幹線道路・建物近景・屋上・歩道・敷地・倉庫・地下鉄入口の11視点。街区の出力は単一GLBで、
 チャンクストリーミング、衝突設定、屋内カリングはUnity側で構成する。
 
 ### その他の非人体モデル
@@ -96,7 +122,7 @@ python -m promodeler build assets/20-cafe.py --out build/models --views perspect
 小物は布・木目・樹脂の BaseColor / Roughness / Normal を部品単位でベイクする。
 布張りや天板など見える面に解像度を集中させ、隠れる骨組みは小さいマップまたは定数PBR材を使う。
 カフェの天板と道場の代表的なマットにも固有の表面マップを設け、駅の長い床・壁は
-部品ごとの巨大なテクスチャを避けて材質色と反復形状で表現する。
+反復PBRマップでタイルの目地、汚れ、粗さと法線を表現する。
 `report.json` の `blueprint_qa` と `parts.*.uv.texel_density_px_per_m` で実測値を確認できる。
 一括生成後は `build-logs/` に各ビルドの標準出力を保存し、
 `python -m promodeler.gallery build/models` でGLB・確認画像・QA結果の一覧
@@ -245,6 +271,8 @@ clips=(Clip(id, duration, keyframes=(Keyframe(time, pose_id_or_None), ...), loop
   歯（口は閉じている）、ランタイム物理そのもの、髪のカーブ書き出しは未着手。
 
 ### 人型キャラクター: CharacterRecipe（M9〜）
+
+人型には既定の Unity + UMA モードに加え、作者が用意した統一素体にShapeKey・ボーン・モジュールを適用する `--mode canonical` を用意した。新モードはRecipe 2.0を使い、従来のRecipe 1.0とビルド経路を保持する。コマンド、素体manifest、現時点の対応範囲は [Canonical Base モード](docs/canonical-character-mode.md) を参照。
 
 人型はもうコードで髪・服・靴を組み立てない。設計書（`blueprints/japan-realistic-v1/*/blueprint.json` の `kind: humanoid` / `wearable`）を
 **Recipe JSON**（`character/recipes/<id>.json`, `character/outfits/<id>.json`、schema `promodeler-character/1.0`）へ変換し、

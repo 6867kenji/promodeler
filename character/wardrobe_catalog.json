@@ -1,0 +1,569 @@
+{
+  "schema": "promodeler-wardrobe-catalog/1.0",
+  "items": [
+    {
+      "id": "amber_crop_tshirt",
+      "slot": "top",
+      "name": "クロップTシャツ",
+      "objects": [
+        "Crop_T_Shirt"
+      ],
+      "masks": [
+        "Bra"
+      ],
+      "sourceBase": "Amber_Rigged_v1",
+      "sourceModel": "C:/Users/kuwano/develop/3d/キャラクター/Amber/Amber.Fbx",
+      "compatibleBases": [
+        "Amber_Wardrobe_v2",
+        "RiggedWoman_v5",
+        "RiggedWoman_v6"
+      ],
+      "rig": "native",
+      "fit": "native",
+      "materials": "source_textures_preserved",
+      "fits": {
+        "Amber_Wardrobe_v2": {
+          "objects": [
+            "Crop_T_Shirt"
+          ],
+          "fit": "native"
+        },
+        "RiggedWoman_v5": {
+          "objects": [
+            "Wardrobe_Amber_CropTShirt"
+          ],
+          "fit": "bind_bone_transfer",
+          "model": "C:/Users/kuwano/OneDrive/画像/モデル生成/promodeler-wardrobe/base/RiggedWoman_v5.blend"
+        },
+        "RiggedWoman_v6": {
+          "objects": [
+            "Wardrobe_Amber_CropTShirt"
+          ],
+          "fit": "bind_bone_transfer",
+          "model": "C:/Users/kuwano/OneDrive/画像/モデル生成/promodeler-new-assets-20260930/base/RiggedWoman_v6.blend"
+        }
+      }
+    },
+    {
+      "id": "amber_jeans",
+      "slot": "bottom",
+      "name": "ジーンズ",
+      "objects": [
+        "Jeans"
+      ],
+      "masks": [
+        "Underwear_Bottoms"
+      ],
+      "sourceBase": "Amber_Rigged_v1",
+      "sourceModel": "C:/Users/kuwano/develop/3d/キャラクター/Amber/Amber.Fbx",
+      "compatibleBases": [
+        "Amber_Wardrobe_v2",
+        "RiggedWoman_v5",
+        "RiggedWoman_v6"
+      ],
+      "rig": "native",
+      "fit": "native",
+      "materials": "source_textures_preserved",
+      "fits": {
+        "Amber_Wardrobe_v2": {
+          "objects": [
+            "Jeans"
+          ],
+          "fit": "native"
+        },
+        "RiggedWoman_v5": {
+          "objects": [
+            "Wardrobe_Amber_Jeans"
+          ],
+          "fit": "bind_bone_transfer",
+          "model": "C:/Users/kuwano/OneDrive/画像/モデル生成/promodeler-wardrobe/base/RiggedWoman_v5.blend"
+        },
+        "RiggedWoman_v6": {
+          "objects": [
+            "Wardrobe_Amber_Jeans"
+          ],
+          "fit": "bind_bone_transfer",
+          "model": "C:/Users/kuwano/OneDrive/画像/モデル生成/promodeler-new-assets-20260930/base/RiggedWoman_v6.blend"
+        }
+      }
+    },
+    {
+      "id": "amber_boots",
+      "slot": "shoes",
+      "name": "ブーツ",
+      "objects": [
+        "Boots"
+      ],
+      "sourceBase": "Amber_Rigged_v1",
+      "sourceModel": "C:/Users/kuwano/develop/3d/キャラクター/Amber/Amber.Fbx",
+      "compatibleBases": [
+        "Amber_Wardrobe_v2",
+        "RiggedWoman_v5",
+        "RiggedWoman_v6"
+      ],
+      "rig": "native",
+      "fit": "native",
+      "materials": "source_textures_preserved",
+      "fits": {
+        "Amber_Wardrobe_v2": {
+          "objects": [
+            "Boots"
+          ],
+          "fit": "native"
+        },
+        "RiggedWoman_v5": {
+          "objects": [
+            "Wardrobe_Amber_Boots"
+          ],
+          "fit": "bind_bone_transfer",
+          "model": "C:/Users/kuwano/OneDrive/画像/モデル生成/promodeler-wardrobe/base/RiggedWoman_v5.blend"
+        },
+        "RiggedWoman_v6": {
+          "objects": [
+            "Wardrobe_Amber_Boots"
+          ],
+          "fit": "bind_bone_transfer",
+          "model": "C:/Users/kuwano/OneDrive/画像/モデル生成/promodeler-new-assets-20260930/base/RiggedWoman_v6.blend"
+        }
+      }
+    },
+    {
+      "id": "amber_leather_jacket",
+      "slot": "outer",
+      "name": "レザージャケット",
+      "objects": [
+        "Punk_Leather_Jacket"
+      ],
+      "sourceBase": "Amber_Rigged_v1",
+      "sourceModel": "C:/Users/kuwano/develop/3d/キャラクター/Amber/Amber.Fbx",
+      "compatibleBases": [
+        "Amber_Wardrobe_v2",
+        "RiggedWoman_v5",
+        "RiggedWoman_v6"
+      ],
+      "rig": "native",
+      "fit": "native",
+      "materials": "source_textures_preserved",
+      "fits": {
+        "Amber_Wardrobe_v2": {
+          "objects": [
+            "Punk_Leather_Jacket"
+          ],
+          "fit": "native"
+        },
+        "RiggedWoman_v5": {
+          "objects": [
+            "Wardrobe_Amber_LeatherJacket"
+          ],
+          "fit": "bind_bone_transfer",
+          "model": "C:/Users/kuwano/OneDrive/画像/モデル生成/promodeler-wardrobe/base/RiggedWoman_v5.blend"
+        },
+        "RiggedWoman_v6": {
+          "objects": [
+            "Wardrobe_Amber_LeatherJacket"
+          ],
+          "fit": "bind_bone_transfer",
+          "model": "C:/Users/kuwano/OneDrive/画像/モデル生成/promodeler-new-assets-20260930/base/RiggedWoman_v6.blend"
+        }
+      }
+    },
+    {
+      "id": "matt_fit_shirt",
+      "slot": "top",
+      "name": "フィットシャツ",
+      "objects": [
+        "Fit_shirts"
+      ],
+      "sourceBase": "Matt_Rigged_v1",
+      "sourceModel": "C:/Users/kuwano/develop/3d/キャラクター/Matt/Matt.Fbx",
+      "compatibleBases": [
+        "Matt_Wardrobe_v2"
+      ],
+      "rig": "native",
+      "fit": "native",
+      "materials": "source_textures_preserved"
+    },
+    {
+      "id": "matt_slim_jeans",
+      "slot": "bottom",
+      "name": "スリムジーンズ",
+      "objects": [
+        "Slim_Jeans"
+      ],
+      "masks": [
+        "Boxers"
+      ],
+      "sourceBase": "Matt_Rigged_v1",
+      "sourceModel": "C:/Users/kuwano/develop/3d/キャラクター/Matt/Matt.Fbx",
+      "compatibleBases": [
+        "Matt_Wardrobe_v2"
+      ],
+      "rig": "native",
+      "fit": "native",
+      "materials": "source_textures_preserved"
+    },
+    {
+      "id": "matt_canvas_shoes",
+      "slot": "shoes",
+      "name": "キャンバスシューズ",
+      "objects": [
+        "Canvas_shoes"
+      ],
+      "sourceBase": "Matt_Rigged_v1",
+      "sourceModel": "C:/Users/kuwano/develop/3d/キャラクター/Matt/Matt.Fbx",
+      "compatibleBases": [
+        "Matt_Wardrobe_v2"
+      ],
+      "rig": "native",
+      "fit": "native",
+      "materials": "source_textures_preserved"
+    },
+    {
+      "id": "megane_uniform",
+      "slot": "dress",
+      "name": "制服（上下セット）",
+      "objects": [
+        "Pants_Shirt_Aesthetician"
+      ],
+      "masks": [
+        "Underwear_Bottoms"
+      ],
+      "sourceBase": "Megane_Rigged_v1",
+      "sourceModel": "C:/Users/kuwano/develop/3d/キャラクター/Mégane/Mégane_Blender.Fbx",
+      "compatibleBases": [
+        "Megane_Wardrobe_v2",
+        "RiggedWoman_v5",
+        "RiggedWoman_v6"
+      ],
+      "rig": "native",
+      "fit": "native",
+      "materials": "source_textures_preserved",
+      "fits": {
+        "Megane_Wardrobe_v2": {
+          "objects": [
+            "Pants_Shirt_Aesthetician"
+          ],
+          "fit": "native"
+        },
+        "RiggedWoman_v5": {
+          "objects": [
+            "Wardrobe_Megane_Uniform"
+          ],
+          "fit": "bind_bone_transfer",
+          "model": "C:/Users/kuwano/OneDrive/画像/モデル生成/promodeler-wardrobe/base/RiggedWoman_v5.blend"
+        },
+        "RiggedWoman_v6": {
+          "objects": [
+            "Wardrobe_Megane_Uniform"
+          ],
+          "fit": "bind_bone_transfer",
+          "model": "C:/Users/kuwano/OneDrive/画像/モデル生成/promodeler-new-assets-20260930/base/RiggedWoman_v6.blend"
+        }
+      }
+    },
+    {
+      "id": "megane_high_heels",
+      "slot": "shoes",
+      "name": "ハイヒール",
+      "objects": [
+        "High_Heels"
+      ],
+      "sourceBase": "Megane_Rigged_v1",
+      "sourceModel": "C:/Users/kuwano/develop/3d/キャラクター/Mégane/Mégane_Blender.Fbx",
+      "compatibleBases": [
+        "Megane_Wardrobe_v2"
+      ],
+      "rig": "native",
+      "fit": "native",
+      "materials": "source_textures_preserved"
+    },
+    {
+      "id": "cute_girl_shirt",
+      "slot": "top",
+      "name": "シャツ",
+      "objects": [
+        "shirt"
+      ],
+      "sourceBase": "CuteGirl_Rigged_v1",
+      "sourceModel": "C:/Users/kuwano/OneDrive/画像/モデル生成/promodeler-new-characters/base/CuteGirl_Rigged_v1.blend",
+      "compatibleBases": [
+        "CuteGirl_Wardrobe_v2"
+      ],
+      "rig": "native",
+      "fit": "native",
+      "materials": "source_textures_preserved"
+    },
+    {
+      "id": "cute_girl_jeans",
+      "slot": "bottom",
+      "name": "ジーンズ",
+      "objects": [
+        "jean"
+      ],
+      "sourceBase": "CuteGirl_Rigged_v1",
+      "sourceModel": "C:/Users/kuwano/OneDrive/画像/モデル生成/promodeler-new-characters/base/CuteGirl_Rigged_v1.blend",
+      "compatibleBases": [
+        "CuteGirl_Wardrobe_v2"
+      ],
+      "rig": "native",
+      "fit": "native",
+      "materials": "source_textures_preserved"
+    },
+    {
+      "id": "cute_free_shirt",
+      "slot": "top",
+      "name": "シャツ",
+      "objects": [
+        "shirt"
+      ],
+      "sourceBase": "CuteGirl_Free_Static_v1",
+      "sourceModel": "C:/Users/kuwano/develop/3d/キャラクター/Cute+Girl+freeversion/Cute girl 5.2.blend",
+      "compatibleBases": [
+        "CuteGirl_Free_Wardrobe_v2"
+      ],
+      "rig": "static",
+      "fit": "native",
+      "materials": "source_textures_preserved"
+    },
+    {
+      "id": "cute_free_pants",
+      "slot": "bottom",
+      "name": "パンツ",
+      "objects": [
+        "pant"
+      ],
+      "masks": [
+        "underwear"
+      ],
+      "sourceBase": "CuteGirl_Free_Static_v1",
+      "sourceModel": "C:/Users/kuwano/develop/3d/キャラクター/Cute+Girl+freeversion/Cute girl 5.2.blend",
+      "compatibleBases": [
+        "CuteGirl_Free_Wardrobe_v2"
+      ],
+      "rig": "static",
+      "fit": "native",
+      "materials": "source_textures_preserved"
+    },
+    {
+      "id": "cute_free_shoes_socks",
+      "slot": "shoes",
+      "name": "靴・ソックス",
+      "objects": [
+        "shoes",
+        "sock"
+      ],
+      "sourceBase": "CuteGirl_Free_Static_v1",
+      "sourceModel": "C:/Users/kuwano/develop/3d/キャラクター/Cute+Girl+freeversion/Cute girl 5.2.blend",
+      "compatibleBases": [
+        "CuteGirl_Free_Wardrobe_v2"
+      ],
+      "rig": "static",
+      "fit": "native",
+      "materials": "source_textures_preserved"
+    },
+    {
+      "id": "rainy_shirt",
+      "slot": "top",
+      "name": "シャツ",
+      "objects": [
+        "shirt"
+      ],
+      "sourceBase": "Rainy_Rigged_v1",
+      "sourceModel": "C:/Users/kuwano/OneDrive/画像/モデル生成/promodeler-new-characters/base/Rainy_Rigged_v1.blend",
+      "compatibleBases": [
+        "Rainy_Wardrobe_v2"
+      ],
+      "rig": "native",
+      "fit": "native",
+      "materials": "source_textures_preserved"
+    },
+    {
+      "id": "rainy_pants",
+      "slot": "bottom",
+      "name": "パンツ",
+      "objects": [
+        "pant"
+      ],
+      "sourceBase": "Rainy_Rigged_v1",
+      "sourceModel": "C:/Users/kuwano/OneDrive/画像/モデル生成/promodeler-new-characters/base/Rainy_Rigged_v1.blend",
+      "compatibleBases": [
+        "Rainy_Wardrobe_v2"
+      ],
+      "rig": "native",
+      "fit": "native",
+      "materials": "source_textures_preserved"
+    },
+    {
+      "id": "rainy_boots",
+      "slot": "shoes",
+      "name": "ブーツ",
+      "objects": [
+        "boot"
+      ],
+      "sourceBase": "Rainy_Rigged_v1",
+      "sourceModel": "C:/Users/kuwano/OneDrive/画像/モデル生成/promodeler-new-characters/base/Rainy_Rigged_v1.blend",
+      "compatibleBases": [
+        "Rainy_Wardrobe_v2"
+      ],
+      "rig": "native",
+      "fit": "native",
+      "materials": "source_textures_preserved"
+    },
+    {
+      "id": "female_cargo_pants",
+      "slot": "bottom",
+      "objects": [
+        "Wardrobe_Female_CargoPants"
+      ],
+      "sourceObjects": [
+        "Wardrobe_FemaleOutfit"
+      ],
+      "sourceModel": "C:\\Users\\kuwano\\OneDrive\\画像\\モデル生成\\promodeler-new-reference\\base\\RiggedWoman_v4.blend",
+      "compatibleBases": [
+        "RiggedWoman_v5",
+        "RiggedWoman_v6"
+      ],
+      "rig": "CC3_Base_Plus",
+      "fit": "section_fit_material_split",
+      "materials": "source_textures_preserved",
+      "name": "カーゴパンツ"
+    },
+    {
+      "id": "female_tank_top",
+      "slot": "top",
+      "objects": [
+        "Wardrobe_Female_TankTop"
+      ],
+      "sourceObjects": [
+        "Wardrobe_FemaleOutfit"
+      ],
+      "sourceModel": "C:\\Users\\kuwano\\OneDrive\\画像\\モデル生成\\promodeler-new-reference\\base\\RiggedWoman_v4.blend",
+      "compatibleBases": [
+        "RiggedWoman_v5",
+        "RiggedWoman_v6"
+      ],
+      "rig": "CC3_Base_Plus",
+      "fit": "section_fit_material_split",
+      "materials": "source_textures_preserved",
+      "name": "タンクトップ"
+    },
+    {
+      "id": "female_jacket",
+      "slot": "outer",
+      "objects": [
+        "Wardrobe_Female_Jacket"
+      ],
+      "sourceObjects": [
+        "Wardrobe_FemaleOutfit"
+      ],
+      "sourceModel": "C:\\Users\\kuwano\\OneDrive\\画像\\モデル生成\\promodeler-new-reference\\base\\RiggedWoman_v4.blend",
+      "compatibleBases": [
+        "RiggedWoman_v5",
+        "RiggedWoman_v6"
+      ],
+      "rig": "CC3_Base_Plus",
+      "fit": "section_fit_material_split",
+      "materials": "source_textures_preserved",
+      "name": "ジャケット"
+    },
+    {
+      "id": "streetwear_sport_shirt",
+      "slot": "top",
+      "name": "Streetwear Sport Shirt",
+      "objects": [
+        "Wardrobe_Streetwear_SportShirt"
+      ],
+      "sourceModel": "C:/Users/kuwano/develop/3d/服装/Streetwear Module 01/Streetwear_Sport_Shirt/Streetwear_Sport_Shirt.obj",
+      "compatibleBases": [
+        "RiggedWoman_v6"
+      ],
+      "rig": "CC3_Base_Plus",
+      "fit": "body_weight_transfer",
+      "materials": "source_pbr_textures_packed",
+      "vertices": 1653,
+      "weightedVertices": 1653
+    },
+    {
+      "id": "streetwear_formal_pants",
+      "slot": "bottom",
+      "name": "Streetwear Modern Formal Pants",
+      "objects": [
+        "Wardrobe_Streetwear_FormalPants"
+      ],
+      "sourceModel": "C:/Users/kuwano/develop/3d/服装/Streetwear Module 01/Streetwear_Modern_Formal_Pants/Streetwear_Modern_Formal_Pants.obj",
+      "compatibleBases": [
+        "RiggedWoman_v6"
+      ],
+      "rig": "CC3_Base_Plus",
+      "fit": "body_weight_transfer",
+      "materials": "source_pbr_textures_packed",
+      "vertices": 5345,
+      "weightedVertices": 5345
+    },
+    {
+      "id": "streetwear_shoes",
+      "slot": "shoes",
+      "name": "Streetwear Shoes 01",
+      "objects": [
+        "Wardrobe_Streetwear_Shoes"
+      ],
+      "sourceModel": "C:/Users/kuwano/develop/3d/服装/Streetwear Module 01/Streetwear_Shoes_01/Streetwear_Shoes_01.obj",
+      "compatibleBases": [
+        "RiggedWoman_v6"
+      ],
+      "rig": "CC3_Base_Plus",
+      "fit": "body_weight_transfer",
+      "materials": "source_pbr_textures_packed",
+      "vertices": 18198,
+      "weightedVertices": 18198
+    },
+    {
+      "id": "streetwear_bomber_jacket",
+      "slot": "outer",
+      "name": "Streetwear Bomber Jacket",
+      "objects": [
+        "Wardrobe_Streetwear_BomberJacket"
+      ],
+      "sourceModel": "C:/Users/kuwano/develop/3d/服装/Streetwear Module 01/Streetwear_Bomber_Jacket/Streetwear_Bomber_Jacket.obj",
+      "compatibleBases": [
+        "RiggedWoman_v6"
+      ],
+      "rig": "CC3_Base_Plus",
+      "fit": "body_weight_transfer",
+      "materials": "source_pbr_textures_packed",
+      "vertices": 4937,
+      "weightedVertices": 4937
+    },
+    {
+      "id": "male_tshirt",
+      "slot": "top",
+      "name": "Male T-shirt",
+      "objects": ["Wardrobe_Male_Tshirt"],
+      "sourceModel": "C:/Users/kuwano/develop/3d/服装/Male tshirt free 3D model/fbx/fbx.fbx",
+      "compatibleBases": ["DidoMale_v1"],
+      "rig": "Armature",
+      "fit": "body_weight_transfer",
+      "materials": "source_diffuse_normal_packed",
+      "vertices": 99976,
+      "weightedVertices": 99976
+    }
+  ],
+  "deferred": [
+    {
+      "source": "Ayane",
+      "reason": "衣装部品に肌や手足が含まれるため、独立した衣装としての抽出を保留"
+    },
+    {
+      "source": "Knight",
+      "reason": "リグのない鎧のため、共通素体への装着は鎧の部位分割・フィット・ボーン設定が必要"
+    },
+    {
+      "source": "FantasyGirl",
+      "reason": "人体・衣装・髪が単一メッシュと単一マテリアルに統合されている"
+    },
+    {
+      "source": "WhiteWeddingDressGirl",
+      "reason": "人体・衣装・髪が単一メッシュと単一マテリアルに統合されている"
+    }
+  ]
+}

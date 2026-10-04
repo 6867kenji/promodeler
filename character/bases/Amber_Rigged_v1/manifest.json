@@ -1,0 +1,11 @@
+{
+  "id": "Amber_Rigged_v1",
+  "model": "../../../../3d/キャラクター/Amber/Amber.Fbx",
+  "textureMaxSize": 2048,
+  "exportMorphs": false,
+  "parameters": {
+    "body.shoulderWidth": {"bones": [{"name": "CC_Base_L_Clavicle", "axis": "Y", "scale": [0.92, 1.08]}, {"name": "CC_Base_R_Clavicle", "axis": "Y", "scale": [0.92, 1.08]}]},
+    "body.armLength": {"bones": [{"name": "CC_Base_L_Upperarm", "axis": "Y", "scale": [0.92, 1.08]}, {"name": "CC_Base_R_Upperarm", "axis": "Y", "scale": [0.92, 1.08]}, {"name": "CC_Base_L_Forearm", "axis": "Y", "scale": [0.92, 1.08]}, {"name": "CC_Base_R_Forearm", "axis": "Y", "scale": [0.92, 1.08]}]},
+    "body.legLength": {"bones": [{"name": "CC_Base_L_Thigh", "axis": "Y", "scale": [0.92, 1.08]}, {"name": "CC_Base_R_Thigh", "axis": "Y", "scale": [0.92, 1.08]}, {"name": "CC_Base_L_Calf", "axis": "Y", "scale": [0.92, 1.08]}, {"name": "CC_Base_R_Calf", "axis": "Y", "scale": [0.92, 1.08]}]}
+  }
+}

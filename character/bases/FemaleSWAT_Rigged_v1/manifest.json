@@ -1,0 +1,51 @@
+{
+  "id": "FemaleSWAT_Rigged_v1",
+  "requireSkin": true,
+  "model": "C:/Users/kuwano/develop/3d/キャラクター/Female SWAT Soldier free 3D model/SWAT_Blend.blend",
+  "sourceSha256": "a35fe4a909271c26d0d4f204cf8345914e4f311ee35e8a1986481d6b703012a9",
+  "modules": {
+    "wardrobe.dress": {
+      "swat_suit": [
+        "Suit"
+      ]
+    },
+    "wardrobe.shoes": {
+      "swat_boots": [
+        "Boots"
+      ]
+    },
+    "wardrobe.outer": {
+      "swat_protective_armor": [
+        "armor",
+        "Protect"
+      ]
+    }
+  },
+  "accessories": {
+    "swat_helmet": [
+      "AUG3M_Helmet_33393_Shape"
+    ],
+    "swat_balaclava": [
+      "Balaclava_Mask"
+    ],
+    "swat_belt": [
+      "Belt"
+    ],
+    "swat_gloves": [
+      "Gloves_Cut"
+    ],
+    "swat_knee_pads": [
+      "Knee_Pad"
+    ],
+    "swat_rifle": [
+      "SKM_WP_Magazine_109_01",
+      "SKM_WP_MPX_001_01_2",
+      "SKM_WP_Stock_027_01",
+      "SM_WP_Barrel_026_01_2",
+      "SM_WP_Handguard_019_01_2",
+      "SM_WP_Muzzle_011_01_2",
+      "SM_WP_PistolGrip_014_01_2",
+      "SM_WP_Upper_037_01"
+    ]
+  }
+}

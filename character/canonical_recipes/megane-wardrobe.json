@@ -1,0 +1,20 @@
+{
+  "schema": "promodeler-canonical-character/2.0",
+  "id": "megane-wardrobe",
+  "name": "Mégane Selectable Wardrobe",
+  "base": "Megane_Wardrobe_v2",
+  "seed": 1,
+  "source": {
+    "kind": "native_wardrobe",
+    "base": "Megane_Rigged_v1"
+  },
+  "face": {},
+  "body": {},
+  "appearance": {},
+  "material": {},
+  "wardrobe": {
+    "dress": "megane_uniform",
+    "shoes": "megane_high_heels"
+  },
+  "accessories": []
+}

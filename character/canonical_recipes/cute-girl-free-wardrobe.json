@@ -1,0 +1,23 @@
+{
+  "schema": "promodeler-canonical-character/2.0",
+  "id": "cute-girl-free-wardrobe",
+  "name": "Cute Girl free Selectable Wardrobe",
+  "base": "CuteGirl_Free_Wardrobe_v2",
+  "seed": 1,
+  "source": {
+    "kind": "native_wardrobe",
+    "base": "CuteGirl_Free_Static_v1"
+  },
+  "face": {},
+  "body": {},
+  "appearance": {},
+  "material": {},
+  "wardrobe": {
+    "top": "cute_free_shirt",
+    "bottom": "cute_free_pants",
+    "shoes": "cute_free_shoes_socks"
+  },
+  "accessories": [
+    "dinosaur_hood"
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "id": "RiggedWoman_v4",
+  "model": "../../../../../OneDrive/画像/モデル生成/promodeler-new-reference/base/RiggedWoman_v4.blend",
+  "textureMaxSize": 4096,
+  "parameters": {
+    "face.faceRoundness": {"shapeKeys": [{"name": "PM_Face_Round", "side": "positive"}, {"name": "PM_Face_Narrow", "side": "negative"}]},
+    "face.jawWidth": {"shapeKeys": [{"name": "PM_Jaw_Wide", "side": "positive"}, {"name": "PM_Jaw_Narrow", "side": "negative"}]},
+    "face.eyeSize": {"shapeKeys": [{"name": "PM_Eye_Large", "side": "positive"}, {"name": "PM_Eye_Small", "side": "negative"}]},
+    "face.noseSize": {"shapeKeys": [{"name": "PM_Nose_Large", "side": "positive"}, {"name": "PM_Nose_Small", "side": "negative"}]},
+    "face.cheekVolume": {"shapeKeys": [{"name": "PM_Cheek_Full", "side": "positive"}, {"name": "PM_Cheek_Slim", "side": "negative"}]},
+    "body.shoulderWidth": {"bones": [{"name": "CC_Base_L_Clavicle", "axis": "Y", "scale": [0.92, 1.08]}, {"name": "CC_Base_R_Clavicle", "axis": "Y", "scale": [0.92, 1.08]}]},
+    "body.chest": {"shapeKeys": [{"name": "PM_Bust_Flatten", "side": "negative"}]},
+    "body.armLength": {"bones": [{"name": "CC_Base_L_Upperarm", "axis": "Y", "scale": [0.92, 1.08]}, {"name": "CC_Base_R_Upperarm", "axis": "Y", "scale": [0.92, 1.08]}, {"name": "CC_Base_L_Forearm", "axis": "Y", "scale": [0.92, 1.08]}, {"name": "CC_Base_R_Forearm", "axis": "Y", "scale": [0.92, 1.08]}]},
+    "body.legLength": {"bones": [{"name": "CC_Base_L_Thigh", "axis": "Y", "scale": [0.92, 1.08]}, {"name": "CC_Base_R_Thigh", "axis": "Y", "scale": [0.92, 1.08]}, {"name": "CC_Base_L_Calf", "axis": "Y", "scale": [0.92, 1.08]}, {"name": "CC_Base_R_Calf", "axis": "Y", "scale": [0.92, 1.08]}]}
+  },
+  "modules": {
+    "appearance.hairStyle": {
+      "hair_blue_silver_long": ["Hair_BlueSilver_Long", "Hair_Flower_Clip"],
+      "hair_headband_black": ["Hair_Headband_Black_0", "Hair_Headband_Black_1", "Hair_Headband_Black_2", "Hair_Headband_Black_3", "Hair_Headband_Black_4"],
+      "hair_ponytail_brown": ["Hair_Ponytail_Brown"]
+    },
+    "wardrobe.top": {
+      "sports_bra": ["Wardrobe_SportsBRA"],
+      "blouse_a": ["Wardrobe_BlouseA"]
+    },
+    "wardrobe.dress": {
+      "medieval_thin": ["Wardrobe_Medieval_Thin"],
+      "medieval_thick": ["Wardrobe_Medieval_Thick"],
+      "lingerie_set": ["Wardrobe_Lingerie_Set"],
+      "female_outfit": ["Wardrobe_FemaleOutfit"]
+    }
+  },
+  "bodyMasks": {
+    "wardrobe.top": {"sports_bra": ["Bra"], "blouse_a": ["Bra"]},
+    "wardrobe.dress": {
+      "medieval_thin": ["Bra", "Underwear_Bottoms"],
+      "medieval_thick": ["Bra", "Underwear_Bottoms"],
+      "lingerie_set": ["Bra", "Underwear_Bottoms"],
+      "female_outfit": ["Bra", "Underwear_Bottoms"]
+    }
+  },
+  "bodyMeshMasks": {
+    "wardrobe.top": {"blouse_a": [{"object": "CC_Base_Body", "vertexGroup": "PM_Cover_Blouse"}]},
+    "wardrobe.dress": {"female_outfit": [{"object": "CC_Base_Body", "vertexGroup": "PM_Cover_FemaleOutfit"}]}
+  },
+  "materials": {"skin": ["Std_Skin_Head", "Std_Skin_Body", "Std_Skin_Arm", "Std_Skin_Leg"]}
+}

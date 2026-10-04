@@ -1,0 +1,20 @@
+{
+  "schema": "promodeler-canonical-character/2.0",
+  "id": "cute-girl-wardrobe",
+  "name": "Cute Girl Selectable Wardrobe",
+  "base": "CuteGirl_Wardrobe_v2",
+  "seed": 1,
+  "source": {
+    "kind": "native_wardrobe",
+    "base": "CuteGirl_Rigged_v1"
+  },
+  "face": {},
+  "body": {},
+  "appearance": {},
+  "material": {},
+  "wardrobe": {
+    "top": "cute_girl_shirt",
+    "bottom": "cute_girl_jeans"
+  },
+  "accessories": []
+}

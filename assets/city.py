@@ -1,8 +1,9 @@
 """Shiomi 500 m district, generated from the 01-city placement and road plan.
 
 The three building functions are reusable shells with walkable floor plates,
-entrances and fixed interior zones. The 64 primary sites come from the
-numerical blueprint; compact infill buildings occupy checked gaps between them.
+entrances and fixed interior zones. The 64 native building designs and 256
+infill buildings follow density_layout.json. The warehouse occupies a planned
+facility lot; the second lot remains available for the subway entrance.
 """
 
 from __future__ import annotations
@@ -15,8 +16,13 @@ from pathlib import Path
 
 from promodeler.core import (
     Array, Asset, AssetGenerator, Box, Camera, Cone, Cylinder, Extrude, GenerationInput,
-    Material, ModelingError, Part, Profile, RenderSettings, Sphere, Transform, srgb,
+    Material, ModelingError, Part, Profile, QualityProfile, RenderSettings, Sphere,
+    Transform, srgb,
 )
+from assets.city_layout import RULES as DENSITY_RULES, dense_layout
+from assets.city_facilities import add_facilities, with_facilities, open_station_ground
+from assets.subway_station import station as subway_station
+from assets.warehouse import materials as warehouse_materials, tile_specs as warehouse_tile_specs
 
 
 DESIGNS = Path(__file__).resolve().parent.parent / "blueprints" / "japan-realistic-v1"
@@ -33,6 +39,8 @@ def _overlap(a: tuple[float, float, float, float], b: tuple[float, float, float,
 
 
 def footprint(placement: dict) -> tuple[float, float, float, float]:
+    if "layout_bounds" in placement:
+        return tuple(placement["layout_bounds"])
     size_x, _, size_z = BUILDINGS[placement["blueprint"]]["dimensions"]["envelope_xyz_m"]
     yaw = placement["yaw_rad"]
     half_x = (abs(math.cos(yaw)) * size_x + abs(math.sin(yaw)) * size_z) / 2
@@ -145,6 +153,121 @@ def roads(parts: list[Part]) -> None:
                     "marking", repeat=(5, (0, 0, 0.9)))
     # The blueprint's curb is a standard 1 m section, rather than an origin-placed site object.
     box(parts, "curb_standard", (-15.5, -14.5, 0, 0.15, 6, 6.18), "concrete")
+
+
+def street_details(parts: list[Part]) -> None:
+    """Street wear and drainage stay inside carriageways or existing sidewalks."""
+    rng = random.Random(28431)
+    for axis in ("ew", "ns"):
+        for road_index, center in enumerate(ROAD_CENTERS):
+            carriage = 6 if center == 0 else 3
+            half = 10 if center == 0 else 5
+            walk_material = "brick_walk" if center == 0 else "asphalt_walk"
+            for segment, (start, end) in enumerate(_street_segments()):
+                def b(name, along0, along1, cross0, cross1, y0, y1, material, repeat=None):
+                    bounds = ((along0, along1, y0, y1, cross0, cross1) if axis == "ew"
+                              else (cross0, cross1, y0, y1, along0, along1))
+                    box(parts, f"street_{axis}_{road_index}_{segment}_{name}", bounds, material, repeat=repeat)
+                for patch in range(2):
+                    along = rng.uniform(start + 12, end - 15)
+                    cross = center + rng.choice((-1, 1)) * carriage * .6
+                    length = rng.uniform(1.5, 3.0)
+                    width = rng.uniform(.75, 1.15)
+                    origin = (along, 0, cross) if axis == "ew" else (cross, 0, along)
+                    box(parts, f"street_{axis}_{road_index}_{segment}_patch_{patch}",
+                        (-length / 2, length / 2, .0005, .0015, -width / 2, width / 2),
+                        f"road_repair_{rng.randrange(3)}", origin=origin,
+                        yaw=(0 if axis == "ew" else math.pi / 2) + rng.uniform(-.32, .32))
+                for side in (-1, 1):
+                    edge = center + side * (carriage - .18)
+                    along = start + 10
+                    cross = center + side * (carriage + .65)
+                    step = (22, 0, 0) if axis == "ew" else (0, 0, 22)
+                    count = max(1, int((end - start - 14) / 22))
+                    b(f"drain_frame_{side}", along, along + .6, edge - .15, edge + .15,
+                      .002, .012, "metal", (count, step))
+                    b(f"drain_slots_{side}", along + .04, along + .07, edge - .12, edge + .12,
+                      .012, .014, "grille", ((9, (.06, 0, 0) if axis == "ew" else (0, 0, .06)), (count, step)))
+                    b(f"tactile_{side}", start + 1.2, start + 2.4, cross - .3, cross + .3,
+                      .1505, .158, "tactile")
+                    # Each patch has its own world position and local UVs. The
+                    # 3.84 m brick map now carries only fine pigment variation.
+                    for patch in range(max(6, int((end - start) / 4.5))):
+                        along = rng.uniform(start + 2, end - 2)
+                        across = center + side * rng.uniform(carriage + .85, half - .85)
+                        length = rng.uniform(.65, 1.8)
+                        width = rng.uniform(.42, .85)
+                        wet = walk_material == "brick_walk" and rng.random() < .30
+                        material = (f"walk_damp_{rng.randrange(3)}" if wet else
+                                    f"walk_dust_{rng.randrange(4)}")
+                        origin = (along, 0, across) if axis == "ew" else (across, 0, along)
+                        box(parts, f"street_{axis}_{road_index}_{segment}_walk_weather_{side}_{patch}",
+                            (-length / 2, length / 2, .1502, .1507, -width / 2, width / 2),
+                            material, origin=origin,
+                            yaw=(0 if axis == "ew" else math.pi / 2) + rng.uniform(-.35, .35))
+                    # Raised warning dots, all within the 1.2 x .6 m panel.
+                    bounds = ((start + 1.25, start + 1.28, .158, .162, cross - .25, cross - .22)
+                              if axis == "ew" else (cross - .25, cross - .22, .158, .162,
+                                                    start + 1.25, start + 1.28))
+                    repeats = ((12, (.1, 0, 0)), (6, (0, 0, .1))) if axis == "ew" else ((6, (.1, 0, 0)), (12, (0, 0, .1)))
+                    box(parts, f"street_{axis}_{road_index}_{segment}_tactile_dots_{side}", bounds,
+                        "tactile", repeat=repeats)
+                along = (start + end) / 2
+                x, z = (along, center + carriage * .55) if axis == "ew" else (center + carriage * .55, along)
+                cylinder(parts, f"street_{axis}_{road_index}_{segment}_manhole", x, .006, z,
+                         .3, .012, "grille", segments=24)
+
+
+def rooftop_details(parts: list[Part], prefix: str, width: float, depth: float, height: float,
+                    *, origin=(0., 0., 0.), yaw=0., seed=1) -> None:
+    """Model roof equipment inside the roof outline, inspired by the NYC set."""
+    rng = random.Random(seed)
+
+    def b(name, bounds, material="equipment", repeat=None):
+        box(parts, prefix + "_roof_" + name, bounds, material, origin=origin, yaw=yaw, repeat=repeat)
+
+    b("membrane", (-width / 2 + .25, width / 2 - .25, height + .002, height + .018,
+                   -depth / 2 + .25, depth / 2 - .25), "roof_membrane")
+    for unit in range(2 if width < 15 else 3):
+        x = -width * .22 + unit * 2.0
+        z = -depth * .22
+        b(f"ac_{unit}_feet", (x - .55, x + .55, height + .02, height + .17, z - .36, z + .36), "metal")
+        b(f"ac_{unit}_housing", (x - .65, x + .65, height + .17, height + 1.02, z - .45, z + .45))
+        b(f"ac_{unit}_louvers", (x - .55, x + .55, height + .28, height + .30,
+                                  z + .451, z + .464), "grille", (10, (0, .064, 0)))
+        primitive(parts, prefix + f"_roof_ac_{unit}_fan", Cylinder(radius=.27, height=.018, segments=20),
+                  "grille", (x, height + 1.035, z), origin=origin, yaw=yaw)
+    b("service_hatch", (-width * .35, -width * .35 + 1.7, height + .02, height + 1.8,
+                        depth * .18, depth * .18 + 1.6), "concrete")
+    b("hatch_door", (-width * .35 + .4, -width * .35 + 1.2, height + .02, height + 1.6,
+                     depth * .18 + 1.601, depth * .18 + 1.63), "metal")
+    b("hatch_cap", (-width * .35 - .08, -width * .35 + 1.78, height + 1.8, height + 1.88,
+                    depth * .18 - .08, depth * .18 + 1.68), "metal")
+    for index in range(2):
+        x, z = width * .28, -depth * .2 + index * 1.1
+        primitive(parts, prefix + f"_roof_vent_{index}", Cylinder(radius=.09, height=.8, segments=12),
+                  "metal", (x, height + .42, z), origin=origin, yaw=yaw)
+        primitive(parts, prefix + f"_roof_vent_cap_{index}", Cone(radius=.19, top_radius=.07, height=.12, segments=12),
+                  "metal", (x, height + .86, z), origin=origin, yaw=yaw)
+    if height > 12 and rng.random() < .45:
+        x, z = width * .2, depth * .23
+        b("tank_support", (x - .65, x + .65, height + .02, height + .4, z - .65, z + .65), "metal")
+        primitive(parts, prefix + "_roof_water_tank", Cylinder(radius=.72, height=1.6, segments=24),
+                  "equipment", (x, height + 1.2, z), origin=origin, yaw=yaw)
+        primitive(parts, prefix + "_roof_tank_cap", Cone(radius=.74, top_radius=.23, height=.22, segments=24),
+                  "equipment", (x, height + 2.11, z), origin=origin, yaw=yaw)
+
+
+def facade_details(parts: list[Part], prefix: str, width: float, depth: float, height: float,
+                   *, origin=(0., 0., 0.), yaw=0., floors=1, floor_pitch=3.2) -> None:
+    for side in (-1, 1):
+        x, z = side * (width / 2 - .25), depth / 2 + .06
+        primitive(parts, prefix + f"_downpipe_{side}", Cylinder(radius=.055, height=height - .3, segments=10),
+                  "metal", (x, height / 2, z), origin=origin, yaw=yaw)
+        box(parts, prefix + f"_downpipe_clamps_{side}", (x - .09, x + .09, .5, .55, z - .065, z + .065),
+            "metal", origin=origin, yaw=yaw, repeat=(floors, (0, floor_pitch, 0)))
+    box(parts, prefix + "_roof_flashing", (-width / 2, width / 2, height + .18, height + .23,
+                                           depth / 2 - .12, depth / 2 + .1), "metal", origin=origin, yaw=yaw)
 
 
 def apartment(parts: list[Part], placement: dict) -> None:
@@ -483,7 +606,7 @@ def city_materials() -> tuple[Material, ...]:
         Material("tile", base_color=srgb(0.72, 0.71, 0.68), roughness=0.45),
         Material("floor_tile_300", base_color=srgb(0.82, 0.81, 0.77), roughness=0.42),
         Material("metal", base_color=srgb(0.27, 0.286, 0.29), metallic=1, roughness=0.32),
-        Material("glass", base_color=srgb(0.68, 0.78, 0.79, 0.54), roughness=0.08, alpha_mode="blend"),
+        Material("glass", base_color=srgb(0.78, 0.82, 0.83, 0.18), roughness=0.07, alpha_mode="blend"),
         Material("paint", base_color=srgb(0.898, 0.894, 0.855), roughness=0.55),
         Material("site_paving", base_color=srgb(0.43, 0.45, 0.43), roughness=0.8),
         Material("slate", base_color=srgb(0.22, 0.25, 0.27), roughness=0.48),
@@ -494,14 +617,28 @@ def city_materials() -> tuple[Material, ...]:
         Material("bark", base_color=srgb(0.24, 0.19, 0.13), roughness=0.85),
         Material("foliage", base_color=srgb(0.17, 0.29, 0.17), roughness=0.85),
         Material("lamp", base_color=srgb(0.75, 0.78, 0.75), roughness=0.4),
-        Material("brick_walk", base_color=srgb(0.53, 0.31, 0.25), roughness=0.82),
+        Material("roof_membrane", base_color=srgb(0.43, 0.45, 0.43), roughness=0.84),
+        Material("equipment", base_color=srgb(0.72, 0.73, 0.69), roughness=0.48),
+        Material("grille", base_color=srgb(0.16, 0.18, 0.18), metallic=0.75, roughness=0.53),
+        *(Material(f"road_repair_{variant}", base_color=srgb(0.18, 0.195, 0.20),
+                   roughness=0.90, alpha_mode="blend") for variant in range(3)),
+        Material("tactile", base_color=srgb(0.77, 0.62, 0.23), roughness=0.75),
+        *(Material(f"runoff_stain_{variant}", base_color=srgb(0.24, 0.25, 0.22),
+                   roughness=0.88, alpha_mode="blend") for variant in range(3)),
+        *(Material(f"walk_dust_{variant}", base_color=srgb(0.29, 0.24, 0.21),
+                   roughness=0.88, alpha_mode="blend") for variant in range(4)),
+        *(Material(f"walk_damp_{variant}", base_color=srgb(0.44, 0.30, 0.27),
+                   roughness=0.34, alpha_mode="blend") for variant in range(3)),
+        *(Material(f"wall_dust_{variant}", base_color=srgb(0.32, 0.30, 0.27),
+                   roughness=0.82, alpha_mode="blend") for variant in range(3)),
+        Material("brick_walk", base_color=srgb(0.53, 0.31, 0.25), roughness=0.70),
         Material("asphalt_walk", base_color=srgb(0.37, 0.39, 0.39), roughness=0.9),
         Material("brick_red", base_color=srgb(0.56, 0.29, 0.23), roughness=0.79),
         Material("brick_sand", base_color=srgb(0.73, 0.57, 0.42), roughness=0.77),
         Material("brick_charcoal", base_color=srgb(0.32, 0.34, 0.33), roughness=0.82),
-        Material("tile_sand", base_color=srgb(0.77, 0.69, 0.56), roughness=0.48),
-        Material("tile_rose", base_color=srgb(0.69, 0.54, 0.51), roughness=0.47),
-        Material("tile_gray", base_color=srgb(0.58, 0.63, 0.65), roughness=0.48),
+        Material("tile_sand", base_color=srgb(0.77, 0.69, 0.56), roughness=0.38),
+        Material("tile_rose", base_color=srgb(0.69, 0.54, 0.51), roughness=0.39),
+        Material("tile_gray", base_color=srgb(0.58, 0.63, 0.65), roughness=0.40),
         Material("paint_cream", base_color=srgb(0.88, 0.82, 0.68), roughness=0.57),
         Material("paint_sage", base_color=srgb(0.66, 0.75, 0.65), roughness=0.59),
         Material("paint_rose", base_color=srgb(0.81, 0.67, 0.68), roughness=0.57),
@@ -509,9 +646,13 @@ def city_materials() -> tuple[Material, ...]:
         Material("concrete_warm", base_color=srgb(0.67, 0.62, 0.54), roughness=0.77),
         Material("concrete_cool", base_color=srgb(0.55, 0.61, 0.66), roughness=0.76),
         Material("slate_blue", base_color=srgb(0.18, 0.28, 0.34), roughness=0.49),
-        Material("glass_blue", base_color=srgb(0.55, 0.72, 0.82, 0.54), roughness=0.08, alpha_mode="blend"),
-        Material("glass_green", base_color=srgb(0.60, 0.78, 0.69, 0.54), roughness=0.08, alpha_mode="blend"),
-        Material("glass_smoke", base_color=srgb(0.58, 0.65, 0.69, 0.54), roughness=0.08, alpha_mode="blend"),
+        Material("glass_blue", base_color=srgb(0.74, 0.81, 0.85, 0.18), roughness=0.07, alpha_mode="blend"),
+        Material("glass_green", base_color=srgb(0.76, 0.83, 0.78, 0.18), roughness=0.07, alpha_mode="blend"),
+        Material("glass_smoke", base_color=srgb(0.70, 0.74, 0.76, 0.20), roughness=0.08, alpha_mode="blend"),
+        Material("interior_unlit", base_color=srgb(0.055, 0.065, 0.07), roughness=0.83),
+        Material("interior_warm", base_color=srgb(0.18, 0.15, 0.12), roughness=0.83),
+        Material("interior_cool", base_color=srgb(0.10, 0.12, 0.13), roughness=0.83),
+        Material("interior_blind", base_color=srgb(0.69, 0.66, 0.58), roughness=0.75),
         Material("store_tile", base_color=srgb(0.84, 0.80, 0.70), roughness=0.56),
         Material("store_tile_blue", base_color=srgb(0.66, 0.75, 0.78), roughness=0.56),
         Material("store_tile_rose", base_color=srgb(0.79, 0.67, 0.64), roughness=0.56),
@@ -534,29 +675,39 @@ def city_materials() -> tuple[Material, ...]:
 def city_tile_specs() -> dict[str, dict]:
     """Repeatable maps with a fixed physical pitch and at least 512 px/m."""
     return {
-        "asphalt": {"pattern": "asphalt", "scale_m": 0.4, "resolution": 256,
-                    "normal_strength": 0.08},
+        "asphalt": {"pattern": "aggregate_asphalt", "scale_m": 0.4, "resolution": 512,
+                    "normal_strength": 0.4},
         "concrete": {"pattern": "concrete", "scale_m": 0.4, "resolution": 256},
-        "tile": {"pattern": "ceramic", "scale_m": 0.095, "resolution": 256},
+        "tile": {"pattern": "facade_tile", "scale_m": 3.2, "resolution": 2048,
+                 "columns": 32, "rows": 64},
         "floor_tile_300": {"pattern": "floor_tile", "scale_m": 0.3, "resolution": 256},
         "metal": {"pattern": "brushed_metal", "scale_m": 0.3, "resolution": 256},
         "paint": {"pattern": "plaster", "scale_m": 0.4, "resolution": 256},
-        "site_paving": {"pattern": "paving", "scale_m": 0.4, "resolution": 256},
+        "site_paving": {"pattern": "weathered_paving", "scale_m": 1.2, "resolution": 1024,
+                        "normal_strength": 0.3},
         "slate": {"pattern": "stone", "scale_m": 0.4, "resolution": 256},
         "teal": {"pattern": "brushed_metal", "scale_m": 0.3, "resolution": 256},
         "stone": {"pattern": "stone", "scale_m": 0.4, "resolution": 256},
         "carpet": {"pattern": "carpet", "scale_m": 0.3, "resolution": 256},
         "bark": {"pattern": "bark", "scale_m": 0.3, "resolution": 256},
         "foliage": {"pattern": "foliage", "scale_m": 0.3, "resolution": 256},
-        "brick_walk": {"pattern": "brick", "scale_m": 0.48, "resolution": 256},
-        "asphalt_walk": {"pattern": "asphalt", "scale_m": 0.4, "resolution": 256,
-                         "normal_strength": 0.08},
-        "brick_red": {"pattern": "brick", "scale_m": 0.48, "resolution": 256},
-        "brick_sand": {"pattern": "brick", "scale_m": 0.48, "resolution": 256},
-        "brick_charcoal": {"pattern": "brick", "scale_m": 0.48, "resolution": 256},
-        "tile_sand": {"pattern": "ceramic", "scale_m": 0.095, "resolution": 256},
-        "tile_rose": {"pattern": "ceramic", "scale_m": 0.095, "resolution": 256},
-        "tile_gray": {"pattern": "ceramic", "scale_m": 0.095, "resolution": 256},
+        "brick_walk": {"pattern": "weathered_brick", "scale_m": 3.84, "resolution": 2048,
+                       "columns": 16, "rows": 32,
+                       "normal_strength": 0.4},
+        "asphalt_walk": {"pattern": "aggregate_asphalt", "scale_m": 0.4, "resolution": 512,
+                         "normal_strength": 0.4},
+        "brick_red": {"pattern": "weathered_brick", "scale_m": 3.84, "resolution": 2048,
+                      "columns": 16, "rows": 32},
+        "brick_sand": {"pattern": "weathered_brick", "scale_m": 3.84, "resolution": 2048,
+                       "columns": 16, "rows": 32},
+        "brick_charcoal": {"pattern": "weathered_brick", "scale_m": 3.84, "resolution": 2048,
+                           "columns": 16, "rows": 32},
+        "tile_sand": {"pattern": "facade_tile", "scale_m": 3.2, "resolution": 2048,
+                      "columns": 32, "rows": 64},
+        "tile_rose": {"pattern": "facade_tile", "scale_m": 3.2, "resolution": 2048,
+                      "columns": 32, "rows": 64},
+        "tile_gray": {"pattern": "facade_tile", "scale_m": 3.2, "resolution": 2048,
+                      "columns": 32, "rows": 64},
         "paint_cream": {"pattern": "plaster", "scale_m": 0.4, "resolution": 256},
         "paint_sage": {"pattern": "plaster", "scale_m": 0.4, "resolution": 256},
         "paint_rose": {"pattern": "plaster", "scale_m": 0.4, "resolution": 256},
@@ -567,6 +718,24 @@ def city_tile_specs() -> dict[str, dict]:
         "store_tile": {"pattern": "store_tile", "scale_m": 0.3, "resolution": 256},
         "store_tile_blue": {"pattern": "store_tile", "scale_m": 0.3, "resolution": 256},
         "store_tile_rose": {"pattern": "store_tile", "scale_m": 0.3, "resolution": 256},
+        "roof_membrane": {"pattern": "roof_membrane", "scale_m": 2, "resolution": 1024,
+                          "normal_strength": 0.25},
+        "equipment": {"pattern": "brushed_metal", "scale_m": 0.3, "resolution": 256},
+        **{f"road_repair_{variant}": {"pattern": "weather_patch", "scale_m": 1.0,
+                                      "resolution": 256, "mapping": "local", "alpha_map": True,
+                                      "opacity": .36} for variant in range(3)},
+        **{f"runoff_stain_{variant}": {"pattern": "runoff_decal", "scale_m": 1.0,
+                                      "resolution": 512, "mapping": "local", "alpha_map": True}
+           for variant in range(3)},
+        **{f"walk_dust_{variant}": {"pattern": "weather_patch", "scale_m": 1.0,
+                                    "resolution": 256, "mapping": "local", "alpha_map": True,
+                                    "opacity": .20} for variant in range(4)},
+        **{f"walk_damp_{variant}": {"pattern": "weather_patch", "scale_m": 1.0,
+                                    "resolution": 256, "mapping": "local", "alpha_map": True,
+                                    "opacity": .32} for variant in range(3)},
+        **{f"wall_dust_{variant}": {"pattern": "weather_patch", "scale_m": 1.0,
+                                    "resolution": 256, "mapping": "local", "alpha_map": True,
+                                    "opacity": .13} for variant in range(3)},
     }
 
 
@@ -579,6 +748,7 @@ def _vary_designed_building(parts: list[Part], start: int, placement: dict,
                             index: int) -> None:
     """Vary each blueprint shell around its site centre without shifting the roads."""
     horizontal, vertical = _variation(index)
+    scale_x, vertical, scale_z = placement.get("layout_scale", (horizontal, vertical, horizontal))
     rng = random.Random(8521 + index * 113)
     kind = placement["blueprint"]
     if kind == "02-apartment":
@@ -594,64 +764,34 @@ def _vary_designed_building(parts: list[Part], start: int, placement: dict,
                    "slate": rng.choice(("slate", "slate_blue")),
                    "glass": rng.choice(("glass", "glass_blue", "glass_green", "glass_smoke"))}
     ox, oy, oz = placement["position_m"]
+    yaw = placement["yaw_rad"]
     for part_index in range(start, len(parts)):
         part = parts[part_index]
         if part.id.endswith(("_parking", "_parking_stripes", "_lot", "_lot_stripes", "_loading")):
             continue
         transform = part.transform
         x, y, z = transform.translation
+        dx, dz = x - ox, z - oz
+        local_x = dx * math.cos(yaw) - dz * math.sin(yaw)
+        local_z = dx * math.sin(yaw) + dz * math.cos(yaw)
+        varied_x, varied_y, varied_z = _position(local_x * scale_x, (y - oy) * vertical,
+                                               local_z * scale_z, (ox, oy, oz), yaw)
         parts[part_index] = replace(
             part, material=palette.get(part.material, part.material),
             transform=replace(transform,
-                              translation=(ox + (x - ox) * horizontal,
-                                           oy + (y - oy) * vertical,
-                                           oz + (z - oz) * horizontal),
+                              translation=(varied_x, varied_y, varied_z),
                               scale=tuple(value * factor for value, factor in
-                                          zip(transform.scale, (horizontal, vertical, horizontal)))))
+                                          zip(transform.scale, (scale_x, vertical, scale_z)))))
 
 
 def infill_sites(placements: list[dict] | None = None) -> list[dict]:
-    """Place five compact, varied shells in the gaps of each designed block."""
-    placements = CITY["placements"] if placements is None else placements
-    xs = sorted({float(p["position_m"][0]) for p in placements})
-    zs = sorted({float(p["position_m"][2]) for p in placements})
-    if len(xs) != 8 or len(zs) != 8:
-        raise ModelingError("city.infillGrid", "Expected an 8 by 8 placement grid.")
-    occupied = []
-    for index, placement in enumerate(placements):
-        horizontal, _ = _variation(index)
-        x, _, z = placement["position_m"]
-        left, back, right, front = footprint(placement)
-        occupied.append((x + (left - x) * horizontal, z + (back - z) * horizontal,
-                         x + (right - x) * horizontal, z + (front - z) * horizontal))
-    roads = [tuple(zone["rect_xz_m"]) for zone in CITY["layout"]]
-    rng = random.Random(91107)
-    sites = []
-    for row in range(4):
-        z0, z1 = zs[2 * row:2 * row + 2]
-        zm = (z0 + z1) / 2
-        for column in range(4):
-            x0, x1 = xs[2 * column:2 * column + 2]
-            xm = (x0 + x1) / 2
-            for slot, (x, z) in enumerate(((xm, z0), (xm, z1), (x0, zm),
-                                           (x1, zm), (xm, zm))):
-                width = round(rng.uniform(9.0, 13.0), 2)
-                depth = round(rng.uniform(9.0, 13.0), 2)
-                bounds = (x - width / 2, z - depth / 2, x + width / 2, z + depth / 2)
-                clearance = (bounds[0] - 1.0, bounds[1] - 1.0,
-                             bounds[2] + 1.0, bounds[3] + 1.0)
-                if any(_overlap(clearance, other) for other in (*occupied, *roads)):
-                    continue
-                floors = rng.randint(2, 10)
-                sites.append({"id": f"infill_{column}_{row}_{slot}", "x": x, "z": z,
-                              "width": width, "depth": depth, "floors": floors,
-                              "facade": rng.choice(("brick_red", "brick_sand", "brick_charcoal",
-                                                    "tile_sand", "tile_rose", "tile_gray",
-                                                    "paint_cream", "paint_sage", "paint_blue")),
-                              "glass": rng.choice(("glass", "glass_blue", "glass_green")),
-                              "bounds": bounds})
-                occupied.append(bounds)
-    return sites
+    """Sixteen extra buildings per block, alongside four native buildings."""
+    design = CITY if placements is None else {**CITY, "placements": placements}
+    return [r for r in dense_layout(design, _variation)["buildings"] if r["kind"] == "infill"]
+
+
+def city_layout() -> dict:
+    return with_facilities(dense_layout(CITY, _variation))
 
 
 def _infill_building(parts: list[Part], site: dict) -> None:
@@ -670,20 +810,98 @@ def _infill_building(parts: list[Part], site: dict) -> None:
     for side, front in (("north", False), ("south", True)):
         wall_z0, wall_z1 = (z1 - 0.2, z1) if front else (z0, z0 + 0.2)
         glass_z0, glass_z1 = (z1 + 0.005, z1 + 0.015) if front else (z0 - 0.015, z0 - 0.005)
+        # The south ground floor has a 1.8 m entrance, with no wall or glass
+        # spanning its opening. Upper windows use real masonry piers.
+        upper = (floors - 1, (0, 3.2, 0))
         box(parts, tag + side + "_spandrel",
-            (x0, x1, 0.22, 0.85, wall_z0, wall_z1), facade,
-            repeat=(floors, (0, 3.2, 0)))
+            (x0, x1, 3.42, 4.05, wall_z0, wall_z1), facade, repeat=upper)
+        if not front:
+            box(parts, tag + side + "_ground_sill", (x0, x1, .22, .85, wall_z0, wall_z1), facade)
+        else:
+            for name, a, b in (("left", x0, x - .9), ("right", x + .9, x1)):
+                box(parts, tag + "entry_sill_" + name, (a, b, .22, .85, wall_z0, wall_z1), facade)
         box(parts, tag + side + "_header",
             (x0, x1, 2.85, 3.2, wall_z0, wall_z1), facade,
             repeat=(floors, (0, 3.2, 0)))
-        box(parts, tag + side + "_glass",
-            (x0 + 0.18, x1 - 0.18, 0.85, 2.85, glass_z0, glass_z1), site["glass"],
-            repeat=(floors, (0, 3.2, 0)))
         bays = max(2, round(w / 2.2))
         pitch = (w - 0.4) / bays
+        if floors > 1:
+            stain_rng = random.Random(sum((i + 1) * ord(char) for i, char in enumerate(tag + side)))
+            for mark in range(min(2, floors - 1)):
+                level = stain_rng.randrange(floors - 1)
+                bay = stain_rng.randrange(bays)
+                centre = x0 + .44 + bay * pitch + (pitch - .49) / 2
+                radius = stain_rng.uniform(.21, .37)
+                sill_y = 4.0 + level * 3.2
+                stain_z = (z1 + .017, z1 + .020) if front else (z0 - .020, z0 - .017)
+                box(parts, tag + side + f"_runoff_{mark}",
+                    (centre - radius, centre + radius, sill_y - .52, sill_y, *stain_z),
+                    f"runoff_stain_{stain_rng.randrange(3)}")
+            for mark in range(min(2, floors - 1)):
+                level = stain_rng.randrange(floors - 1)
+                centre = stain_rng.uniform(x0 + .7, x1 - .7)
+                radius = stain_rng.uniform(.23, .52)
+                wall_z = (z1 + .022, z1 + .025) if front else (z0 - .025, z0 - .022)
+                box(parts, tag + side + f"_wall_dust_{mark}",
+                    (centre - radius, centre + radius, 3.48 + level * 3.2,
+                     3.87 + level * 3.2, *wall_z),
+                    f"wall_dust_{stain_rng.randrange(3)}")
+        box(parts, tag + side + "_glass",
+            (x0 + .44, x0 + pitch - .05, 4.05, 6.05, glass_z0, glass_z1), site["glass"],
+            repeat=((bays, (pitch, 0, 0)), upper))
+        # These upper storeys have no authored rooms. Inset surfaces give
+        # transparent panes depth instead of a sight line through the shell.
+        inset_z = z1 - .62 if front else z0 + .62
+        room_tones = ("interior_unlit", "interior_warm", "interior_cool")
+        room_index = (sum(ord(c) for c in tag) + int(front)) % len(room_tones)
+        room_tone = room_tones[room_index]
+        box(parts, tag + side + "_room_back",
+            (x0 + .22, x1 - .22, 4.05, 6.05, inset_z - .015, inset_z + .015),
+            room_tone, repeat=upper)
+        shade_rng = random.Random(1613 + sum((i + 1) * ord(c) for i, c in enumerate(tag + side)))
+        for accent in range(min(2, bays)):
+            bay = shade_rng.randrange(bays)
+            level = shade_rng.randrange(floors - 1)
+            left = x0 + .48 + bay * pitch
+            accent_z = inset_z + (.03 if front else -.03)
+            box(parts, tag + side + f"_room_variation_{accent}",
+                (left, left + pitch - .56, 4.05 + level * 3.2,
+                 6.05 + level * 3.2, accent_z - .012, accent_z + .012),
+                room_tones[(room_index + accent + 1) % len(room_tones)])
+        if floors > 2:
+            for shade in range(min(3, bays)):
+                bay = shade_rng.randrange(bays)
+                level = shade_rng.randrange(floors - 1)
+                shade_y = 4.05 + level * 3.2
+                shade_z = z1 - .14 if front else z0 + .14
+                shade_width = pitch - .57
+                if shade_width > .35:
+                    left = x0 + .49 + bay * pitch
+                    lowered = shade_rng.choice((.55, .85, 1.15))
+                    box(parts, tag + side + f"_blind_{shade}",
+                        (left, left + shade_width, shade_y + 2.0 - lowered, shade_y + 2.0,
+                         shade_z - .012, shade_z + .012), "interior_blind")
+        box(parts, tag + side + "_piers",
+            (x0 + .2, x0 + .44, 4.05, 6.05, wall_z0, wall_z1), facade,
+            repeat=((bays, (pitch, 0, 0)), upper))
+        box(parts, tag + side + "_window_sills",
+            (x0 + .39, x0 + pitch, 4.0, 4.06, glass_z0 - .06, glass_z1 + .08), "stone",
+            repeat=((bays, (pitch, 0, 0)), upper))
+        if front:
+            for name, a, b in (("left", x0 + .2, x - .9), ("right", x + .9, x1 - .2)):
+                box(parts, tag + "shop_glass_" + name, (a, b, .85, 2.85, glass_z0, glass_z1), site["glass"])
+            box(parts, tag + "entry_frame_left", (x - .96, x - .9, .22, 2.85, glass_z0 - .03, glass_z1 + .03), "metal")
+            box(parts, tag + "entry_frame_right", (x + .9, x + .96, .22, 2.85, glass_z0 - .03, glass_z1 + .03), "metal")
+            box(parts, tag + "entry_transom", (x - .96, x + .96, 2.79, 2.85, glass_z0 - .03, glass_z1 + .03), "metal")
+            # Open leaf parked at the right jamb; 1.35 m remains clear.
+            box(parts, tag + "entry_door", (x + .45, x + .89, .22, 2.75, glass_z0, glass_z1), site["glass"])
+            box(parts, tag + "shop_canopy", (x0, x1, 2.91, 3.02, z1, z1 + .6), "paint_cream")
+            box(parts, tag + "entry_apron", (x - 1.5, x + 1.5, .036, .07, z1, z1 + 1.3), "brick_walk")
+        else:
+            box(parts, tag + "north_ground_glass", (x0 + .2, x1 - .2, .85, 2.85, glass_z0, glass_z1), site["glass"])
         box(parts, tag + side + "_mullions",
-            (x0 + 0.2, x0 + 0.25, 0.85, 2.85, glass_z0 - 0.025, glass_z1 + 0.025),
-            "metal", repeat=((bays, (pitch, 0, 0)), (floors, (0, 3.2, 0))))
+            (x0 + .44, x0 + .48, 4.05, 6.05, glass_z0 - .025, glass_z1 + .025),
+            "metal", repeat=((bays, (pitch, 0, 0)), upper))
     box(parts, tag + "roof", (x0, x1, height, height + 0.22, z0, z1), "slate")
     for side, bounds in (("w", (x0, x0 + 0.18, z0, z1)),
                          ("e", (x1 - 0.18, x1, z0, z1)),
@@ -692,33 +910,75 @@ def _infill_building(parts: list[Part], site: dict) -> None:
         a, b, c, d2 = bounds
         box(parts, tag + "parapet_" + side,
             (a, b, height + 0.22, height + 0.62, c, d2), facade)
+    rooftop_details(parts, site["id"], w, d, height + .22, origin=(x, 0, z),
+                    seed=sum(ord(c) for c in site["id"]))
+    facade_details(parts, site["id"], w, d, height + .22, origin=(x, 0, z), floors=floors)
 
 
 def build(_: GenerationInput) -> Asset:
     validate_city_layout()
-    materials = city_materials()
+    subway = subway_station()
+    materials = city_materials() + warehouse_materials() + subway.materials
     parts: list[Part] = []
     roads(parts)
-    for index, placement in enumerate(CITY["placements"]):
+    street_details(parts)
+    layout = city_layout()
+    open_station_ground(parts,layout)
+    for record in (r for r in layout["buildings"] if r["kind"] == "designed"):
+        index, placement = record["source_index"], record["placement"]
         kind = placement["blueprint"]
         start = len(parts)
         {"02-apartment": apartment, "03-convenience": convenience, "04-office": office}[kind](parts, placement)
+        # Remove detached parking and loading pads from the compact frontage.
+        parts[start:] = [p for p in parts[start:] if not p.id.endswith(
+            ("_parking", "_parking_stripes", "_lot", "_lot_stripes", "_plaza", "_loading"))]
+        width, roof, depth = {"02-apartment": (24, 18, 14), "03-convenience": (18, 4.2, 12),
+                             "04-office": (24, 29.4, 18)}[kind]
+        rooftop_details(parts, f"site_{placement['id']}", width, depth, roof,
+                        origin=tuple(placement["position_m"]), yaw=placement["yaw_rad"], seed=5231 + index)
+        facade_details(parts, f"site_{placement['id']}", width, depth, roof,
+                       origin=tuple(placement["position_m"]), yaw=placement["yaw_rad"],
+                       floors={"02-apartment": 6, "03-convenience": 1, "04-office": 8}[kind])
         _vary_designed_building(parts, start, placement, index)
-    sites = infill_sites()
+    sites = [r for r in layout["buildings"] if r["kind"] == "infill"]
     for site in sites:
-        _infill_building(parts, site)
-    site_furnishings(parts, CITY["placements"], [site["bounds"] for site in sites])
+        start = len(parts)
+        local = {**site, "x": 0., "z": 0., "width": site["local_width"], "depth": site["local_depth"]}
+        _infill_building(parts, local)
+        for i in range(start, len(parts)):
+            part = parts[i]
+            transform = part.transform
+            parts[i] = replace(part, transform=replace(transform,
+                translation=_position(*transform.translation, (site["x"], 0., site["z"]), site["yaw"]),
+                rotation=(transform.rotation[0], transform.rotation[1] + site["yaw"], transform.rotation[2])))
+    site_furnishings(parts, [])
+    for reserve in layout["reservedSites"]:
+        x0, z0, x1, z1 = reserve["bounds"]
+        box(parts, "reserved_" + reserve["id"], (x0, x1, .036, .042, z0, z1), "asphalt_walk")
+    add_facilities(parts, layout)
     return Asset(name="City", materials=materials, parts=tuple(parts),
-                 extras={"tiled_materials": city_tile_specs(),
-                         "infill_count": len(sites), "city_variation_seed": 91107})
+                 extras={"tiled_materials": {**city_tile_specs(), **warehouse_tile_specs(), **subway.extras["tiled_materials"]},
+                         "infill_count": len(sites), "city_variation_seed": DENSITY_RULES["seed"],
+                         "city_layout": layout,
+                         "architecture_detail_version": 9,
+                         "visual_reference": "blueprints/japan-realistic-v1/01-city/reference_models.json"})
 
 
-asset = AssetGenerator(name="City", parameters={}, build=build, seed=1)
+asset = AssetGenerator(name="City", parameters={}, build=build, seed=1,
+                       quality=QualityProfile(max_triangles=CITY["target"]["triangles_lod0_max"]))
 blueprint = "../blueprints/japan-realistic-v1/01-city/blueprint.json"
 blueprint_dependencies = (
+    "../blueprints/japan-realistic-v1/01-city/density_layout.json",
     "../blueprints/japan-realistic-v1/02-apartment/blueprint.json",
     "../blueprints/japan-realistic-v1/03-convenience/blueprint.json",
     "../blueprints/japan-realistic-v1/04-office/blueprint.json",
+    "../blueprints/japan-realistic-v1/24-warehouse/blueprint.json",
+    "../blueprints/japan-realistic-v1/01-city/facility_layout.json",
+    "../blueprints/japan-realistic-v1/25-subway-station/blueprint.json",
+    "../blueprints/japan-realistic-v1/subway-assembly.json",
+    "../blueprints/japan-realistic-v1/17-subway-entrance/blueprint.json",
+    "../blueprints/japan-realistic-v1/18-subway-concourse/blueprint.json",
+    "../blueprints/japan-realistic-v1/19-subway-platform/blueprint.json",
 )
 blueprint_part_map = {"ground": ("ground",), "curb": ("curb_standard",)}
 blueprint_prototype_parts = ("curb",)
@@ -729,10 +989,19 @@ render = RenderSettings(
     resolution=768, aspect_ratio=1.6, views=(), passes=("shaded",), samples=24,
     environment="sunny",
     cameras=(
-        Camera("district_oblique", position=(440, 440, 440), target=(0, 0, 0), fov=math.radians(55)),
-        Camera("district_plan", position=(0, 700, 0.001), target=(0, 0, 0), orthographic=True, ortho_scale=520),
+        Camera("district_oblique", position=(440, 440, 440), target=(0, -25, 0), fov=math.radians(70)),
+        Camera("district_plan", position=(0, 700, 0.001), target=(0, 0, 0), orthographic=True, ortho_scale=840),
         Camera("main_street", position=(0, 2.0, 55), target=(0, 2.0, -85), fov=math.radians(70)),
-        Camera("neighborhood_walk", position=(-65, 2.0, -20), target=(-65, 8, -75),
+        Camera("neighborhood_walk", position=(-8, 1.8, -106), target=(-14, 3.0, -79),
                fov=math.radians(70)),
+        Camera("rooftop_detail", position=(-42, 48, -42), target=(-65, 22, -65), fov=math.radians(50)),
+        Camera("sidewalk_detail", position=(7.8, 1.1, 53), target=(7.8, .18, 44), fov=math.radians(65)),
+        Camera("facade_runoff_detail", position=(30.0, 10.4, -4.0),
+               target=(30.0, 10.14, -11.38), fov=math.radians(38)),
+        Camera("reserved_sites", position=(74, 85, 74), target=(0, 0, 0), fov=math.radians(65)),
+        Camera("warehouse_street", position=(8, 10, 9), target=(26, 3.6, 38), fov=math.radians(70)),
+        Camera("warehouse_site", position=(52, 52, -5), target=(26, 1, 37), fov=math.radians(63)),
+        Camera("subway_street",position=(-15,9,-62),target=(-25,.4,-52),fov=math.radians(72)),
+        Camera("subway_approach",position=(-23.5,2.1,-62),target=(-27.1,1.1,-58),fov=math.radians(72)),
     ),
 )

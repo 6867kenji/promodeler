@@ -1,0 +1,22 @@
+{
+  "schema": "promodeler-canonical-character/2.0",
+  "id": "shared-megane-uniform-woman",
+  "name": "Megane Uniform on Rigged Woman",
+  "base": "RiggedWoman_v5",
+  "seed": 1,
+  "source": {
+    "kind": "shared_wardrobe"
+  },
+  "face": {},
+  "body": {
+    "chest": 0.25
+  },
+  "appearance": {
+    "hairStyle": "hair_ponytail_brown"
+  },
+  "material": {},
+  "wardrobe": {
+    "dress": "megane_uniform"
+  },
+  "accessories": []
+}

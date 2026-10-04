@@ -1,0 +1,13 @@
+{
+  "schema": "promodeler-canonical-character/2.0",
+  "id": "sports-bra-woman",
+  "name": "Sports Bra Woman",
+  "base": "RiggedWoman_v3",
+  "seed": 1,
+  "source": {"kind": "local_clothing", "id": "SportsBRA"},
+  "face": {}, "body": {},
+  "appearance": {"hairStyle": "hair_blue_silver_long"},
+  "material": {},
+  "wardrobe": {"top": "sports_bra"},
+  "accessories": []
+}

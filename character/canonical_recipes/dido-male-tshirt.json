@@ -1,0 +1,14 @@
+{
+  "schema": "promodeler-canonical-character/2.0",
+  "id": "dido-male-tshirt",
+  "name": "Dido Male with T-shirt",
+  "base": "DidoMale_v1",
+  "seed": 1,
+  "source": {"kind": "user_supplied_rigged_fbx_with_fitted_tshirt"},
+  "face": {},
+  "body": {},
+  "appearance": {"hairStyle": "dido_short_hair"},
+  "material": {},
+  "wardrobe": {"top": "male_tshirt", "bottom": "dido_biker_jeans", "shoes": "dido_biker_boots"},
+  "accessories": ["dido_facial_hair"]
+}

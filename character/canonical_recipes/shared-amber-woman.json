@@ -1,0 +1,25 @@
+{
+  "schema": "promodeler-canonical-character/2.0",
+  "id": "shared-amber-woman",
+  "name": "Amber Outfit on Rigged Woman",
+  "base": "RiggedWoman_v5",
+  "seed": 1,
+  "source": {
+    "kind": "shared_wardrobe"
+  },
+  "face": {},
+  "body": {
+    "chest": 0.25
+  },
+  "appearance": {
+    "hairStyle": "hair_ponytail_brown"
+  },
+  "material": {},
+  "wardrobe": {
+    "top": "amber_crop_tshirt",
+    "bottom": "amber_jeans",
+    "shoes": "amber_boots",
+    "outer": "amber_leather_jacket"
+  },
+  "accessories": []
+}

@@ -35,7 +35,7 @@ def finish(scene: CompiledScene, recipe: dict, out_dir: str, reuse_textures: boo
         material_id = part_spec["material"]
         if material_id in tiled_materials:
             tile = tile_specs[material_id]
-            tiled.project(obj, tile["scale_m"])
+            tiled.project(obj, tile["scale_m"], tile.get("mapping", "world"))
             scene.uv_stats[part_id] = uv.uv_statistics(obj.data, tile.get("resolution", 256))
             material, textures = tiled_materials[material_id]
             obj.data.materials[0] = material

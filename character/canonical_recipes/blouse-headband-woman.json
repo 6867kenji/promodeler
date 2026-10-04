@@ -1,0 +1,13 @@
+{
+  "schema": "promodeler-canonical-character/2.0",
+  "id": "blouse-headband-woman",
+  "name": "Blouse and Black Headband Woman",
+  "base": "RiggedWoman_v4",
+  "seed": 1,
+  "source": {"kind": "local_clothing", "id": "BlouseA/BlouseA.blend"},
+  "face": {}, "body": {"chest": 0.25},
+  "appearance": {"hairStyle": "hair_headband_black"},
+  "material": {},
+  "wardrobe": {"top": "blouse_a"},
+  "accessories": []
+}

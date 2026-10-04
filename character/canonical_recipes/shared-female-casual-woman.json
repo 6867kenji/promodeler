@@ -1,0 +1,24 @@
+{
+  "schema": "promodeler-canonical-character/2.0",
+  "id": "shared-female-casual-woman",
+  "name": "Separated Female Outfit on Rigged Woman",
+  "base": "RiggedWoman_v5",
+  "seed": 1,
+  "source": {
+    "kind": "shared_wardrobe"
+  },
+  "face": {},
+  "body": {
+    "chest": 0.25
+  },
+  "appearance": {
+    "hairStyle": "hair_ponytail_brown"
+  },
+  "material": {},
+  "wardrobe": {
+    "top": "female_tank_top",
+    "bottom": "female_cargo_pants",
+    "outer": "female_jacket"
+  },
+  "accessories": []
+}

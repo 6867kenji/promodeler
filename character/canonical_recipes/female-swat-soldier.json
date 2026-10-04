@@ -1,0 +1,28 @@
+{
+  "schema": "promodeler-canonical-character/2.0",
+  "id": "female-swat-soldier",
+  "name": "Female SWAT Soldier",
+  "base": "FemaleSWAT_Rigged_v1",
+  "seed": 1,
+  "source": {
+    "kind": "user_supplied_rigged_blend",
+    "sha256": "a35fe4a909271c26d0d4f204cf8345914e4f311ee35e8a1986481d6b703012a9"
+  },
+  "face": {},
+  "body": {},
+  "appearance": {},
+  "material": {},
+  "wardrobe": {
+    "dress": "swat_suit",
+    "shoes": "swat_boots",
+    "outer": "swat_protective_armor"
+  },
+  "accessories": [
+    "swat_helmet",
+    "swat_balaclava",
+    "swat_belt",
+    "swat_gloves",
+    "swat_knee_pads",
+    "swat_rifle"
+  ]
+}

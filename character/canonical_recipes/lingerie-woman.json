@@ -1,0 +1,13 @@
+{
+  "schema": "promodeler-canonical-character/2.0",
+  "id": "lingerie-woman",
+  "name": "Lingerie Set Woman",
+  "base": "RiggedWoman_v3",
+  "seed": 1,
+  "source": {"kind": "local_clothing", "id": "Lingerie-skc-02_obj"},
+  "face": {}, "body": {"chest": 0.0},
+  "appearance": {"hairStyle": "hair_blue_silver_long"},
+  "material": {},
+  "wardrobe": {"dress": "lingerie_set"},
+  "accessories": []
+}

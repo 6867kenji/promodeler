@@ -1,0 +1,21 @@
+{
+  "schema": "promodeler-canonical-character/2.0",
+  "id": "matt-wardrobe",
+  "name": "Matt Selectable Wardrobe",
+  "base": "Matt_Wardrobe_v2",
+  "seed": 1,
+  "source": {
+    "kind": "native_wardrobe",
+    "base": "Matt_Rigged_v1"
+  },
+  "face": {},
+  "body": {},
+  "appearance": {},
+  "material": {},
+  "wardrobe": {
+    "top": "matt_fit_shirt",
+    "bottom": "matt_slim_jeans",
+    "shoes": "matt_canvas_shoes"
+  },
+  "accessories": []
+}

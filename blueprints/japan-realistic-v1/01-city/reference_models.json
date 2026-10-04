@@ -1,0 +1,81 @@
+{
+  "referenceModels": [
+    {
+      "id": "nyc-set-8",
+      "name": "New York City Set 8",
+      "aliases": ["NewYorkBlock"],
+      "suppliedBlend": "C:/Users/kuwano/develop/3d/建築物/NewYorkBlock/Block_08_relinked.blend",
+      "inspection": "C:/Users/kuwano/OneDrive/画像/モデル生成/promodeler-rig-review-20260929/new-york-block.audit.json",
+      "inspectionStatus": "textures_complete_identical_to_existing_reference",
+      "role": "visual_reference",
+      "source": "C:/Users/kuwano/develop/3d/建築物/NewYork/NYC_Set_8_Blender.rar",
+      "textureArchive": "C:/Users/kuwano/develop/3d/建築物/NewYork/NYC_Set_8_Textures(1).rar",
+      "preparedBlend": "C:/Users/kuwano/OneDrive/画像/モデル生成/promodeler-new-reference/architecture/nyc-set-8/Block_08_relinked.blend",
+      "preview": "C:/Users/kuwano/OneDrive/画像/モデル生成/promodeler-new-reference/architecture/nyc-set-8/preview.png",
+      "textureDirectory": "C:/Users/kuwano/OneDrive/画像/モデル生成/promodeler-new-reference/architecture/nyc-set-8/textures",
+      "useFor": ["facade variation", "roof details", "street furniture", "sidewalk texture", "vegetation density"],
+      "note": "Use as a material and detail reference. The city blueprint's 500 m Japanese street plan and dimensions remain authoritative."
+    },
+    {
+      "id": "subway-passage",
+      "name": "SubwayPassage",
+      "role": "visual_reference",
+      "source": "C:/Users/kuwano/develop/3d/建築物/SubwayPassage/Subway+Walking+Stairs/project/Journey Through the Morning Subway.blend",
+      "preparedBlend": "C:/Users/kuwano/OneDrive/画像/モデル生成/promodeler-rig-review-20260929/architecture/subway-passage/SubwayPassage_relinked.blend",
+      "preview": "C:/Users/kuwano/OneDrive/画像/モデル生成/promodeler-rig-review-20260929/architecture/subway-passage/preview.png",
+      "inspection": "C:/Users/kuwano/OneDrive/画像/モデル生成/promodeler-rig-review-20260929/subway-passage.audit.json",
+      "textureRepair": "C:/Users/kuwano/OneDrive/画像/モデル生成/promodeler-rig-review-20260929/subway-preparation.json",
+      "inspectionStatus": "partial_textures",
+      "relinkedImages": 43,
+      "unresolvedImages": 9,
+      "useFor": ["subway stairs", "tile wear and grout", "railings", "ceiling pipes", "utility details"],
+      "note": "Nine image files are absent from the supplied folders; four roughness maps are referenced by scene materials. Reference use only; source geometry remains unchanged."
+    },
+    {
+      "id": "warehouse",
+      "name": "Warehouse WSE 11",
+      "role": "visual_reference",
+      "source": "C:/Users/kuwano/develop/3d/建築物/Warehouse/WSE_11.blend",
+      "preview": "C:/Users/kuwano/OneDrive/画像/モデル生成/promodeler-rig-review-20260929/architecture/warehouse/preview.png",
+      "inspection": "C:/Users/kuwano/OneDrive/画像/モデル生成/promodeler-rig-review-20260929/warehouse.audit.json",
+      "inspectionStatus": "textures_complete",
+      "packedImages": 29,
+      "dimensionsNativeXYZM": [25.002784729003906, 26.49997615814209, 8.5500009059906],
+      "useFor": ["warehouse facade", "corrugated roof", "skylights", "loading doors", "brick base"]
+    },
+    {
+      "id": "subway-gates-vending",
+      "name": "Gates and Vending",
+      "role": "visual_reference",
+      "source": "C:/Users/kuwano/develop/3d/地下鉄/改札＋自販機/Gates_And_Vending/Gates_And_Vending.fbx",
+      "inspection": "C:/Users/kuwano/OneDrive/画像/モデル生成/promodeler-new-assets-20260930/inventory/subway-gates-vending.json",
+      "inspectionStatus": "textures_complete",
+      "textureFiles": 40,
+      "useFor": ["ticket gates", "vending machines", "station help point", "signage"],
+      "note": "Source contains a 1000 m presentation ground plane; exclude it when exporting props."
+    },
+    {
+      "id": "subway-train-station",
+      "name": "Train Station and Subway Cars",
+      "role": "visual_reference",
+      "source": "C:/Users/kuwano/develop/3d/地下鉄/駅/TrainStation.fbx",
+      "inspection": "C:/Users/kuwano/OneDrive/画像/モデル生成/promodeler-new-assets-20260930/inventory/subway-train-station.json",
+      "inspectionStatus": "partial_pbr_textures",
+      "textureFiles": 4,
+      "useFor": ["subway car proportions", "platform layout", "trackside ceiling"],
+      "note": "Only platform/floor materials have image maps; train cars mainly use material colors."
+    },
+    {
+      "id": "subway-station-v1",
+      "name": "Subway Station v1",
+      "role": "visual_reference",
+      "source": "C:/Users/kuwano/develop/3d/地下鉄/駅2/Subway+Station+v1.blend",
+      "inspection": "C:/Users/kuwano/OneDrive/画像/モデル生成/promodeler-new-assets-20260930/inventory/subway-station-v1-blend.json",
+      "inspectionStatus": "partial_textures",
+      "packedImages": 162,
+      "unresolvedImages": 3,
+      "useFor": ["platform materials", "rails", "guardrails", "vending machines", "signage"],
+      "note": "Large full-scene reference (958 MB). Optimize repeated coffee cups before direct scene reuse; three wall_blue texture links are missing."
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "schema": "promodeler-canonical-character/2.0",
+  "id": "amber-wardrobe",
+  "name": "Amber Selectable Wardrobe",
+  "base": "Amber_Wardrobe_v2",
+  "seed": 1,
+  "source": {
+    "kind": "native_wardrobe",
+    "base": "Amber_Rigged_v1"
+  },
+  "face": {},
+  "body": {},
+  "appearance": {},
+  "material": {},
+  "wardrobe": {
+    "top": "amber_crop_tshirt",
+    "bottom": "amber_jeans",
+    "shoes": "amber_boots",
+    "outer": "amber_leather_jacket"
+  },
+  "accessories": []
+}

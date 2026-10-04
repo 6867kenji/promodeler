@@ -1,0 +1,124 @@
+{
+  "id": "Matt_Wardrobe_v2",
+  "model": "C:/Users/kuwano/OneDrive/画像/モデル生成/promodeler-new-characters/canonical/matt/18e0f24f7d5e/model.glb",
+  "textureMaxSize": 2048,
+  "exportMorphs": false,
+  "parameters": {
+    "body.shoulderWidth": {
+      "bones": [
+        {
+          "name": "CC_Base_L_Clavicle",
+          "axis": "Y",
+          "scale": [
+            0.92,
+            1.08
+          ]
+        },
+        {
+          "name": "CC_Base_R_Clavicle",
+          "axis": "Y",
+          "scale": [
+            0.92,
+            1.08
+          ]
+        }
+      ]
+    },
+    "body.armLength": {
+      "bones": [
+        {
+          "name": "CC_Base_L_Upperarm",
+          "axis": "Y",
+          "scale": [
+            0.92,
+            1.08
+          ]
+        },
+        {
+          "name": "CC_Base_R_Upperarm",
+          "axis": "Y",
+          "scale": [
+            0.92,
+            1.08
+          ]
+        },
+        {
+          "name": "CC_Base_L_Forearm",
+          "axis": "Y",
+          "scale": [
+            0.92,
+            1.08
+          ]
+        },
+        {
+          "name": "CC_Base_R_Forearm",
+          "axis": "Y",
+          "scale": [
+            0.92,
+            1.08
+          ]
+        }
+      ]
+    },
+    "body.legLength": {
+      "bones": [
+        {
+          "name": "CC_Base_L_Thigh",
+          "axis": "Y",
+          "scale": [
+            0.92,
+            1.08
+          ]
+        },
+        {
+          "name": "CC_Base_R_Thigh",
+          "axis": "Y",
+          "scale": [
+            0.92,
+            1.08
+          ]
+        },
+        {
+          "name": "CC_Base_L_Calf",
+          "axis": "Y",
+          "scale": [
+            0.92,
+            1.08
+          ]
+        },
+        {
+          "name": "CC_Base_R_Calf",
+          "axis": "Y",
+          "scale": [
+            0.92,
+            1.08
+          ]
+        }
+      ]
+    }
+  },
+  "modules": {
+    "wardrobe.top": {
+      "matt_fit_shirt": [
+        "Fit_shirts"
+      ]
+    },
+    "wardrobe.bottom": {
+      "matt_slim_jeans": [
+        "Slim_Jeans"
+      ]
+    },
+    "wardrobe.shoes": {
+      "matt_canvas_shoes": [
+        "Canvas_shoes"
+      ]
+    }
+  },
+  "bodyMasks": {
+    "wardrobe.bottom": {
+      "matt_slim_jeans": [
+        "Boxers"
+      ]
+    }
+  }
+}

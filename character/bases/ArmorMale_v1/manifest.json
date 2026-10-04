@@ -1,0 +1,18 @@
+{
+  "id": "ArmorMale_v1",
+  "requireSkin": true,
+  "exportAllInfluences": true,
+  "exportMorphs": false,
+  "model": "C:/Users/kuwano/OneDrive/画像/モデル生成/promodeler-new-assets-20260930/base/ArmorMale_v1.blend",
+  "sourceModel": "C:/Users/kuwano/develop/3d/キャラクター/male1-6 man in armor free 3D model/male1.6.fbx",
+  "modules": {
+    "wardrobe.top": {"armor_tank": ["Tank_Top"]},
+    "wardrobe.bottom": {"armor_joggers": ["Utility_Joggers"]},
+    "wardrobe.outer": {"armor_shell": ["Armor_Lower", "Armor_Arms"]},
+    "appearance.hairStyle": {"armor_short_hair": ["MaleB_S_T002"]}
+  },
+  "accessories": {
+    "armor_vest": ["Biker_Vest"],
+    "armor_wrist_band": ["band"]
+  }
+}

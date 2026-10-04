@@ -1,0 +1,31 @@
+{
+  "id": "RiggedWoman_v1",
+  "model": "../../../../3d/キャラクター/Base_woman_Blender/Blender/blender.Fbx",
+  "parameters": {
+    "body.shoulderWidth": {
+      "bones": [
+        {"name": "CC_Base_L_Clavicle", "axis": "Y", "scale": [0.92, 1.08]},
+        {"name": "CC_Base_R_Clavicle", "axis": "Y", "scale": [0.92, 1.08]}
+      ]
+    },
+    "body.armLength": {
+      "bones": [
+        {"name": "CC_Base_L_Upperarm", "axis": "Y", "scale": [0.92, 1.08]},
+        {"name": "CC_Base_R_Upperarm", "axis": "Y", "scale": [0.92, 1.08]},
+        {"name": "CC_Base_L_Forearm", "axis": "Y", "scale": [0.92, 1.08]},
+        {"name": "CC_Base_R_Forearm", "axis": "Y", "scale": [0.92, 1.08]}
+      ]
+    },
+    "body.legLength": {
+      "bones": [
+        {"name": "CC_Base_L_Thigh", "axis": "Y", "scale": [0.92, 1.08]},
+        {"name": "CC_Base_R_Thigh", "axis": "Y", "scale": [0.92, 1.08]},
+        {"name": "CC_Base_L_Calf", "axis": "Y", "scale": [0.92, 1.08]},
+        {"name": "CC_Base_R_Calf", "axis": "Y", "scale": [0.92, 1.08]}
+      ]
+    }
+  },
+  "materials": {
+    "skin": ["Std_Skin_Head", "Std_Skin_Body", "Std_Skin_Arm", "Std_Skin_Leg"]
+  }
+}

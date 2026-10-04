@@ -1,0 +1,35 @@
+{
+  "id": "CuteGirl_Free_Wardrobe_v2",
+  "model": "C:/Users/kuwano/develop/3d/キャラクター/Cute+Girl+freeversion/Cute girl 5.2.blend",
+  "textureMaxSize": 4096,
+  "modules": {
+    "wardrobe.top": {
+      "cute_free_shirt": [
+        "shirt"
+      ]
+    },
+    "wardrobe.bottom": {
+      "cute_free_pants": [
+        "pant"
+      ]
+    },
+    "wardrobe.shoes": {
+      "cute_free_shoes_socks": [
+        "shoes",
+        "sock"
+      ]
+    }
+  },
+  "bodyMasks": {
+    "wardrobe.bottom": {
+      "cute_free_pants": [
+        "underwear"
+      ]
+    }
+  },
+  "accessories": {
+    "dinosaur_hood": [
+      "dino head"
+    ]
+  }
+}

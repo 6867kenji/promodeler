@@ -1,0 +1,556 @@
+{
+  "Material #61": {
+    "diffuse": [
+      "Maps/Croft_Noise05_Gloss.jpg"
+    ],
+    "reflection": [
+      "Maps/Croft_Noise05_Gloss.jpg"
+    ],
+    "bump": [
+      "Maps/Croft_Noise05_Gloss.jpg"
+    ],
+    "reflectionGlossiness": [
+      "Maps/Croft_Noise05_Gloss.jpg"
+    ]
+  },
+  "Material #62": {
+    "diffuse": [
+      "Maps/Croft01_Gravel_Albedo.jpg"
+    ],
+    "reflection": [
+      "Maps/Croft01_Gravel_Albedo.jpg"
+    ],
+    "bump": [
+      "Maps/Croft01_Gravel_Albedo.jpg"
+    ],
+    "reflectionGlossiness": [
+      "Maps/Croft01_GravelGloss.jpg"
+    ]
+  },
+  "Material #53": {
+    "diffuse": [
+      "Maps/Wild_Erica_Multiflora_Bruyere_Fiche_Flower_Cap.jpeg"
+    ],
+    "reflection": [
+      "Maps/Wild_Erica_Multiflora_Bruyere_Fiche_Flower_Cap_Gloss.jpeg"
+    ],
+    "bump": [
+      "Maps/Wild_Erica_Multiflora_Bruyere_Fiche_Flower_Cap_Normal.jpeg"
+    ],
+    "reflectionGlossiness": [
+      "Maps/Wild_Erica_Multiflora_Bruyere_Fiche_Flower_Cap_Gloss.jpeg"
+    ]
+  },
+  "Material #52": {
+    "diffuse": [
+      "Maps/Wild_Erica_Multiflora_Bruyere_Fiche_Barck.jpeg",
+      "Maps/Wild_Erica_Multiflora_Bruyere_Fiche_Barck_AO.jpeg",
+      "Maps/Wild_Erica_Multiflora_Bruyere_Fiche_Barck_Custom.jpeg"
+    ],
+    "reflection": [
+      "Maps/Wild_Erica_Multiflora_Bruyere_Fiche_Barck_Gloss.jpeg"
+    ],
+    "bump": [
+      "Maps/Wild_Erica_Multiflora_Bruyere_Fiche_Barck_Normal.jpeg"
+    ],
+    "reflectionGlossiness": [
+      "Maps/Wild_Erica_Multiflora_Bruyere_Fiche_Barck_Gloss.jpeg"
+    ]
+  },
+  "Material #49": {
+    "diffuse": [
+      "Maps/Wild_Erica_Multiflora_Bruyere_Fiche_Leaf_Spring02.jpeg",
+      "Maps/Wild_Erica_Multiflora_Bruyere_Fiche_Leaf_Spring02_AO.jpeg",
+      "Maps/Wild_Erica_Multiflora_Bruyere_Fiche_Leaf_Spring02_Custom.jpeg"
+    ],
+    "reflection": [
+      "Maps/Wild_Erica_Multiflora_Bruyere_Fiche_Leaf_Spring02.jpeg",
+      "Maps/Wild_Erica_Multiflora_Bruyere_Fiche_Leaf_Spring02_AO.jpeg",
+      "Maps/Wild_Erica_Multiflora_Bruyere_Fiche_Leaf_Spring02_Custom.jpeg"
+    ],
+    "bump": [
+      "Maps/Wild_Erica_Multiflora_Bruyere_Fiche_Leaf_Spring02_Normal.jpeg"
+    ],
+    "reflectionGlossiness": [
+      "Maps/Wild_Erica_Multiflora_Bruyere_Fiche_Leaf_Spring02_Gloss.jpeg"
+    ],
+    "opacity": [
+      "Maps/Wild_Erica_Multiflora_Bruyere_Fiche_Leaf_Spring02_Opacity.jpeg"
+    ]
+  },
+  "Material #50": {
+    "diffuse": [
+      "Maps/Wild_Erica_Multiflora_Bruyere_Fiche_Leaf_Spring02.jpeg",
+      "Maps/Wild_Erica_Multiflora_Bruyere_Fiche_Leaf_Spring02_AO.jpeg",
+      "Maps/Wild_Erica_Multiflora_Bruyere_Fiche_Leaf_Spring02_Custom.jpeg"
+    ],
+    "reflection": [
+      "Maps/Wild_Erica_Multiflora_Bruyere_Fiche_Leaf_Spring02.jpeg",
+      "Maps/Wild_Erica_Multiflora_Bruyere_Fiche_Leaf_Spring02_AO.jpeg",
+      "Maps/Wild_Erica_Multiflora_Bruyere_Fiche_Leaf_Spring02_Custom.jpeg"
+    ],
+    "bump": [
+      "Maps/Wild_Erica_Multiflora_Bruyere_Fiche_Leaf_Spring02_Normal.jpeg"
+    ],
+    "reflectionGlossiness": [
+      "Maps/Wild_Erica_Multiflora_Bruyere_Fiche_Leaf_Spring02_Gloss.jpeg"
+    ],
+    "opacity": [
+      "Maps/Wild_Erica_Multiflora_Bruyere_Fiche_Leaf_Spring02_Opacity.jpeg"
+    ]
+  },
+  "Material #47": {
+    "diffuse": [
+      "Maps/Wild_Erica_Multiflora_Bruyere_Fiche_Flower.jpeg"
+    ],
+    "reflection": [
+      "Maps/Wild_Erica_Multiflora_Bruyere_Fiche_Flower.jpeg"
+    ],
+    "bump": [
+      "Maps/Wild_Erica_Multiflora_Bruyere_Fiche_Flower_Normal.jpeg"
+    ],
+    "reflectionGlossiness": [
+      "Maps/Wild_Erica_Multiflora_Bruyere_Fiche_Flower.jpeg"
+    ]
+  },
+  "Material #48": {
+    "diffuse": [
+      "Maps/Wild_Erica_Multiflora_Bruyere_Fiche_Flower.jpeg"
+    ],
+    "reflection": [
+      "Maps/Wild_Erica_Multiflora_Bruyere_Fiche_Flower.jpeg"
+    ],
+    "bump": [
+      "Maps/Wild_Erica_Multiflora_Bruyere_Fiche_Flower_Normal.jpeg"
+    ],
+    "reflectionGlossiness": [
+      "Maps/Wild_Erica_Multiflora_Bruyere_Fiche_Flower.jpeg"
+    ]
+  },
+  "Material #51": {},
+  "Material #37": {
+    "diffuse": [
+      "Maps/Nigella_Damascena_Jungfer_Grunen_Branche.jpeg"
+    ],
+    "reflection": [
+      "Maps/Nigella_Damascena_Jungfer_Grunen_Branche.jpeg"
+    ],
+    "bump": [
+      "Maps/Nigella_Damascena_Jungfer_Grunen_Branche_Normal.jpeg"
+    ],
+    "reflectionGlossiness": [
+      "Maps/Nigella_Damascena_Jungfer_Grunen_Branche_Gloss.jpeg"
+    ]
+  },
+  "Material #40": {
+    "diffuse": [
+      "Maps/Nigella_Damascena_Jungfer_Grunen_Leaf.jpeg"
+    ],
+    "reflection": [
+      "Maps/Nigella_Damascena_Jungfer_Grunen_Leaf.jpeg"
+    ],
+    "bump": [
+      "Maps/Nigella_Damascena_Jungfer_Grunen_Leaf_Normal.jpeg"
+    ],
+    "reflectionGlossiness": [
+      "Maps/Nigella_Damascena_Jungfer_Grunen_Leaf_Gloss.jpeg"
+    ],
+    "opacity": [
+      "Maps/Nigella_Damascena_Jungfer_Grunen_Leaf_Opacity.jpeg"
+    ]
+  },
+  "Material #39": {
+    "diffuse": [
+      "Maps/Nigella_Damascena_Jungfer_Grunen_Leaf.jpeg"
+    ],
+    "reflection": [
+      "Maps/Nigella_Damascena_Jungfer_Grunen_Leaf.jpeg"
+    ],
+    "bump": [
+      "Maps/Nigella_Damascena_Jungfer_Grunen_Leaf_Normal.jpeg"
+    ],
+    "reflectionGlossiness": [
+      "Maps/Nigella_Damascena_Jungfer_Grunen_Leaf_Gloss.jpeg"
+    ],
+    "opacity": [
+      "Maps/Nigella_Damascena_Jungfer_Grunen_Leaf_Opacity.jpeg"
+    ]
+  },
+  "Material #42": {
+    "diffuse": [
+      "Maps/Nigella_Damascena_Jungfer_Grunen_Flower.jpeg",
+      "Maps/Nigella_Damascena_Jungfer_Grunen_Flower_Custom.jpeg"
+    ],
+    "reflection": [
+      "Maps/Nigella_Damascena_Jungfer_Grunen_Flower.jpeg",
+      "Maps/Nigella_Damascena_Jungfer_Grunen_Flower_Custom.jpeg"
+    ],
+    "bump": [
+      "Maps/Nigella_Damascena_Jungfer_Grunen_Flower_Normal.jpeg"
+    ],
+    "reflectionGlossiness": [
+      "Maps/Nigella_Damascena_Jungfer_Grunen_Flower_Gloss.jpeg"
+    ],
+    "opacity": [
+      "Maps/Nigella_Damascena_Jungfer_Grunen_Flower_Opacity.jpeg"
+    ]
+  },
+  "Material #41": {
+    "diffuse": [
+      "Maps/Nigella_Damascena_Jungfer_Grunen_Flower.jpeg",
+      "Maps/Nigella_Damascena_Jungfer_Grunen_Flower_Custom.jpeg"
+    ],
+    "reflection": [
+      "Maps/Nigella_Damascena_Jungfer_Grunen_Flower.jpeg",
+      "Maps/Nigella_Damascena_Jungfer_Grunen_Flower_Custom.jpeg"
+    ],
+    "bump": [
+      "Maps/Nigella_Damascena_Jungfer_Grunen_Flower_Normal.jpeg"
+    ],
+    "reflectionGlossiness": [
+      "Maps/Nigella_Damascena_Jungfer_Grunen_Flower_Gloss.jpeg"
+    ],
+    "opacity": [
+      "Maps/Nigella_Damascena_Jungfer_Grunen_Flower_Opacity.jpeg"
+    ]
+  },
+  "Material #43": {},
+  "Material #45": {
+    "diffuse": [
+      "Maps/Nigella_Damascena_Jungfer_Grunen_Flower_mesh02.jpeg"
+    ],
+    "reflection": [
+      "Maps/Nigella_Damascena_Jungfer_Grunen_Flower_mesh02.jpeg"
+    ],
+    "bump": [
+      "Maps/Nigella_Damascena_Jungfer_Grunen_Flower_mesh02_Normal.jpeg"
+    ],
+    "reflectionGlossiness": [
+      "Maps/Nigella_Damascena_Jungfer_Grunen_Flower_mesh02_Gloss.jpeg"
+    ],
+    "opacity": [
+      "Maps/Nigella_Damascena_Jungfer_Grunen_Flower_mesh02_Opacity.jpeg"
+    ]
+  },
+  "Material #44": {
+    "diffuse": [
+      "Maps/Nigella_Damascena_Jungfer_Grunen_Flower_mesh02.jpeg"
+    ],
+    "reflection": [
+      "Maps/Nigella_Damascena_Jungfer_Grunen_Flower_mesh02.jpeg"
+    ],
+    "bump": [
+      "Maps/Nigella_Damascena_Jungfer_Grunen_Flower_mesh02_Normal.jpeg"
+    ],
+    "reflectionGlossiness": [
+      "Maps/Nigella_Damascena_Jungfer_Grunen_Flower_mesh02_Gloss.jpeg"
+    ],
+    "opacity": [
+      "Maps/Nigella_Damascena_Jungfer_Grunen_Flower_mesh02_Opacity.jpeg"
+    ]
+  },
+  "Material #65": {
+    "diffuse": [
+      "Maps/leave_Dwarf_Thuja.jpg"
+    ],
+    "reflection": [
+      "Maps/leave_Dwarf_Thuja_Gloss.jpg"
+    ],
+    "bump": [
+      "Maps/leave_Dwarf_Thuja_Normal.jpg"
+    ],
+    "reflectionGlossiness": [
+      "Maps/leave_Dwarf_Thuja_Gloss.jpg"
+    ],
+    "opacity": [
+      "Maps/leave_Dwarf_Thuja_Opacity.jpg"
+    ]
+  },
+  "Material #64": {
+    "diffuse": [
+      "Maps/leave_Dwarf_Thuja.jpg"
+    ],
+    "reflection": [
+      "Maps/leave_Dwarf_Thuja_Gloss.jpg"
+    ],
+    "bump": [
+      "Maps/leave_Dwarf_Thuja_Normal.jpg"
+    ],
+    "reflectionGlossiness": [
+      "Maps/leave_Dwarf_Thuja_Gloss.jpg"
+    ],
+    "opacity": [
+      "Maps/leave_Dwarf_Thuja_Opacity.jpg"
+    ]
+  },
+  "Material #63": {
+    "diffuse": [
+      "Maps/bark_Dwarf_Thuja.jpg"
+    ],
+    "reflection": [
+      "Maps/bark_Dwarf_Thuja_Gloss.jpg"
+    ],
+    "bump": [
+      "Maps/bark_Dwarf_Thuja_Normal.jpg"
+    ],
+    "reflectionGlossiness": [
+      "Maps/bark_Dwarf_Thuja_Gloss.jpg"
+    ]
+  },
+  "Material #31": {
+    "diffuse": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Branche.jpeg"
+    ],
+    "reflection": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Branche.jpeg"
+    ],
+    "bump": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Branche_Normal.jpeg"
+    ],
+    "reflectionGlossiness": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Branche.jpeg"
+    ]
+  },
+  "Material #26": {
+    "diffuse": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Branche.jpeg"
+    ],
+    "reflection": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Branche.jpeg"
+    ],
+    "bump": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Branche_Normal.jpeg"
+    ],
+    "reflectionGlossiness": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Branche.jpeg"
+    ]
+  },
+  "Material #32": {
+    "diffuse": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Leaf.jpeg",
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Leaf_AO.jpeg",
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Leaf_Custom.jpeg"
+    ],
+    "reflection": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Leaf.jpeg",
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Leaf_AO.jpeg",
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Leaf_Custom.jpeg"
+    ],
+    "bump": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Leaf_Normal.jpeg"
+    ],
+    "reflectionGlossiness": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Leaf_Gloss.jpeg"
+    ],
+    "opacity": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Leaf_Opacity.jpeg"
+    ]
+  },
+  "Material #27": {
+    "diffuse": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Leaf.jpeg",
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Leaf_AO.jpeg",
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Leaf_Custom.jpeg"
+    ],
+    "reflection": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Leaf.jpeg",
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Leaf_AO.jpeg",
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Leaf_Custom.jpeg"
+    ],
+    "bump": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Leaf_Normal.jpeg"
+    ],
+    "reflectionGlossiness": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Leaf_Gloss.jpeg"
+    ],
+    "opacity": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Leaf_Opacity.jpeg"
+    ]
+  },
+  "Material #33": {
+    "diffuse": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Flower.jpeg",
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Flower_AO.jpeg"
+    ],
+    "reflection": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Flower.jpeg",
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Flower_AO.jpeg"
+    ],
+    "bump": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Flower_Normal.jpeg"
+    ],
+    "reflectionGlossiness": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Flower_Gloss.jpeg"
+    ],
+    "opacity": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Flower_Opacity.jpeg"
+    ]
+  },
+  "Material #28": {
+    "diffuse": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Flower.jpeg",
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Flower_AO.jpeg"
+    ],
+    "reflection": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Flower.jpeg",
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Flower_AO.jpeg"
+    ],
+    "bump": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Flower_Normal.jpeg"
+    ],
+    "reflectionGlossiness": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Flower_Gloss.jpeg"
+    ],
+    "opacity": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Flower_Opacity.jpeg"
+    ]
+  },
+  "Material #34": {
+    "diffuse": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Leaf_AO.jpeg",
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Leaf_Custom.jpeg",
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Leaf_Red.jpeg"
+    ],
+    "reflection": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Leaf_AO.jpeg",
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Leaf_Custom.jpeg",
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Leaf_Red.jpeg"
+    ],
+    "bump": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Leaf_Normal.jpeg"
+    ],
+    "reflectionGlossiness": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Leaf_Gloss.jpeg"
+    ],
+    "opacity": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Leaf_Opacity.jpeg"
+    ]
+  },
+  "Material #29": {
+    "diffuse": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Leaf_AO.jpeg",
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Leaf_Custom.jpeg",
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Leaf_Red.jpeg"
+    ],
+    "reflection": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Leaf_AO.jpeg",
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Leaf_Custom.jpeg",
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Leaf_Red.jpeg"
+    ],
+    "bump": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Leaf_Normal.jpeg"
+    ],
+    "reflectionGlossiness": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Leaf_Gloss.jpeg"
+    ],
+    "opacity": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Leaf_Opacity.jpeg"
+    ]
+  },
+  "Material #35": {
+    "diffuse": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Branche_red.jpeg"
+    ],
+    "reflection": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Branche_red.jpeg"
+    ],
+    "bump": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Branche_Normal.jpeg"
+    ],
+    "reflectionGlossiness": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Branche_red.jpeg"
+    ]
+  },
+  "Material #30": {
+    "diffuse": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Branche_red.jpeg"
+    ],
+    "reflection": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Branche_red.jpeg"
+    ],
+    "bump": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Branche_Normal.jpeg"
+    ],
+    "reflectionGlossiness": [
+      "Maps/Ceratostigma_Plumbaginoides_Bleiwurz_Branche_red.jpeg"
+    ]
+  },
+  "Material #59": {
+    "diffuse": [
+      "Maps/Saribus_Rotundifolius_Trunk.jpeg",
+      "Maps/Saribus_Rotundifolius_Trunk_AO.jpeg"
+    ],
+    "reflection": [
+      "Maps/Saribus_Rotundifolius_Trunk.jpeg",
+      "Maps/Saribus_Rotundifolius_Trunk_AO.jpeg"
+    ],
+    "bump": [
+      "Maps/Saribus_Rotundifolius_Trunk_Normal.jpeg"
+    ],
+    "reflectionGlossiness": [
+      "Maps/Saribus_Rotundifolius_Trunk_Gloss.jpeg"
+    ]
+  },
+  "Material #55": {
+    "diffuse": [
+      "Maps/Saribus_Rotundifolius_Leaf.jpeg"
+    ],
+    "reflection": [
+      "Maps/Saribus_Rotundifolius_Leaf.jpeg"
+    ],
+    "bump": [
+      "Maps/Saribus_Rotundifolius_Leaf_Normal.jpeg"
+    ],
+    "reflectionGlossiness": [
+      "Maps/Saribus_Rotundifolius_Leaf_Gloss.jpeg"
+    ],
+    "opacity": [
+      "Maps/Saribus_Rotundifolius_Leaf_Opacity.jpeg"
+    ]
+  },
+  "Material #56": {
+    "diffuse": [
+      "Maps/Saribus_Rotundifolius_Leaf.jpeg"
+    ],
+    "reflection": [
+      "Maps/Saribus_Rotundifolius_Leaf.jpeg"
+    ],
+    "bump": [
+      "Maps/Saribus_Rotundifolius_Leaf_Normal.jpeg"
+    ],
+    "reflectionGlossiness": [
+      "Maps/Saribus_Rotundifolius_Leaf_Gloss.jpeg"
+    ],
+    "opacity": [
+      "Maps/Saribus_Rotundifolius_Leaf_Opacity.jpeg"
+    ]
+  },
+  "Material #57": {
+    "diffuse": [
+      "Maps/Saribus_Rotundifolius_Branche.jpeg"
+    ],
+    "reflection": [
+      "Maps/Saribus_Rotundifolius_Branche.jpeg"
+    ],
+    "bump": [
+      "Maps/Saribus_Rotundifolius_Branche_Normal.jpeg"
+    ],
+    "reflectionGlossiness": [
+      "Maps/Saribus_Rotundifolius_Branche.jpeg"
+    ]
+  },
+  "Material #58": {
+    "diffuse": [
+      "Maps/Saribus_Rotundifolius_Cap.jpeg"
+    ],
+    "reflection": [
+      "Maps/Saribus_Rotundifolius_Cap.jpeg"
+    ],
+    "bump": [
+      "Maps/Saribus_Rotundifolius_Cap_Normal.jpeg"
+    ],
+    "reflectionGlossiness": [
+      "Maps/Saribus_Rotundifolius_Cap_Gloss.jpeg"
+    ]
+  }
+}

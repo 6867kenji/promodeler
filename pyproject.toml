@@ -21,3 +21,10 @@ promodeler = "promodeler.cli:main"
 
 [tool.setuptools.packages.find]
 include = ["promodeler*"]
+
+[tool.setuptools.package-data]
+"promodeler.character" = [
+  "makeup.html", "makeup_live.js", "vendor/*.txt", "vendor/build/*.js",
+  "vendor/examples/jsm/loaders/*.js", "vendor/examples/jsm/controls/*.js",
+  "vendor/examples/jsm/utils/*.js",
+]

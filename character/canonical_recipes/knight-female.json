@@ -1,0 +1,14 @@
+{
+  "schema": "promodeler-canonical-character/2.0",
+  "id": "knight-female",
+  "name": "Female Knight",
+  "base": "Knight_Static_v1",
+  "seed": 1,
+  "source": {"kind": "local_static_blend"},
+  "face": {},
+  "body": {},
+  "appearance": {"hairStyle": "knight_hair"},
+  "material": {},
+  "wardrobe": {},
+  "accessories": ["knight_helmet", "knight_shield", "knight_sword"]
+}

@@ -1,0 +1,13 @@
+{
+  "schema": "promodeler-canonical-character/2.0",
+  "id": "female-outfit-ponytail-woman",
+  "name": "Female Outfit and Brown Ponytail Woman",
+  "base": "RiggedWoman_v4",
+  "seed": 1,
+  "source": {"kind": "local_clothing", "id": "FemaleOutfit/Free fbx.fbx"},
+  "face": {}, "body": {"chest": 0.25},
+  "appearance": {"hairStyle": "hair_ponytail_brown"},
+  "material": {},
+  "wardrobe": {"dress": "female_outfit"},
+  "accessories": []
+}

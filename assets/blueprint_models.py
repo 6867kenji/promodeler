@@ -31,9 +31,10 @@ def _space_render(number: int) -> RenderSettings:
                    Camera("glass_side", position=(4.1, 1.45, -9.7),
                           target=(0.7, -2.6, -3.0), fov=math.radians(64),
                           hide_parts=("canopy-frame", "lift-shaft",
-                                      "lower_hall_ceiling")))
+                                      "lower_hall_ceiling", "entry_wall_e_0", "entry_wall_e_1", "entry_wall_e_2", "entry_wall_e_3")),
+                   Camera("stair_detail",position=(-2.1,-1.35,-3.65),target=(-2.1,-4.2,.3),fov=math.radians(67)))
         lights = tuple(Light(f"stair-{i}", position=(0, -0.8 - i * 1.35,
-                                                     -7 + i * 2.8), energy=700, size=2.5)
+                                                     -7 + i * 2.8), energy=140, size=2.5)
                        for i in range(4))
     elif number == 18:
         cameras = (Camera("walkthrough", position=(0, 1.65, -35),
@@ -79,6 +80,7 @@ def _space_render(number: int) -> RenderSettings:
     return RenderSettings(resolution=768, aspect_ratio=1.6,
                           views=("perspective", "front"), cameras=cameras,
                           lights=lights, passes=("shaded",),
+                          background=(.16,.16,.16) if number == 17 else (.35,.35,.35),
                           environment="overcast" if number <= 19 else "studio", samples=32)
 
 
@@ -112,6 +114,9 @@ def definition(folder: str) -> dict:
     elif number == 21:
         for pid in ("bag-0", "bag-1"):
             part_map[pid] = (pid, pid + "_base")
+    elif number == 17:
+        part_map["canopy-frame"] = ("canopy-frame",) + tuple("canopy_edge_"+s for s in ("w","e","n","s"))
+        part_map["lift-shaft"] = ("lift-shaft", "lift-shaft_e", "lift-shaft_back", "lift-shaft_front_top", "lift-shaft_front_mid", "lift-shaft_front_w", "lift-shaft_front_e")
     settings = (RenderSettings(resolution=512, views=("perspective", "front", "side"), passes=("shaded",),
                                environment="studio", samples=24)
                 if number in PROP_NUMBERS else

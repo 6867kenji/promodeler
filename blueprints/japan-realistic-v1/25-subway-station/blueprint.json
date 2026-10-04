@@ -1,0 +1,12 @@
+{
+  "schema":"promodeler-blueprint/1.0",
+  "id":"subway-station",
+  "folder":"25-subway-station",
+  "name":"汐見駅S01・統合モデル",
+  "kind":"environment",
+  "dimensions":{"envelope_xyz_m":[21,17,142],"axis":"X東/Y上/Z南","levels_y_m":{"street":0,"concourse":-6,"platform":-12}},
+  "target":{"triangles_lod0_max":1500000,"texture_resolution_max":2048},
+  "materials":[],
+  "parts":[{"id":"entrance"},{"id":"concourse"},{"id":"platform"}],
+  "metadata":{"reference":"SubwayPassage","mode":"固定開場状態。階段の連続接続確認用。各単体アセットの既存リグは保持。"}
+}

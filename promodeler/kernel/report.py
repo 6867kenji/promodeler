@@ -121,6 +121,8 @@ def build_report(scene: CompiledScene, recipe: dict) -> dict:
     else:
         author_lo = author_hi = None
     warnings = []
+    tiled_ids = set((recipe["asset"].get("extras") or {}).get("tiled_materials") or {})
+    part_materials = {part["id"]: part["material"] for part in recipe["asset"]["parts"]}
     max_triangles = ((recipe.get("input") or {}).get("quality") or {}).get("max_triangles")
     if max_triangles is not None and totals["triangles"] > max_triangles:
         warnings.append({"code": "budget.triangles", "message": f"{totals['triangles']} triangles exceed the budget of {max_triangles}."})
@@ -135,7 +137,10 @@ def build_report(scene: CompiledScene, recipe: dict) -> dict:
             warnings.append({"code": "geometry.selfIntersection", "message": f"Part {part_id!r} has {stats['self_intersections']} self-intersecting triangle pairs."})
         if stats["self_intersections"] is None and "generated" not in stats and "overlapping" not in stats:
             warnings.append({"code": "geometry.selfIntersectionSkipped", "message": f"Part {part_id!r} exceeds the self-intersection check limit."})
-        if "uv" in stats and stats["uv"]["coverage"] < 0.2:
+        # Repeatable architectural maps intentionally use a small fraction of
+        # their image on narrow parts; atlas occupancy applies to baked UVs.
+        if ("uv" in stats and stats["uv"]["coverage"] < 0.2
+                and part_materials.get(part_id) not in tiled_ids):
             warnings.append({"code": "uv.coverage", "message": f"Part {part_id!r} uses only {stats['uv']['coverage']:.0%} of its texture atlas."})
         if stats["watertight"] and stats["volume"] is not None and stats["volume"] < 0:
             warnings.append({"code": "geometry.insideOut", "message": f"Part {part_id!r} has negative volume; its normals face inward."})

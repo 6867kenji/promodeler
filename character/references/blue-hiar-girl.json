@@ -1,0 +1,23 @@
+{
+  "id": "blue-hiar-girl",
+  "role": "canonical-base-reference",
+  "source": {
+    "path": "C:/Users/kuwano/develop/asset-foundry/gallery/library/humanoid/blue-hiar-girl/blue-hiar-girl.glb",
+    "sha256": "5fd5b484d10db25e256d80cb53ea74829b8b6a5b5896d2a7c834102020bd878b",
+    "license": null
+  },
+  "inspection": {
+    "glbVersion": 2,
+    "meshCount": 1,
+    "vertexCount": 1039059,
+    "materialCount": 1,
+    "textureCount": 2,
+    "skinCount": 0,
+    "boneCount": 0,
+    "animationCount": 0,
+    "shapeKeyCount": 0,
+    "skinned": false,
+    "canonicalBaseReady": false
+  },
+  "intendedUse": "Visual and shape reference when authoring a rigged, reusable Canonical Base. Do not register this GLB as a deformable base."
+}

@@ -1,0 +1,16 @@
+{
+  "id": "Knight_Static_v1",
+  "model": "../../../../3d/キャラクター/Knight/Knight/female knight 5.0.blend",
+  "textureMaxSize": 4096,
+  "excludeObjects": ["Grass", "Plane", "DOME_Hdr_Ground", "DOME_Hdr_Sky", "skull"],
+  "modules": {
+    "appearance.hairStyle": {
+      "knight_hair": ["hair"]
+    }
+  },
+  "accessories": {
+    "knight_helmet": ["helmet"],
+    "knight_shield": ["shield"],
+    "knight_sword": ["sword"]
+  }
+}

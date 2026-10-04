@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://promodeler.local/schemas/canonical_character_recipe.schema.json",
+  "title": "ProModeler Canonical Character Recipe 2.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "id", "name", "base", "seed", "face", "body", "appearance", "material", "wardrobe"],
+  "properties": {
+    "schema": {"const": "promodeler-canonical-character/2.0"},
+    "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9_-]*$"},
+    "name": {"type": "string", "minLength": 1},
+    "base": {"type": "string", "minLength": 1},
+    "seed": {"type": "integer"},
+    "source": {"type": "object"},
+    "face": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "headSize": {"$ref": "#/$defs/slider"}, "faceRoundness": {"$ref": "#/$defs/slider"},
+        "jawWidth": {"$ref": "#/$defs/slider"}, "jawLength": {"$ref": "#/$defs/slider"},
+        "eyeSize": {"$ref": "#/$defs/slider"}, "eyeWidth": {"$ref": "#/$defs/slider"},
+        "eyeHeight": {"$ref": "#/$defs/slider"}, "eyeSpacing": {"$ref": "#/$defs/slider"},
+        "eyeAngle": {"$ref": "#/$defs/slider"}, "noseSize": {"$ref": "#/$defs/slider"},
+        "noseWidth": {"$ref": "#/$defs/slider"}, "noseHeight": {"$ref": "#/$defs/slider"},
+        "noseBridge": {"$ref": "#/$defs/slider"}, "mouthWidth": {"$ref": "#/$defs/slider"},
+        "mouthHeight": {"$ref": "#/$defs/slider"}, "upperLip": {"$ref": "#/$defs/slider"},
+        "lowerLip": {"$ref": "#/$defs/slider"}, "cheekVolume": {"$ref": "#/$defs/slider"}
+      }
+    },
+    "body": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "height": {"$ref": "#/$defs/slider"}, "headRatio": {"$ref": "#/$defs/slider"},
+        "shoulderWidth": {"$ref": "#/$defs/slider"}, "chest": {"$ref": "#/$defs/slider"},
+        "waist": {"$ref": "#/$defs/slider"}, "hip": {"$ref": "#/$defs/slider"},
+        "armLength": {"$ref": "#/$defs/slider"}, "legLength": {"$ref": "#/$defs/slider"},
+        "armThickness": {"$ref": "#/$defs/slider"}, "legThickness": {"$ref": "#/$defs/slider"},
+        "muscle": {"$ref": "#/$defs/slider"}
+      }
+    },
+    "appearance": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "skinPreset": {"$ref": "#/$defs/asset"}, "eyePreset": {"$ref": "#/$defs/asset"},
+        "hairStyle": {"$ref": "#/$defs/asset"}, "eyebrowStyle": {"$ref": "#/$defs/asset"}
+      }
+    },
+    "material": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "skinTone": {"$ref": "#/$defs/color"}, "lipColor": {"$ref": "#/$defs/color"},
+        "hairColor": {"$ref": "#/$defs/color"}, "eyeColor": {"$ref": "#/$defs/color"},
+        "blushStrength": {"$ref": "#/$defs/slider"}, "roughnessSkin": {"$ref": "#/$defs/slider"},
+        "toonBlend": {"$ref": "#/$defs/slider"}
+      }
+    },
+    "wardrobe": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "top": {"$ref": "#/$defs/asset"}, "bottom": {"$ref": "#/$defs/asset"},
+        "shoes": {"$ref": "#/$defs/asset"}, "outer": {"$ref": "#/$defs/asset"},
+        "dress": {"$ref": "#/$defs/asset"}
+      }
+    },
+    "accessories": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "underwear": {
+      "type": "object", "additionalProperties": false,
+      "properties": {"top": {"type": "boolean"}, "bottom": {"type": "boolean"}}
+    }
+  },
+  "$defs": {
+    "slider": {"type": "number", "minimum": 0, "maximum": 1},
+    "color": {"type": "string", "pattern": "^#[0-9A-Fa-f]{6}$"},
+    "asset": {"type": ["string", "null"], "minLength": 1}
+  }
+}

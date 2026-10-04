@@ -1,0 +1,18 @@
+{
+  "id": "CuteGirl_Wardrobe_v2",
+  "model": "C:/Users/kuwano/OneDrive/画像/モデル生成/promodeler-new-characters/base/CuteGirl_Rigged_v1.blend",
+  "textureMaxSize": 4096,
+  "modules": {
+    "wardrobe.top": {
+      "cute_girl_shirt": [
+        "shirt"
+      ]
+    },
+    "wardrobe.bottom": {
+      "cute_girl_jeans": [
+        "jean"
+      ]
+    }
+  },
+  "bodyMasks": {}
+}

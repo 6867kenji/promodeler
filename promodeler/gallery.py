@@ -29,7 +29,7 @@ def create(root: Path) -> list[dict]:
                                                   "floor_detail",
                                                   "gate_oblique",
                                                   "walkthrough", "perspective",
-                                                  "district_oblique", "main_street", "front")
+                                                  "district_oblique", "warehouse_oblique", "station_section", "main_street", "front")
                         if view in renders), None)
         relative = lambda path: path.relative_to(root).as_posix()
         entries.append({
@@ -83,7 +83,7 @@ article div{padding:18px}h2{font-size:18px;margin:0 0 8px}article p{margin:0 0 1
         "16-gaming-pc-pink": "ピンクのゲーミングPC",
         "17-subway-entrance": "地下鉄入口", "18-subway-concourse": "地下鉄コンコース",
         "19-subway-platform": "地下鉄ホーム", "20-cafe": "カフェ",
-        "21-karate-dojo": "空手道場",
+        "21-karate-dojo": "空手道場", "24-warehouse": "倉庫", "25-subway-station": "地下鉄・統合駅",
     }
     image_cards = []
     for entry in entries:
@@ -117,7 +117,7 @@ dialog::backdrop{background:#000d}.viewer{position:relative;display:grid;place-i
 .viewer p{position:absolute;left:0;bottom:0;margin:0;padding:7px 14px;background:#10151bcc}
 .close{position:absolute;right:8px;top:8px;background:#18232ddd;color:white;border:1px solid #789;border-radius:30px;width:38px;height:38px;font-size:24px;cursor:pointer}
 </style><header><div><h1>モデル画像一覧</h1><a href="index.html">GLB・Blenderファイル一覧 ↗</a></div></header>
-<main><p class="intro">全19モデルの確認画像です。画像または視点名をクリックすると拡大できます。</p><div class="grid">""" + "".join(image_cards) + """</div></main>
+<main><p class="intro">全__COUNT__モデルの確認画像です。画像または視点名をクリックすると拡大できます。</p><div class="grid">""" + "".join(image_cards) + """</div></main>
 <dialog id="lightbox"><div class="viewer"><img alt=""><p></p><button class="close" aria-label="閉じる">×</button></div></dialog>
 <script>
 const box=document.querySelector('#lightbox');
@@ -129,7 +129,7 @@ box.querySelector('.close').onclick=()=>box.close();
 box.addEventListener('click',e=>{if(e.target===box)box.close()});
 box.addEventListener('close',()=>{box.querySelector('img').src=''});
 </script></html>"""
-    (root / "images.html").write_text(image_page, encoding="utf-8")
+    (root / "images.html").write_text(image_page.replace("__COUNT__", str(len(entries))), encoding="utf-8")
     return entries
 
 

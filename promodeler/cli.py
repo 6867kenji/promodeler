@@ -244,6 +244,27 @@ def cmd_new(args) -> int:
     return 0
 
 
+def cmd_external(args) -> int:
+    from . import external_assets
+
+    if args.action == "list":
+        for item in external_assets.entries():
+            if args.category and item["category"] != args.category:
+                continue
+            print(f"{item['id']:<28} {item['category']:<12} {item['role']:<22} {item['name']}")
+        return 0
+    if args.action == "show":
+        print(json.dumps(external_assets.resolve(args.id), ensure_ascii=False, indent=2))
+        return 0
+    if args.action == "verify":
+        item = external_assets.resolve(args.id)
+        print(f"verified: {external_assets.verify(item)}")
+        return 0
+    report = external_assets.export(args.id, args.out)
+    print(json.dumps(report, ensure_ascii=False, indent=2))
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="promodeler", description="Code-first realistic 3D asset generation.")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -294,6 +315,18 @@ def main(argv: list[str] | None = None) -> int:
     new.add_argument("path", help="Where to create it, e.g. assets/lamp.py")
     new.add_argument("--name", default=None)
     new.set_defaults(func=cmd_new)
+
+    external = sub.add_parser("external", help="List, verify or export user-supplied 3D references.")
+    external_sub = external.add_subparsers(dest="action", required=True)
+    external_list = external_sub.add_parser("list", help="List registered external 3D models.")
+    external_list.add_argument("--category", choices=("character", "interior", "weapon", "plant", "hair", "wardrobe"))
+    external_list.set_defaults(func=cmd_external)
+    for action in ("show", "verify", "export"):
+        command = external_sub.add_parser(action)
+        command.add_argument("id")
+        if action == "export":
+            command.add_argument("--out", required=True, help="New standalone GLB path.")
+        command.set_defaults(func=cmd_external)
 
     from .character.cli import add_parsers as add_character_parsers
 

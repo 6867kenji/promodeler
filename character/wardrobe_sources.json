@@ -1,0 +1,61 @@
+{
+  "schema": "promodeler-wardrobe-sources/1.0",
+  "characters": [
+    {
+      "sourceBase": "Amber_Rigged_v1", "base": "Amber_Wardrobe_v2", "recipe": "amber-wardrobe", "name": "Amber",
+      "preparedModel": "C:/Users/kuwano/OneDrive/画像/モデル生成/promodeler-new-characters/canonical/amber/74d57b579c18/model.glb",
+      "items": [
+        {"id": "amber_crop_tshirt", "slot": "top", "name": "クロップTシャツ", "objects": ["Crop_T_Shirt"], "masks": ["Bra"]},
+        {"id": "amber_jeans", "slot": "bottom", "name": "ジーンズ", "objects": ["Jeans"], "masks": ["Underwear_Bottoms"]},
+        {"id": "amber_boots", "slot": "shoes", "name": "ブーツ", "objects": ["Boots"]},
+        {"id": "amber_leather_jacket", "slot": "outer", "name": "レザージャケット", "objects": ["Punk_Leather_Jacket"]}
+      ]
+    },
+    {
+      "sourceBase": "Matt_Rigged_v1", "base": "Matt_Wardrobe_v2", "recipe": "matt-wardrobe", "name": "Matt",
+      "preparedModel": "C:/Users/kuwano/OneDrive/画像/モデル生成/promodeler-new-characters/canonical/matt/18e0f24f7d5e/model.glb",
+      "items": [
+        {"id": "matt_fit_shirt", "slot": "top", "name": "フィットシャツ", "objects": ["Fit_shirts"]},
+        {"id": "matt_slim_jeans", "slot": "bottom", "name": "スリムジーンズ", "objects": ["Slim_Jeans"], "masks": ["Boxers"]},
+        {"id": "matt_canvas_shoes", "slot": "shoes", "name": "キャンバスシューズ", "objects": ["Canvas_shoes"]}
+      ]
+    },
+    {
+      "sourceBase": "Megane_Rigged_v1", "base": "Megane_Wardrobe_v2", "recipe": "megane-wardrobe", "name": "Mégane",
+      "items": [
+        {"id": "megane_uniform", "slot": "dress", "name": "制服（上下セット）", "objects": ["Pants_Shirt_Aesthetician"], "masks": ["Underwear_Bottoms"]},
+        {"id": "megane_high_heels", "slot": "shoes", "name": "ハイヒール", "objects": ["High_Heels"]}
+      ]
+    },
+    {
+      "sourceBase": "CuteGirl_Rigged_v1", "base": "CuteGirl_Wardrobe_v2", "recipe": "cute-girl-wardrobe", "name": "Cute Girl",
+      "items": [
+        {"id": "cute_girl_shirt", "slot": "top", "name": "シャツ", "objects": ["shirt"]},
+        {"id": "cute_girl_jeans", "slot": "bottom", "name": "ジーンズ", "objects": ["jean"]}
+      ]
+    },
+    {
+      "sourceBase": "CuteGirl_Free_Static_v1", "base": "CuteGirl_Free_Wardrobe_v2", "recipe": "cute-girl-free-wardrobe", "name": "Cute Girl free",
+      "items": [
+        {"id": "cute_free_shirt", "slot": "top", "name": "シャツ", "objects": ["shirt"]},
+        {"id": "cute_free_pants", "slot": "bottom", "name": "パンツ", "objects": ["pant"], "masks": ["underwear"]},
+        {"id": "cute_free_shoes_socks", "slot": "shoes", "name": "靴・ソックス", "objects": ["shoes", "sock"]}
+      ],
+      "accessories": {"dinosaur_hood": ["dino head"]}
+    },
+    {
+      "sourceBase": "Rainy_Rigged_v1", "base": "Rainy_Wardrobe_v2", "recipe": "rainy-wardrobe", "name": "Rainy",
+      "items": [
+        {"id": "rainy_shirt", "slot": "top", "name": "シャツ", "objects": ["shirt"]},
+        {"id": "rainy_pants", "slot": "bottom", "name": "パンツ", "objects": ["pant"]},
+        {"id": "rainy_boots", "slot": "shoes", "name": "ブーツ", "objects": ["boot"]}
+      ]
+    }
+  ],
+  "deferred": [
+    {"source": "Ayane", "reason": "衣装部品に肌や手足が含まれるため、独立した衣装としての抽出を保留"},
+    {"source": "Knight", "reason": "リグのない鎧のため、共通素体への装着は鎧の部位分割・フィット・ボーン設定が必要"},
+    {"source": "FantasyGirl", "reason": "人体・衣装・髪が単一メッシュと単一マテリアルに統合されている"},
+    {"source": "WhiteWeddingDressGirl", "reason": "人体・衣装・髪が単一メッシュと単一マテリアルに統合されている"}
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "DidoMale_v1",
+  "requireSkin": true,
+  "model": "C:/Users/kuwano/OneDrive/画像/モデル生成/promodeler-new-assets-20260930/base/DidoMale_v1.blend",
+  "sourceModel": "C:/Users/kuwano/develop/3d/キャラクター/Dido Human Male Character free 3D model/V1+To+Blender.Fbx",
+  "modules": {
+    "wardrobe.top": {
+      "dido_plaid_shirt": ["Plaid_Punk_Shirt"],
+      "male_tshirt": ["Wardrobe_Male_Tshirt"]
+    },
+    "wardrobe.bottom": {"dido_biker_jeans": ["Biker_Jeans"]},
+    "wardrobe.shoes": {"dido_biker_boots": ["Loose_Biker_Boots"]},
+    "appearance.hairStyle": {"dido_short_hair": ["Hair_0_"]}
+  },
+  "bodyMeshMasks": {
+    "wardrobe.top": {
+      "male_tshirt": [{"object": "CC_Base_Body", "vertexGroup": "PM_Cover_Male_Tshirt"}],
+      "dido_plaid_shirt": [{"object": "CC_Base_Body", "vertexGroup": "PM_Cover_Male_Tshirt"}]
+    }
+  },
+  "accessories": {
+    "dido_facial_hair": ["Chin_Curtain_Sparse", "Sideburns_Narrow", "Soul_Path_Thick", "Mustache_Horseshoe", "Chinstrap_Thick"]
+  }
+}

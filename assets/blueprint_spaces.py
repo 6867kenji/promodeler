@@ -3,9 +3,12 @@
 from __future__ import annotations
 
 import math
+import hashlib
+import json
 from dataclasses import replace
+from pathlib import Path
 
-from promodeler.core import Array, Asset, Bevel, Box, Color, Cylinder, Material, Part, Transform
+from promodeler.core import Array, Asset, Bevel, Box, Color, Cylinder, Extrude, Material, Part, Profile, Transform
 
 from assets.blueprint_materials import color_from_hex, materials_for, texture_resolution_for
 from assets.blueprint_props import joint_id, rig_for
@@ -37,6 +40,16 @@ def _scheduled_parts(design: dict, folder: str) -> list[Part]:
         x, y, z = entry["center_m"]
         sx, sy, sz = entry["size_m"]
         pid = entry["id"]
+        cutouts = (design.get("floor_cutouts", []) if pid == "floor" else
+                   design.get("ceiling_cutouts", []) if pid == "ceiling" else [])
+        if cutouts:
+            outer = ((x-sx/2, -z-sz/2), (x+sx/2, -z-sz/2),
+                     (x+sx/2, -z+sz/2), (x-sx/2, -z+sz/2))
+            holes = tuple(((a, -d), (c, -d), (c, -b), (a, -b))
+                          for opening in cutouts for a, b, c, d in [opening["rect_xz_m"]])
+            parts.append(Part(id=pid, shape=Extrude(Profile(outer, holes), depth=sy, axis="y"),
+                              material=entry["material"], transform=Transform(translation=(0, y-sy/2, 0))))
+            continue
         if folder == "20-cafe" and pid.startswith("table-"):
             _box(parts, pid + "_top", (x - sx / 2, x + sx / 2, sy - 0.025, sy,
                                        z - sz / 2, z + sz / 2), "oak", bevel=0.004)
@@ -94,6 +107,8 @@ def _stairs(parts: list[Part], design: dict) -> None:
             _box(parts, tread["id"], (x0, x1, top - 0.16, top, z0, z1), "floor-tile")
             _box(parts, tread["id"] + "_nosing", (x0, x1, top, top + 0.005, z0, z0 + 0.025),
                  "stainless")
+        from assets.subway_details import stair_details
+        stair_details(parts, stair)
 
 
 def _escalators(parts: list[Part], design: dict) -> None:
@@ -127,6 +142,8 @@ def _escalators(parts: list[Part], design: dict) -> None:
                       min(z0, z1), max(z0, z1)), "escalator-tread")
                 continue
             steps = max(1, math.ceil(abs(dz) / escalator.get("step_pitch_m", 0.4)))
+            _sloped_box(parts, f"{escalator['id']}_support_{index}",
+                        (x,mid_y-.21,mid_z),(1.25,.30,max(.2,length-.5)),slope,"escalator-tread")
             pitch = abs(dz) / steps
             for step in range(steps):
                 t = (step + 0.5) / steps
@@ -173,6 +190,8 @@ def _entrance(parts: list[Part], design: dict) -> None:
                  (x, x + 0.018, -5.995, -5.989, z, z + 2.8), "tactile")
     _box(parts, "closure_shutter", (-3.2, 3.2, 0, 2.6, -12.04, -12.02), "stainless",
          joint="closure-shutter")
+    from assets.subway_details import entrance_details
+    entrance_details(parts, design)
 
 
 def _concourse(parts: list[Part], design: dict) -> None:
@@ -189,13 +208,14 @@ def _concourse(parts: list[Part], design: dict) -> None:
             _box(parts, f"ceiling_light_{x}_{z}", (x - 1.2, x + 1.2, 2.97, 3.0,
                                                    z - 0.12, z + 0.12), "light")
     for index in range(8):
-        x = -3.23 + index * 0.88
+        x = design["faregates"]["lanes"][index]["center_x_m"]
+        reader_x = x - design["faregates"]["lanes"][index]["clear_width_m"] / 2 - 0.14
         _box(parts, f"gate_flap_{index}", (x - 0.28, x + 0.28, 0.52, 0.92,
                                           -28.012, -27.99), "glass",
              joint="gate-flap" if index == 0 else None)
-        _box(parts, f"gate_reader_{index}", (x - 0.07, x + 0.07, 1.0, 1.02,
+        _box(parts, f"gate_reader_{index}", (reader_x - 0.07, reader_x + 0.07, 1.0, 1.02,
                                             -28.12, -27.88), "dark-display")
-        _box(parts, f"gate_status_{index}", (x - 0.11, x + 0.11, 1.02, 1.036,
+        _box(parts, f"gate_status_{index}", (reader_x - 0.11, reader_x + 0.11, 1.02, 1.036,
                                             -28.67, -28.52), "teal")
         _box(parts, f"gate_flap_edge_{index}", (x - 0.28, x + 0.28,
                                                0.90, 0.925, -28.016, -27.986),
@@ -283,10 +303,14 @@ def _concourse(parts: list[Part], design: dict) -> None:
                           material="tactile",
                           transform=Transform(translation=(2.86, 0.008, z0 + 0.08)),
                           modifiers=(Array(count=6, offset=(0.09, 0, 0)),
-                                     Array(count=6, offset=(0, 0, 0.09)))))
+                                 Array(count=6, offset=(0, 0, 0.09)))))
+    from assets.subway_details import concourse_details
+    concourse_details(parts, design)
+    from assets.subway_reference_details import concourse_reference_details
+    concourse_reference_details(parts, design)
 
 
-def _platform(parts: list[Part]) -> None:
+def _platform(parts: list[Part], design: dict) -> None:
     for x in (-10.4, 10.4):
         _box(parts, f"side_wall_{x}", (x - 0.1, x + 0.1, -1.2, 3.6,
                                       -66, 66), "wall-tile")
@@ -296,7 +320,14 @@ def _platform(parts: list[Part]) -> None:
                  0.12, 1.55, z - 2.7, z + 2.7), "glass")
             _box(parts, f"platform_frame_{x}_{z}", (x - 0.035, x + 0.035,
                  0.05, 1.7, z - 2.75, z - 2.70), "stainless")
-        _box(parts, f"light_{z}", (-2.5, 2.5, 3.57, 3.6, z - 0.08, z + 0.08), "light")
+        in_opening = any(a < 2.5 and c > -2.5 and b-.08 < z < d+.08
+                         for opening in design.get("ceiling_cutouts", [])
+                         for a,b,c,d in [opening["rect_xz_m"]])
+        if in_opening:
+            _box(parts, f"light_{z}", (-4.5, -3.3, 3.57, 3.6, z-.08, z+.08), "light")
+            _box(parts, f"light_{z}_east", (3.3, 4.5, 3.57, 3.6, z-.08, z+.08), "light")
+        else:
+            _box(parts, f"light_{z}", (-2.5, 2.5, 3.57, 3.6, z - 0.08, z + 0.08), "light")
     for index, z in enumerate((-57.5, 57.5)):
         for x, side in ((-4.9, "west"), (4.9, "east")):
             _box(parts, f"door_leaf_{side}_{index}",
@@ -305,6 +336,8 @@ def _platform(parts: list[Part]) -> None:
                        "platform-leaf-positive-z" if index == 1 and side == "west" else None)
     _box(parts, "emergency_door", (-2.23, -2.22, 0, 1.5, -54.2, -53.8), "stainless",
          joint="emergency-cabinet")
+    from assets.subway_reference_details import platform_reference_details
+    platform_reference_details(parts, design)
 
 
 def _venue_shell(parts: list[Part], design: dict, *, dojo: bool) -> None:
@@ -424,21 +457,62 @@ def build_space(design: dict, folder: str) -> Asset:
             "floor-tile": {"pattern": "subway_floor", "scale_m": 1.2,
                            "resolution": 1024, "normal_strength": 0.35},
         }
+        tiled_materials.update({"wall-tile":{"pattern":"station_wall","scale_m":1.2,"resolution":1024,"normal_strength":.5},
+                                "stainless":{"pattern":"brushed_metal","scale_m":.4,"resolution":256}})
+        # Matched PBR sets from the supplied TrainStation reference. The
+        # digests ensure that a changed image produces a fresh asset recipe.
+        catalog_path = Path(__file__).with_name("external_references.json")
+        references = json.loads(catalog_path.read_text(encoding="utf-8"))["entries"]
+        train_reference = next(entry for entry in references
+                               if entry["id"] == "subway-train-station")
+        source_root = Path(train_reference["sourceModel"]).parent / "Texture"
+        for material_id, stem, scale, metallic in (
+            ("reference-concrete", "Concrete008", 1.8, 0.0),
+            ("reference-dark-tile", "Tiles051", 1.1, 0.0),
+            ("reference-metal-plate", "MetalPlates008", 1.0, 0.75),
+        ):
+            maps = {channel: source_root / f"{stem}_2K-JPG_{suffix}.jpg" for channel, suffix in
+                    (("base_color", "Color"), ("normal", "NormalGL"), ("roughness", "Roughness"))}
+            missing = [str(path) for path in maps.values() if not path.is_file()]
+            if missing:
+                raise FileNotFoundError(f"Subway reference texture missing: {missing}")
+            materials.append(Material(material_id, base_color=color_from_hex("#FFFFFF"),
+                                      roughness=0.5, metallic=metallic))
+            tiled_materials[material_id] = {
+                "pattern": "source_pbr", "scale_m": scale, "normal_strength": 0.55,
+                "maps": {channel: str(path) for channel, path in maps.items()},
+                "sha256": {channel: hashlib.sha256(path.read_bytes()).hexdigest()
+                           for channel, path in maps.items()},
+            }
     if folder in {"17-subway-entrance", "18-subway-concourse"}:
         materials.append(Material("escalator-tread", base_color=color_from_hex("#69727A"),
                                   roughness=0.47, metallic=0.64))
         tiled_materials.update({
-            "wall-tile": {"pattern": "ceramic", "scale_m": 0.095, "resolution": 256},
+            "wall-tile": {"pattern": "station_wall", "scale_m": 1.2, "resolution": 1024,
+                          "normal_strength": .5},
             "rubber": {"pattern": "rubber", "scale_m": 0.24, "resolution": 256},
             "tactile": {"pattern": "floor_tile", "scale_m": 0.3, "resolution": 256},
+            "stainless": {"pattern": "brushed_metal", "scale_m": .4, "resolution": 256},
+            "escalator-tread": {"pattern": "tread_grooves", "scale_m": .192, "resolution": 512},
+            "paint": {"pattern": "concrete", "scale_m": .4, "resolution": 256},
         })
+    if folder == "18-subway-concourse":
+        materials.extend((
+            Material("vending-blue", base_color=color_from_hex("#4D8FCE"),
+                     roughness=0.38, metallic=0.18),
+            Material("vending-ivory", base_color=color_from_hex("#DCE3E6"),
+                     roughness=0.42, metallic=0.08),
+        ))
     parts = _scheduled_parts(design, folder)
+    if folder == "19-subway-platform" and "reference-concrete" in tiled_materials:
+        parts = [replace(part, material="reference-concrete")
+                 if part.id.startswith("track-bed-") else part for part in parts]
     if folder == "17-subway-entrance":
         _entrance(parts, design)
     elif folder == "18-subway-concourse":
         _concourse(parts, design)
     elif folder == "19-subway-platform":
-        _platform(parts)
+        _platform(parts, design)
     else:
         _venue_shell(parts, design, dojo=folder == "21-karate-dojo")
         if folder == "20-cafe":

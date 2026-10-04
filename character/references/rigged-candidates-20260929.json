@@ -1,0 +1,42 @@
+{
+  "date": "2026-09-29",
+  "review": "C:/Users/kuwano/OneDrive/画像/モデル生成/promodeler-rig-review-20260929/index.html",
+  "candidates": [
+    {
+      "id": "knight-rigged-candidate",
+      "source": "C:/Users/kuwano/develop/3d/キャラクター/Knight/female knight 5.0born.blend",
+      "sha256": "fab259fb24f0039a992b5a1691d591c20a7da88da50c6e1bc0173b1e7b64a4a4",
+      "generatedRigBones": 918,
+      "deformBones": 171,
+      "bodyVertices": 53205,
+      "weightedBodyVertices": 0,
+      "status": "needs_weights_and_binding",
+      "usableRiggedBase": false,
+      "inspection": "C:/Users/kuwano/OneDrive/画像/モデル生成/promodeler-rig-review-20260929/knight.audit.json"
+    },
+    {
+      "id": "ayane-rigged-candidate",
+      "source": "C:/Users/kuwano/develop/3d/キャラクター/Ayane/Ayane 4.5+born.blend",
+      "sha256": "b9b5a634828e0f3ac75968e1bb831508f3d5592a8a6093397af5866f8988ebaa",
+      "generatedRigBones": 919,
+      "deformBones": 171,
+      "bodyVertices": 34803,
+      "weightedBodyVertices": 0,
+      "status": "needs_weights_and_binding",
+      "usableRiggedBase": false,
+      "inspection": "C:/Users/kuwano/OneDrive/画像/モデル生成/promodeler-rig-review-20260929/ayane.audit.json"
+    },
+    {
+      "id": "cute-girl-free-rigged-candidate",
+      "source": "C:/Users/kuwano/develop/3d/キャラクター/Cute+Girl+freeversion/Cute girl 5.2.blendボーン.blend",
+      "sha256": "ae5139a32523ac8b6d8d742763b0f99f5e733f2b95e0291e1faf780cc7e3fb72",
+      "generatedRigBones": 918,
+      "deformBones": 171,
+      "bodyVertices": 43007,
+      "weightedBodyVertices": 0,
+      "status": "needs_weights_and_binding",
+      "usableRiggedBase": false,
+      "inspection": "C:/Users/kuwano/OneDrive/画像/モデル生成/promodeler-rig-review-20260929/cute-girl-free.audit.json"
+    }
+  ]
+}

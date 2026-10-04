@@ -1,0 +1,24 @@
+{
+  "schema": "promodeler-canonical-character/2.0",
+  "id": "streetwear-woman",
+  "name": "Streetwear Woman",
+  "base": "RiggedWoman_v6",
+  "seed": 1,
+  "source": {
+    "kind": "user_supplied_modules"
+  },
+  "face": {},
+  "body": {},
+  "appearance": {
+    "hairStyle": "hair_ponytail_telo"
+  },
+  "material": {},
+  "wardrobe": {
+    "top": "streetwear_sport_shirt",
+    "bottom": "streetwear_formal_pants",
+    "shoes": "streetwear_shoes"
+  },
+  "accessories": [
+    "streetwear_bag"
+  ]
+}

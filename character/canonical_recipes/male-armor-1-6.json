@@ -1,0 +1,14 @@
+{
+  "schema": "promodeler-canonical-character/2.0",
+  "id": "male-armor-1-6",
+  "name": "Male 1-6 Armor",
+  "base": "ArmorMale_v1",
+  "seed": 1,
+  "source": {"kind": "user_supplied_rigged_fbx"},
+  "face": {},
+  "body": {},
+  "appearance": {"hairStyle": "armor_short_hair"},
+  "material": {},
+  "wardrobe": {"top": "armor_tank", "bottom": "armor_joggers", "outer": "armor_shell"},
+  "accessories": ["armor_vest", "armor_wrist_band"]
+}

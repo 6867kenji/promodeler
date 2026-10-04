@@ -6,13 +6,16 @@
   "category": "city",
   "kind": "environment",
   "status": "design_review",
+  "generation_layout": "density_layout.json",
   "summary": "日本の現代的な住宅・商業混在街区。500mは一辺として採用。平坦地で構成し、街路・敷地・全建物の内部を設計する。",
   "dimensions": {
     "envelope_xyz_m": [
       500,
-      40,
+      56,
       500
     ],
+    "above_ground_height_max_m": 40,
+    "below_ground_depth_max_m": 16,
     "origin": "地面・床面の平面中心。女性は裸足の両足接地中央。",
     "axis": "右手系: +X東/画面右、+Y上、+Z南/正面。北=-Z。人物の解剖学的右は-X。",
     "priority": "数値JSON > 寸法SVG > 仕様書 > 参考画像"

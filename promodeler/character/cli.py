@@ -12,7 +12,7 @@ from dataclasses import replace
 from pathlib import Path
 
 from ..core import ModelingError
-from . import bridge, check, consistency, prompt as prompt_module, sampler, schema
+from . import bridge, canonical, check, consistency, prompt as prompt_module, sampler, schema
 from .catalog import Catalog
 from .from_blueprint import character_from_blueprint, load_blueprint, outfit_from_blueprint
 from .recipe import OUTFIT_SCHEMA, RACES, SCHEMA, CharacterRecipe, OutfitRecipe, RecipeWarning
@@ -20,6 +20,8 @@ from .recipe import OUTFIT_SCHEMA, RACES, SCHEMA, CharacterRecipe, OutfitRecipe,
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 RECIPES_DIR = PROJECT_ROOT / "character" / "recipes"
 OUTFITS_DIR = PROJECT_ROOT / "character" / "outfits"
+CANONICAL_RECIPES_DIR = PROJECT_ROOT / "character" / "canonical_recipes"
+CANONICAL_BASES_DIR = PROJECT_ROOT / "character" / "bases"
 
 
 # --- files -----------------------------------------------------------------------------------
@@ -95,6 +97,21 @@ def generate_from_blueprint(blueprint_path: str, out: str | None, force: bool, s
 
 
 def cmd_character_recipe(args) -> int:
+    if getattr(args, "mode", "uma") == "canonical":
+        blueprint = load_blueprint(args.blueprint)
+        if blueprint.get("kind") != "humanoid":
+            raise ModelingError("canonical.kind", "Canonical mode accepts humanoid blueprints only.")
+        legacy, warnings = character_from_blueprint(blueprint, Catalog(), seed=args.seed)
+        recipe = canonical.from_uma(legacy, base=getattr(args, "base", None))
+        path = Path(args.out) if args.out else CANONICAL_RECIPES_DIR / f"{recipe['id']}.json"
+        if path.exists() and not args.force:
+            raise ModelingError("character.exists", f"{path} exists; use --force or --out.")
+        write_json(path, recipe)
+        print(f"canonical: {path}")
+        print_warnings(warnings)
+        return 0
+    if getattr(args, "base", None):
+        raise ModelingError("character.mode", "--base requires --mode canonical.")
     path, warnings, kind = generate_from_blueprint(args.blueprint, args.out, args.force, args.seed)
     print(f"{kind}: {path}")
     print_warnings(warnings)
@@ -102,6 +119,23 @@ def cmd_character_recipe(args) -> int:
 
 
 def cmd_character_validate(args) -> int:
+    if getattr(args, "mode", "uma") == "canonical":
+        if args.mhr:
+            raise ModelingError("character.mode", "--mhr is available only in UMA mode.")
+        path = resolve_canonical_path(args.target)
+        recipe = json.loads(path.read_text(encoding="utf-8"))
+        canonical.validate(recipe)
+        manifest_path = getattr(args, "base_manifest", None)
+        unresolved = []
+        if manifest_path:
+            manifest, _ = canonical.load_manifest(manifest_path)
+            unresolved = canonical.compatibility(recipe, manifest)
+        print(f"valid:    {path} ({canonical.SCHEMA})")
+        for item in unresolved:
+            print(f"warning:  canonical.mapping: {item}")
+        return 1 if args.strict and unresolved else 0
+    if getattr(args, "base_manifest", None):
+        raise ModelingError("character.mode", "--base-manifest requires --mode canonical.")
     path = resolve_recipe_path(args.target)
     catalog = Catalog()
     recipe = load_recipe(path)
@@ -268,6 +302,21 @@ def _clip_list(value):
 
 
 def cmd_character_build(args) -> int:
+    if getattr(args, "mode", "uma") == "canonical":
+        unsupported = [name for name in ("outfit", "views", "passes", "probe", "clips")
+                       if getattr(args, name, None)]
+        if getattr(args, "formats", None) not in (None, "glb"):
+            unsupported.append("formats")
+        if unsupported:
+            raise ModelingError("character.mode", "Canonical mode does not use: " + ", ".join(unsupported))
+        if getattr(args, "all", False):
+            failures = 0
+            for path in sorted(CANONICAL_RECIPES_DIR.glob("*.json")):
+                args.target = str(path)
+                failures += bool(cmd_character_build_one_canonical(args))
+            print(f"built {len(list(CANONICAL_RECIPES_DIR.glob('*.json')))} canonical recipes, {failures} failed")
+            return 1 if failures else 0
+        return cmd_character_build_one_canonical(args)
     if getattr(args, "all", False):
         return _build_all(args)
     if not args.target:
@@ -297,6 +346,54 @@ def cmd_character_build(args) -> int:
         return 3
     print_build(result)
     return 0 if result.ok else 1
+
+
+def resolve_canonical_path(target: str) -> Path:
+    path = Path(target)
+    if path.is_file():
+        return path
+    path = CANONICAL_RECIPES_DIR / f"{target}.json"
+    if path.is_file():
+        return path
+    raise ModelingError("canonical.recipe", f"Canonical recipe not found: {target}")
+
+
+def cmd_character_build_one_canonical(args) -> int:
+    if not args.target:
+        raise ModelingError("canonical.recipe", "Give a canonical recipe id or --all.")
+    path = resolve_canonical_path(args.target)
+    recipe = json.loads(path.read_text(encoding="utf-8"))
+    canonical.validate(recipe)
+    manifest = getattr(args, "base_manifest", None) or CANONICAL_BASES_DIR / recipe["base"] / "manifest.json"
+    out_dir, report = canonical.build(recipe, manifest, Path(args.out) / "canonical",
+                                      force=args.force, render=not args.no_render,
+                                      strict=getattr(args, "strict_base", False))
+    print(f"mode:     canonical")
+    print(f"recipe:   {path}")
+    print(f"out:      {out_dir}")
+    print(f"status:   {report['status']}")
+    for item in report.get("unresolved", []):
+        print(f"warning:  canonical.mapping: {item}")
+    if report["status"] != "ok":
+        print(f"error:    {report.get('error', {}).get('message')}")
+        print(f"log:      {out_dir / 'blender.log'}")
+        return 1
+    print(f"export:   {out_dir / 'model.glb'}")
+    if report.get("preview"):
+        print(f"render:   {out_dir / report['preview']}")
+    return 0
+
+
+def cmd_character_inspect_base(args) -> int:
+    output = Path(args.out) if args.out else Path(args.model).with_suffix(".inventory.json")
+    inventory = canonical.inspect_base(args.model, output)
+    print(f"inventory: {output}")
+    print(f"meshes:    {sum(item['type'] == 'MESH' for item in inventory['objects'])}")
+    print(f"shapeKeys: {len(inventory['shapeKeys'])}, bones: {len(inventory['bones'])}, materials: {len(inventory['materials'])}")
+    for issue in inventory.get("bindingIssues", []):
+        print(f"binding:   {issue['mesh']}: {issue['status']} "
+              f"({issue['weightedVertices']}/{issue['vertices']} vertices weighted)")
+    return 0
 
 
 def cmd_character_setup(args) -> int:
@@ -331,6 +428,8 @@ def cmd_character_setup(args) -> int:
 
 def cmd_character_random(args) -> int:
     """Seed-deterministic recipes from the anthropometric priors; writes <out>/<id>.json and validates each."""
+    if getattr(args, "base", None) and getattr(args, "mode", "uma") != "canonical":
+        raise ModelingError("character.mode", "--base requires --mode canonical.")
     catalog = Catalog()
     try:
         presets = sampler.load_presets(args.presets) if args.presets else sampler.load_presets()
@@ -358,8 +457,10 @@ def cmd_character_random(args) -> int:
             print(f"seed {seed}: {path} exists (use --force)", file=sys.stderr)
             failures += 1
             continue
+        output = (canonical.from_uma(recipe, base=getattr(args, "base", None))
+                  if getattr(args, "mode", "uma") == "canonical" else recipe.to_json())
         if not args.dry_run:
-            write_json(path, recipe.to_json())
+            write_json(path, output)
         m = recipe.body.measurements_m
         rows.append((recipe.id, recipe.identity.sex, recipe.identity.age, m.barefoot_height, m.circumferences, len(recipe.wardrobe), len(recipe.accessories),
                      [w.code for w in warnings if not w.code.startswith("catalog.placeholder")]))
@@ -374,6 +475,10 @@ def cmd_character_random(args) -> int:
 
 def cmd_character_prompt(args) -> int:
     """One sentence -> PromptSpec (rules, or an LLM constrained to the spec schema) -> seeded recipe -> validate -> write."""
+    if getattr(args, "base", None) and getattr(args, "mode", "uma") != "canonical":
+        raise ModelingError("character.mode", "--base requires --mode canonical.")
+    if getattr(args, "base_manifest", None) and (getattr(args, "mode", "uma") != "canonical" or not args.build):
+        raise ModelingError("character.mode", "--base-manifest requires --mode canonical --build.")
     catalog = Catalog()
     text = " ".join(args.text)
     try:
@@ -391,14 +496,16 @@ def cmd_character_prompt(args) -> int:
         for w in warnings:
             if w.code.startswith(code_prefix) and w.code != "catalog.placeholder":
                 print(f"warning:  {w.code}: {w.message}")
+    output = (canonical.from_uma(recipe, base=getattr(args, "base", None))
+              if getattr(args, "mode", "uma") == "canonical" else recipe.to_json())
     if args.dry_run:
-        print(json.dumps(recipe.to_json(), ensure_ascii=False, indent=2)[:4000])
+        print(json.dumps(output, ensure_ascii=False, indent=2)[:4000])
         return 0
     path = Path(args.out) if args.out else Path("build/prompt") / f"{recipe.id}.json"
     if path.exists() and not args.force:
         print(f"error:    {path} exists (use --force or --out)", file=sys.stderr)
         return 2
-    write_json(path, recipe.to_json())
+    write_json(path, output)
     m = recipe.body.measurements_m
     print(f"recipe:   {path}  ({recipe.identity.sex} {recipe.identity.age}, h {m.barefoot_height:.3f}, " + " ".join(f"{k} {v:.2f}" for k, v in m.circumferences.items())
           + f", wardrobe {[g.catalog_id for g in recipe.wardrobe]}, accessories {[a.id for a in recipe.accessories]}, hair {recipe.appearance.hair.style})")
@@ -568,26 +675,55 @@ def cmd_character_edit(args) -> int:
     return 0
 
 
+def cmd_character_makeup(args) -> int:
+    """Run the local visual makeup screen for the canonical character base."""
+    from .makeup_server import serve
+
+    serve(args.out, args.port)
+    return 0
+
+
 def cmd_generate(args) -> int:
     """Dispatch a blueprint by kind: characters go through the recipe layer, everything else is a hand-written asset."""
+    if getattr(args, "mode", "uma") != "canonical" and (getattr(args, "base", None) or getattr(args, "base_manifest", None)):
+        raise ModelingError("character.mode", "--base and --base-manifest require --mode canonical.")
     blueprint = load_blueprint(args.blueprint)
     kind = blueprint.get("kind")
     if kind not in ("humanoid", "wearable"):
         print(f"{blueprint.get('id')}: kind {kind!r} is procedural. Write assets/{blueprint.get('id')}.py from the blueprint and run "
               f"`python -m promodeler build assets/{blueprint.get('id')}.py`.")
         return 2
+    if getattr(args, "mode", "uma") == "canonical":
+        if kind != "humanoid":
+            raise ModelingError("canonical.kind", "Canonical mode accepts humanoid blueprints only.")
+        recipe_path = Path(args.out) if args.out else CANONICAL_RECIPES_DIR / f"{blueprint['id']}.json"
+        args.seed = None
+        try:
+            cmd_character_recipe(args)
+        except ModelingError as exc:
+            if exc.code != "character.exists":
+                raise
+            print(f"canonical: existing recipe kept; use --force to regenerate")
+        if args.no_build:
+            return 0
+        args.target = str(recipe_path)
+        args.out = "build/character"
+        for name, value in (("all", False), ("outfit", None), ("views", None), ("passes", None),
+                            ("formats", None), ("no_render", False), ("strict_base", False)):
+            setattr(args, name, value)
+        return cmd_character_build(args)
     try:
-        path, warnings, _ = generate_from_blueprint(args.blueprint, None, args.force, None)
+        path, warnings, _ = generate_from_blueprint(args.blueprint, args.out, args.force, None)
         print(f"{kind}: {path}")
     except ModelingError as exc:
         if exc.code != "character.exists":
             raise
-        path = resolve_recipe_path(blueprint["id"])
+        path = Path(args.out) if args.out else resolve_recipe_path(blueprint["id"])
         print(f"{kind}: {path} (existing recipe kept; --force regenerates)")
         warnings = []
     print_warnings(warnings)
     if kind == "humanoid" and not args.no_build:
-        args.target = blueprint["id"]
+        args.target = str(path)
         for name, value in (("outfit", None), ("out", "build/character"), ("views", None), ("passes", None), ("formats", None),
                             ("no_render", False), ("verbose", False)):
             setattr(args, name, value)
@@ -601,7 +737,11 @@ def add_parsers(sub) -> None:
     generate = sub.add_parser("generate", help="Route a blueprint.json by kind: humanoid/wearable through the character recipe layer.")
     generate.add_argument("blueprint", help="Path to a promodeler-blueprint/1.0 blueprint.json.")
     generate.add_argument("--force", action="store_true", help="Regenerate an existing recipe.")
+    generate.add_argument("--out", default=None, help="Recipe JSON output path (default is the mode's recipe directory).")
     generate.add_argument("--no-build", action="store_true", help="Stop after writing and validating the recipe.")
+    generate.add_argument("--mode", choices=("uma", "canonical"), default="uma")
+    generate.add_argument("--base", default=None, help="Canonical base id.")
+    generate.add_argument("--base-manifest", default=None, help="Canonical base manifest for the build.")
     generate.set_defaults(func=cmd_generate)
 
     character = sub.add_parser("character", help="Humanoid characters as recipes for the Unity character creator.")
@@ -612,6 +752,9 @@ def add_parsers(sub) -> None:
     recipe.add_argument("--out", default=None)
     recipe.add_argument("--force", action="store_true")
     recipe.add_argument("--seed", type=int, default=None)
+    recipe.add_argument("--mode", choices=("uma", "canonical"), default="uma",
+                        help="UMA keeps the existing recipe; canonical writes a 2.0 base-mesh recipe.")
+    recipe.add_argument("--base", default=None, help="Canonical base id (default from character sex).")
     recipe.set_defaults(func=cmd_character_recipe)
 
     validate = csub.add_parser("validate", help="Schema, catalog, license and measurement-consistency checks (no Unity).")
@@ -619,6 +762,8 @@ def add_parsers(sub) -> None:
     validate.add_argument("--mhr", action="store_true", help="Also run the MHR reference fit (torch) and store body.reference_fit.")
     validate.add_argument("--strict", action="store_true", help="Exit 1 when there are warnings.")
     validate.add_argument("--verbose", "-v", action="store_true")
+    validate.add_argument("--mode", choices=("uma", "canonical"), default="uma")
+    validate.add_argument("--base-manifest", default=None, help="Check canonical recipe selections against this base manifest.")
     validate.set_defaults(func=cmd_character_validate)
 
     chk = csub.add_parser("check", help="Blueprint targets vs recipe vs Unity build.json (or the MHR reference fit).")
@@ -649,24 +794,38 @@ def add_parsers(sub) -> None:
     build = csub.add_parser("build", help="Build a character with the Unity + UMA batch pipeline and read back build.json.")
     build.add_argument("target", nargs="?", default=None, help="Character recipe id or path (omit with --all).")
     build.add_argument("--all", action="store_true", help="Build every character/recipes/*.json in turn.")
-    build.add_argument("--outfit", default=None, help="Outfit recipe id to dress the character with.")
+    build.add_argument("--outfit", default=None, help="UMA: outfit recipe id to dress the character with.")
     build.add_argument("--out", default="build/character")
     build.add_argument("--force", action="store_true", help="Ignore the cached build and rebuild accessories.")
-    build.add_argument("--views", default=None, help="Comma-separated: front,side,back,perspective,face,hand")
-    build.add_argument("--passes", default=None, help="Comma-separated: shaded,clay")
-    build.add_argument("--formats", default=None, help="Comma-separated: fbx,glb")
-    build.add_argument("--no-render", action="store_true", help="Skip verification renders (runs Unity with -nographics).")
+    build.add_argument("--views", default=None, help="UMA: comma-separated front,side,back,perspective,face,hand")
+    build.add_argument("--passes", default=None, help="UMA: comma-separated shaded,clay")
+    build.add_argument("--formats", default=None, help="UMA: fbx,glb; canonical: glb only")
+    build.add_argument("--no-render", action="store_true", help="Skip the preview render.")
     build.add_argument("--probe", action="store_true", help="Also write calibration.json: each body parameter at 0 and 1 against every target.")
     build.add_argument("--clips", nargs="?", const="all", help="Record animation.clips as frame sequences + MP4/GIF: --clips (all) or --clips idle,walk.")
     build.add_argument("--clip-fps", type=int, default=12)
     build.add_argument("--clip-seconds", type=float, default=3.0, help="Cap per clip (the recipe's duration_s otherwise).")
     build.add_argument("--clip-resolution", type=int, default=384)
     build.add_argument("--verbose", "-v", action="store_true")
+    build.add_argument("--mode", choices=("uma", "canonical"), default="uma",
+                        help="Use the existing Unity/UMA build or an authored canonical GLB/Blend/FBX base.")
+    build.add_argument("--base-manifest", default=None, help="Canonical base manifest (default character/bases/<base>/manifest.json).")
+    build.add_argument("--strict-base", action="store_true", help="Reject any canonical parameter or module without a base mapping.")
     build.set_defaults(func=cmd_character_build)
+
+    inspect = csub.add_parser("inspect-base", help="List meshes, ShapeKeys, bones and materials in a GLB/Blend/FBX/OBJ asset.")
+    inspect.add_argument("model", help="Candidate GLB, Blend, FBX or OBJ file.")
+    inspect.add_argument("--out", default=None, help="Inventory JSON path (default next to the model).")
+    inspect.set_defaults(func=cmd_character_inspect_base)
 
     edit = csub.add_parser("edit", help="Open the Unity character editor (sliders, preview, Save writes the recipe JSON).")
     edit.add_argument("target", help="Character recipe id or path.")
     edit.set_defaults(func=cmd_character_edit)
+
+    makeup = csub.add_parser("makeup", help="Open a local before/after makeup preview for RiggedWoman_v6.")
+    makeup.add_argument("--out", default="build/character-makeup", help="Generated previews and saved recipes.")
+    makeup.add_argument("--port", type=int, default=8765, help="Local browser port (default 8765).")
+    makeup.set_defaults(func=cmd_character_makeup)
 
     rnd = csub.add_parser("random", help="Seed-deterministic recipes from character/presets/anthropometry.json (docs/03 M13).")
     rnd.add_argument("--seed", type=int, default=1, help="First seed; recipe ids are random-<seed as 8 hex digits>.")
@@ -679,6 +838,8 @@ def add_parsers(sub) -> None:
     rnd.add_argument("--force", action="store_true", help="Overwrite existing files.")
     rnd.add_argument("--dry-run", action="store_true", help="Generate and validate without writing.")
     rnd.add_argument("--verbose", action="store_true", help="Print every recipe row even for large counts.")
+    rnd.add_argument("--mode", choices=("uma", "canonical"), default="uma")
+    rnd.add_argument("--base", default=None, help="Canonical base id (default from character sex).")
     rnd.set_defaults(func=cmd_character_random)
 
     prm = csub.add_parser("prompt", help="One sentence (Japanese) -> recipe: rule-based parsing, or --llm anthropic for a schema-constrained LLM spec (docs/03 M13).")
@@ -693,6 +854,9 @@ def add_parsers(sub) -> None:
     prm.add_argument("--build", action="store_true", help="Run `character build` on the written recipe.")
     prm.add_argument("--outfit"); prm.add_argument("--views"); prm.add_argument("--passes"); prm.add_argument("--formats")
     prm.add_argument("--no-render", action="store_true"); prm.add_argument("--probe", action="store_true"); prm.add_argument("--verbose", action="store_true")
+    prm.add_argument("--mode", choices=("uma", "canonical"), default="uma")
+    prm.add_argument("--base", default=None, help="Canonical base id (default from character sex).")
+    prm.add_argument("--base-manifest", default=None, help="Canonical base manifest when used with --build.")
     prm.set_defaults(func=cmd_character_prompt)
 
     profile = csub.add_parser("profile", help="Export the neutral body of a UMA race (outlines, arm sections, bones) for garment generators.")

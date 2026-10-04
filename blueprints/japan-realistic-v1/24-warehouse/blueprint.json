@@ -1,0 +1,41 @@
+{
+  "schema": "promodeler-blueprint/1.0",
+  "folder": "24-warehouse",
+  "id": "warehouse",
+  "name": "汐見物流倉庫",
+  "kind": "architecture",
+  "category": "warehouse",
+  "status": "generated_review",
+  "summary": "WSE_11倉庫を外観参考にした独自のコード生成モデル。波板切妻屋根・天窓12枚・レンガ腰壁・搬入口3か所。",
+  "dimensions": {
+    "envelope_xyz_m": [25, 8.55, 26.5],
+    "axis": "+X東、+Y上、+Z正面（南）",
+    "body_xz_m": [24, 25.5],
+    "eave_m": 6.15,
+    "ridge_m": 8.48,
+    "brick_base_m": 1.75,
+    "loading_opening_wh_m": [4.6, 4.6],
+    "personnel_opening_wh_m": [1.1, 2.2]
+  },
+  "target": {
+    "triangles_lod0_max": 100000,
+    "texture_resolution_max": 2048,
+    "texel_density_px_per_m": 512,
+    "texture_policy": "BaseColor sRGB / Roughness・Normal linear。共有の実寸反復PBRをGLBへ埋め込み。"
+  },
+  "materials": [
+    {"id": "wh_roof", "detail": "24cmピッチの波板。薄い雨筋・粗さむら・微量の酸化。"},
+    {"id": "wh_wall", "detail": "16cmピッチの縦波板。落ち着いた灰緑色。"},
+    {"id": "wh_brick", "detail": "240×120mmの赤茶レンガ、10mm目地。色むらと目地の法線。"},
+    {"id": "wh_shutter", "detail": "8cmピッチのシャッター。透明な確認窓と鋼製枠。"},
+    {"id": "wh_glass", "detail": "青灰色の半透明天窓。下側に不透明屋根を置かない。"}
+  ],
+  "parts": [
+    {"id": "foundation", "center_m": [0, 0.05, 0], "size_m": [24, 0.1, 25.5], "material": "wh_floor"},
+    {"id": "roof", "material": "wh_roof"},
+    {"id": "skylights", "material": "wh_glass"},
+    {"id": "open-bay", "material": "wh_shutter"},
+    {"id": "personnel-door", "material": "wh_shutter"}
+  ],
+  "metadata": {"reference": "C:/Users/kuwano/develop/3d/建築物/Warehouse/WSE_11.blend", "usage": "ローカル確認用。独自形状とPBRを生成。", "license": "配布条件は未設定"}
+}

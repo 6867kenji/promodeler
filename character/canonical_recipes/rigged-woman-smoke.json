@@ -1,0 +1,14 @@
+{
+  "schema": "promodeler-canonical-character/2.0",
+  "id": "rigged-woman-smoke",
+  "name": "Rigged Woman Smoke Test",
+  "base": "RiggedWoman_v1",
+  "seed": 1,
+  "source": {"kind": "local_rigged_fbx"},
+  "face": {},
+  "body": {"armLength": 0.55},
+  "appearance": {},
+  "material": {},
+  "wardrobe": {},
+  "accessories": []
+}
